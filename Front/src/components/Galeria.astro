@@ -1,41 +1,63 @@
 ---
 /**
- * Galería — mosaico editorial de obras.
- * Layout: CSS Grid con obras destacadas que ocupan más espacio (doc 05, 5.3).
- * Fuente de datos: mock por ahora, será fetch a /api/obras.
- * Renderiza <TarjetaObra /> por cada obra.
+ * Galería — rieles horizontales estilo Netflix.
+ * Cada categoría tiene su propio carrusel deslizable.
+ * Las imágenes están en escala de grises y pasan a color al hover.
+ * Conserva la lógica del Modal de video.
+ * Referencia: Builder.io mockup sección 3.
  */
 import textos from "../i18n/es";
 import { siteConfig } from "../config/site";
 ---
 
-<section id="galeria" class="seccion galeria">
+<section id="galeria" class="galeria">
   <div class="galeria__header">
     <div>
+      <p class="galeria__eyebrow">{textos.galeria.eyebrow}</p>
       <h2 class="galeria__titulo">{textos.galeria.titulo}</h2>
-      <p class="galeria__subtitulo">{textos.galeria.subtitulo}</p>
+    </div>
+    <p class="galeria__subtitulo">{textos.galeria.subtitulo}</p>
+  </div>
+
+  <!-- Riel 1: Murales -->
+  <div class="galeria__riel">
+    <div class="galeria__riel-header">
+      <h3 class="galeria__riel-titulo">{textos.galeria.rieles.murales}</h3>
+      <div class="galeria__riel-nav">
+        <button class="galeria__riel-btn" data-riel="riel-murales" data-dir="-1" aria-label="Anterior">&lt;</button>
+        <button class="galeria__riel-btn" data-riel="riel-murales" data-dir="1" aria-label="Siguiente">&gt;</button>
+      </div>
+    </div>
+    <div class="galeria__riel-scroll" id="riel-murales">
+      <!-- Se llena dinámicamente con la API -->
     </div>
   </div>
 
-  <div id="galeria-grid" class="galeria__grid">
-    <!-- Se llena dinámicamente con la API -->
+  <!-- Riel 2: Cuadros -->
+  <div class="galeria__riel">
+    <div class="galeria__riel-header">
+      <h3 class="galeria__riel-titulo">{textos.galeria.rieles.cuadros}</h3>
+      <div class="galeria__riel-nav">
+        <button class="galeria__riel-btn" data-riel="riel-cuadros" data-dir="-1" aria-label="Anterior">&lt;</button>
+        <button class="galeria__riel-btn" data-riel="riel-cuadros" data-dir="1" aria-label="Siguiente">&gt;</button>
+      </div>
+    </div>
+    <div class="galeria__riel-scroll" id="riel-cuadros">
+      <!-- Se llena dinámicamente con la API -->
+    </div>
   </div>
 
-  <template id="tarjeta-template">
-    <article class="tarjeta">
-      <img src="" alt="" class="tarjeta__imagen" loading="lazy" />
-      <div class="tarjeta__overlay">
-        <h3 class="tarjeta__titulo"></h3>
-        <p class="tarjeta__descripcion"></p>
+  <!-- Template para tarjetas del riel -->
+  <template id="riel-tarjeta-template">
+    <div class="riel-tarjeta">
+      <img src="" alt="" class="riel-tarjeta__img" loading="lazy" />
+      <div class="riel-tarjeta__video-badge" style="display: none;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
       </div>
-      <div class="tarjeta__video-badge" aria-label="Esta obra tiene video" style="display: none;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M8 5v14l11-7z" />
-        </svg>
-      </div>
-    </article>
+    </div>
   </template>
-  <!-- Reproductor de Video Emergente -->
+
+  <!-- Reproductor de Video Emergente (Modal) -->
   <dialog id="video-modal" class="modal-video">
     <div class="modal-video__contenido">
       <button id="modal-video-cerrar" class="modal-video__cerrar" aria-label="Cerrar video">✕</button>
@@ -48,68 +70,75 @@ import { siteConfig } from "../config/site";
 
 <script define:vars={{ apiUrl: siteConfig.api.baseUrl }}>
   document.addEventListener("DOMContentLoaded", async () => {
-    const grid = document.getElementById("galeria-grid");
-    const template = document.getElementById("tarjeta-template");
-    
-    if (!grid || !template) return;
+    const rielMurales = document.getElementById("riel-murales");
+    const rielCuadros = document.getElementById("riel-cuadros");
+    const template = document.getElementById("riel-tarjeta-template");
+
+    if (!rielMurales || !rielCuadros || !template) return;
 
     try {
       const res = await fetch(`${apiUrl}/api/obras`);
       if (!res.ok) throw new Error("Error fetching");
       const obras = await res.json();
 
-      grid.innerHTML = "";
-
       if (obras.length === 0) {
-        grid.innerHTML = "<p>Galería vacía. El artista está creando nuevas obras...</p>";
+        rielMurales.innerHTML = "<p style='color: var(--color-texto-sec); padding: 1rem;'>No hay murales aún.</p>";
+        rielCuadros.innerHTML = "<p style='color: var(--color-texto-sec); padding: 1rem;'>No hay cuadros aún.</p>";
         return;
       }
 
-      obras.forEach((obra) => {
-        const clone = template.content.cloneNode(true);
-        const article = clone.querySelector('article');
-        
-        if (obra.destacado) {
-          article.classList.add('tarjeta--destacada');
-        }
+      const murales = obras.filter((o) => o.categoria === "mural");
+      const cuadros = obras.filter((o) => o.categoria === "cuadro" || o.categoria === "escultura" || o.categoria === "logo");
+      // Si no hay categoría específica, ponerlos en ambos rieles
+      const sinCategoria = obras.filter((o) => !o.categoria || (o.categoria !== "mural" && o.categoria !== "cuadro" && o.categoria !== "escultura" && o.categoria !== "logo"));
 
-        const img = clone.querySelector('img');
-        img.src = obra.imagenUrl;
-        img.alt = obra.titulo;
+      const renderRiel = (container, items) => {
+        const allItems = items.length > 0 ? items : sinCategoria.length > 0 ? sinCategoria : obras;
+        allItems.forEach((obra) => {
+          const clone = template.content.cloneNode(true);
+          const card = clone.querySelector(".riel-tarjeta");
+          const img = clone.querySelector("img");
+          img.src = obra.imagenUrl;
+          img.alt = obra.titulo;
 
-        clone.querySelector('.tarjeta__titulo').textContent = obra.titulo;
-        
-        const desc = clone.querySelector('.tarjeta__descripcion');
-        if (obra.descripcion) {
-          desc.textContent = obra.descripcion;
-        } else {
-          desc.remove();
-        }
+          if (obra.videoUrl) {
+            clone.querySelector(".riel-tarjeta__video-badge").style.display = "flex";
+            card.dataset.videoUrl = obra.videoUrl;
+          }
 
-        if (obra.videoUrl) {
-          clone.querySelector('.tarjeta__video-badge').style.display = 'flex';
-          article.dataset.videoUrl = obra.videoUrl;
-        }
+          container.appendChild(clone);
+        });
+      };
 
-        grid.appendChild(clone);
-      });
+      renderRiel(rielMurales, murales);
+      renderRiel(rielCuadros, cuadros);
+
     } catch (error) {
-      grid.innerHTML = "<p>Error al cargar la galería.</p>";
+      rielMurales.innerHTML = "<p style='color: var(--color-texto-sec); padding: 1rem;'>Error al cargar.</p>";
     }
 
-    // Lógica del Reproductor de Video
+    // Botones de navegación de rieles
+    document.querySelectorAll(".galeria__riel-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const rielId = btn.dataset.riel;
+        const dir = parseInt(btn.dataset.dir);
+        const riel = document.getElementById(rielId);
+        if (riel) riel.scrollBy({ left: dir * 350, behavior: "smooth" });
+      });
+    });
+
+    // Lógica del Reproductor de Video (Modal)
     const modal = document.getElementById("video-modal");
     const iframe = document.getElementById("modal-video-iframe");
     const btnCerrar = document.getElementById("modal-video-cerrar");
 
     const cerrarModal = () => {
       modal.close();
-      iframe.src = ""; // Detiene la reproducción y limpia la memoria
+      iframe.src = "";
     };
 
     btnCerrar?.addEventListener("click", cerrarModal);
     
-    // Cerrar al hacer clic en el fondo oscuro
     modal?.addEventListener("click", (e) => {
       const dialogDimensions = modal.getBoundingClientRect();
       if (
@@ -122,13 +151,11 @@ import { siteConfig } from "../config/site";
       }
     });
 
-    // Event Delegation: escuchar clics en toda la galería
-    grid.addEventListener("click", (e) => {
-      const tarjeta = e.target.closest(".tarjeta");
+    // Event delegation para toda la galería
+    document.getElementById("galeria")?.addEventListener("click", (e) => {
+      const tarjeta = e.target.closest(".riel-tarjeta");
       if (tarjeta && tarjeta.dataset.videoUrl) {
         e.preventDefault();
-        
-        // Convertir formato de watch?v= a formato /embed/ para iframe
         let url = tarjeta.dataset.videoUrl;
         if (url.includes("watch?v=")) {
           const videoId = new URL(url).searchParams.get("v");
@@ -137,142 +164,158 @@ import { siteConfig } from "../config/site";
           const videoId = url.split("youtu.be/")[1]?.split("?")[0];
           url = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
         }
-        
         iframe.src = url;
         modal.showModal();
       }
     });
-
   });
 </script>
 
 <style>
+  .galeria {
+    padding: var(--espaciado-seccion) 0;
+    border-top: 1px solid var(--color-borde);
+    overflow: hidden;
+  }
+
   .galeria__header {
-    margin-bottom: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 3.5rem;
+    gap: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 2rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .galeria__eyebrow {
+    font-family: var(--font-cuerpo);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-primario);
+    margin-bottom: 0.75rem;
   }
 
   .galeria__titulo {
     font-family: var(--font-display);
     font-size: var(--tam-h2);
     color: var(--color-texto);
-    margin-bottom: 0.5rem;
+    font-weight: 400;
   }
 
   .galeria__subtitulo {
-    font-size: 1rem;
-    color: var(--color-texto);
-    opacity: 0.55;
-    max-width: 420px;
+    font-size: 0.95rem;
+    color: var(--color-texto-sec);
+    max-width: 380px;
+    line-height: 1.6;
+    text-align: right;
   }
 
-  /* Mosaico editorial — doc 05 sección 5.3 */
-  .galeria__grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 280px;
-    gap: 1rem;
+  /* ---- Rieles ---- */
+  .galeria__riel {
+    margin-bottom: 3rem;
   }
 
-  /* Responsive */
-  @media (max-width: 900px) {
-    .galeria__grid {
-      grid-template-columns: repeat(2, 1fr);
-      grid-auto-rows: 240px;
-    }
+  .galeria__riel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    margin-bottom: 1.25rem;
   }
 
-  @media (max-width: 600px) {
-    .galeria__grid {
-      grid-template-columns: 1fr;
-      grid-auto-rows: 260px;
-    }
-  }
-
-  /* Estilos portados de TarjetaObra.astro para el template */
-  .tarjeta {
-    position: relative;
-    border-radius: var(--radio-base);
-    overflow: hidden;
-    cursor: pointer;
-    background: rgba(47, 79, 79, 0.03);
-    height: 100%;
-    width: 100%;
-  }
-
-  .tarjeta__imagen {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-
-  .tarjeta:hover .tarjeta__imagen {
-    transform: scale(1.03);
-  }
-
-  .tarjeta__overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1.5rem;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.65) 0%,
-      rgba(0, 0, 0, 0) 100%
-    );
-    color: #fff;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .tarjeta:hover .tarjeta__overlay {
-    opacity: 1;
-  }
-
-  .tarjeta__titulo {
+  .galeria__riel-titulo {
     font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 0.25rem;
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--color-texto);
   }
 
-  .tarjeta__descripcion {
-    font-size: 0.825rem;
-    opacity: 0.85;
-    line-height: 1.4;
+  .galeria__riel-nav {
+    display: flex;
+    gap: 0.5rem;
   }
 
-  .tarjeta__video-badge {
-    position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+  .galeria__riel-btn {
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--color-borde);
+    background: transparent;
+    color: var(--color-texto-sec);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .galeria__riel-btn:hover {
+    border-color: var(--color-texto);
+    color: var(--color-texto);
+  }
+
+  .galeria__riel-scroll {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    padding: 0 2rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .galeria__riel-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ---- Tarjetas del riel ---- */
+  .riel-tarjeta {
+    position: relative;
+    flex-shrink: 0;
+    width: 280px;
+    height: 200px;
+    overflow: hidden;
+    scroll-snap-align: start;
+    cursor: pointer;
+  }
+
+  .riel-tarjeta__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%);
+    transition: filter 0.5s ease, transform 0.4s ease;
+  }
+
+  .riel-tarjeta:hover .riel-tarjeta__img {
+    filter: grayscale(0%);
+    transform: scale(1.05);
+  }
+
+  .riel-tarjeta__video-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.6);
     color: #fff;
     border-radius: 50%;
     backdrop-filter: blur(4px);
+    z-index: 2;
   }
 
-  .tarjeta--destacada {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-
-  @media (max-width: 768px) {
-    .tarjeta--destacada {
-      grid-column: span 1;
-      grid-row: span 1;
-    }
-    .tarjeta__overlay {
-      opacity: 1; 
-    }
-  }
-  /* ---- Ventana Emergente de Video (Modal) ---- */
+  /* ---- Modal de Video ---- */
   .modal-video {
     margin: auto;
     padding: 0;
@@ -299,7 +342,7 @@ import { siteConfig } from "../config/site";
 
   .modal-video__iframe-wrapper {
     position: relative;
-    padding-bottom: 56.25%; /* Relación de aspecto 16:9 */
+    padding-bottom: 56.25%;
     height: 0;
     overflow: hidden;
     border-radius: 8px;
@@ -333,7 +376,24 @@ import { siteConfig } from "../config/site";
     transform: scale(1.1);
   }
 
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    .galeria__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .galeria__subtitulo {
+      text-align: left;
+    }
+  }
+
   @media (max-width: 768px) {
+    .riel-tarjeta {
+      width: 220px;
+      height: 160px;
+    }
+
     .modal-video__cerrar {
       top: -36px;
       font-size: 1.75rem;

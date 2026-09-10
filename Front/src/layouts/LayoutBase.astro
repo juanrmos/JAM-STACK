@@ -14,6 +14,8 @@ const cssVars = [
   `--color-texto: ${tokens.color.texto}`,
   `--color-primario: ${tokens.color.primario}`,
   `--color-acento: ${tokens.color.acentoSecundario}`,
+  `--color-texto-sec: ${tokens.color.textoSecundario}`,
+  `--color-borde: ${tokens.color.bordeLinea}`,
   `--font-display: ${tokens.tipografia.display}`,
   `--font-cuerpo: ${tokens.tipografia.cuerpo}`,
   `--tam-h1: ${tokens.tipografia.escala.h1}`,
@@ -23,10 +25,6 @@ const cssVars = [
   `--espaciado-tarjeta: ${tokens.espaciado.tarjeta}`,
   `--radio-base: ${tokens.radio}`,
 ].join(";");
-
-const whatsappUrl = siteConfig.contacto.whatsapp
-  ? `https://wa.me/${siteConfig.contacto.whatsapp}?text=${encodeURIComponent(siteConfig.contacto.mensajeCotizacion)}`
-  : "#";
 ---
 
 <html lang="es" style={cssVars}>
@@ -62,14 +60,15 @@ const whatsappUrl = siteConfig.contacto.whatsapp
     <header class="header">
       <nav class="nav" id="nav-principal">
         <a href="/" class="nav__logo">
-          <span class="nav__logo-inicial">{siteConfig.artista.nombreEstudio.split(' ')[0]}</span> {siteConfig.artista.nombreEstudio.split(' ').slice(1).join(' ')}
+          {siteConfig.artista.nombreEstudio}
         </a>
         <div class="nav__links">
           <a href="#inicio" class="nav__link">{textos.nav.inicio}</a>
+          <a href="#servicios" class="nav__link">{textos.nav.servicios}</a>
           <a href="#galeria" class="nav__link">{textos.nav.galeria}</a>
-          <a href={whatsappUrl} class="nav__link nav__link--cta" target="_blank" rel="noopener">
+          <button id="nav-cotizar-btn" class="nav__link nav__link--cta">
             {textos.nav.cotizar}
-          </a>
+          </button>
         </div>
       </nav>
     </header>
@@ -79,10 +78,34 @@ const whatsappUrl = siteConfig.contacto.whatsapp
     </main>
 
     <footer class="footer">
-      <p>
-        &copy; {new Date().getFullYear()} {siteConfig.artista.nombreEstudio}.{" "}
-        {textos.footer.derechos}
-      </p>
+      <div class="footer__inner">
+        <div class="footer__col footer__col--brand">
+          <p class="footer__logo">{siteConfig.artista.nombreEstudio}</p>
+          <p class="footer__desc">{textos.footer.branding}</p>
+          <div class="footer__socials">
+            <a href="#" aria-label="Instagram" class="footer__social-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="5" /><circle cx="17.5" cy="6.5" r="1.5" /></svg>
+            </a>
+            <a href="#" aria-label="Behance" class="footer__social-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zM9 15.963c2.514 0 2.943-1.693 2.943-2.755 0-3.228-2.842-2.674-2.842-2.674H2V22h7.156S13 21.58 13 18.68c0-1.988-1.574-2.717-4-2.717zm-4-4.248h4c1.287 0 1.672.852 1.672 1.713 0 .999-.717 1.635-1.793 1.635H5v-3.348zm3.943 9.323H5v-3.804h4.037c1.258 0 1.894.852 1.894 1.9 0 1.145-.752 1.904-1.988 1.904zM9 5H2v2h7V5z"/></svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer__col">
+          <p class="footer__col-title">{textos.footer.explorar}</p>
+          <a href="#inicio" class="footer__col-link">{textos.nav.inicio}</a>
+          <a href="#servicios" class="footer__col-link">{textos.nav.servicios}</a>
+          <a href="#galeria" class="footer__col-link">{textos.nav.galeria}</a>
+        </div>
+        <div class="footer__col">
+          <p class="footer__col-title">{textos.footer.estudio}</p>
+          <p class="footer__col-link">📍 {textos.footer.ubicacion}</p>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>&copy; {new Date().getFullYear()} {siteConfig.artista.nombreEstudio.toUpperCase()}</p>
+        <p>{textos.footer.lema}</p>
+      </div>
     </footer>
 
     <script>
@@ -93,12 +116,13 @@ const whatsappUrl = siteConfig.contacto.whatsapp
 </html>
 
 <style>
+  /* ---- Header ---- */
   .header {
     position: sticky;
     top: 0;
     z-index: 100;
     background-color: var(--color-fondo);
-    border-bottom: 1px solid rgba(47, 79, 79, 0.06);
+    border-bottom: 1px solid var(--color-borde);
     backdrop-filter: blur(8px);
   }
 
@@ -119,11 +143,6 @@ const whatsappUrl = siteConfig.contacto.whatsapp
     letter-spacing: -0.01em;
   }
 
-  .nav__logo-inicial {
-    color: var(--color-primario);
-    font-weight: 600;
-  }
-
   .nav__links {
     display: flex;
     align-items: center;
@@ -131,10 +150,16 @@ const whatsappUrl = siteConfig.contacto.whatsapp
   }
 
   .nav__link {
-    font-size: 0.925rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--color-texto);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     transition: color 0.2s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-cuerpo);
   }
 
   .nav__link:hover {
@@ -156,26 +181,119 @@ const whatsappUrl = siteConfig.contacto.whatsapp
     color: #fff;
   }
 
+  /* ---- Footer Editorial 3 Columnas ---- */
   .footer {
-    text-align: center;
-    padding: 2.5rem 2rem;
-    font-size: 0.875rem;
-    opacity: 0.5;
-    border-top: 1px solid rgba(47, 79, 79, 0.06);
+    border-top: 1px solid var(--color-borde);
+    padding: 4rem 2rem 1.5rem;
+  }
+
+  .footer__inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--color-borde);
+  }
+
+  .footer__logo {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--color-texto);
+    margin-bottom: 1rem;
+  }
+
+  .footer__desc {
+    font-size: 0.85rem;
+    color: var(--color-texto-sec);
+    line-height: 1.6;
+    max-width: 320px;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer__socials {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .footer__social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-borde);
+    border-radius: 4px;
+    color: var(--color-texto-sec);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .footer__social-icon:hover {
+    color: var(--color-primario);
+    border-color: var(--color-primario);
+  }
+
+  .footer__col-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primario);
+    margin-bottom: 1.25rem;
+  }
+
+  .footer__col-link {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--color-texto-sec);
+    margin-bottom: 0.75rem;
+    transition: color 0.2s ease;
+  }
+
+  a.footer__col-link:hover {
+    color: var(--color-texto);
+  }
+
+  .footer__bottom {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 1.5rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-texto-sec);
+    opacity: 0.6;
   }
 
   /* ---- Responsive ---- */
+  @media (max-width: 768px) {
+    .footer__inner {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .footer__bottom {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+    }
+  }
+
   @media (max-width: 640px) {
     .nav {
       padding: 1rem 1.25rem;
     }
 
     .nav__links {
-      gap: 1.25rem;
+      gap: 1rem;
     }
 
     .nav__link:not(.nav__link--cta) {
-      font-size: 0.85rem;
+      font-size: 0.75rem;
     }
   }
 </style>

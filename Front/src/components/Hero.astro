@@ -1,44 +1,29 @@
 ---
 /**
  * Hero — sección principal de entrada al sitio.
- * Layout editorial: título grande a la izquierda, obra destacada a la derecha.
+ * Layout editorial: split 50/50 con eyebrow, título masivo y overlay de imagen.
  * Textos del diccionario i18n, datos de siteConfig. No hardcodea nada.
- * Referencia: imágenes de referencia + doc 05 sección 3.
+ * Referencia: Builder.io mockup + doc 05 sección 3.
  */
 import { siteConfig } from "../config/site";
 import textos from "../i18n/es";
-import FormaGeometrica from "./FormaGeometrica.astro";
 
-const { titulo, palabraDestacada, subtitulo, cta } = textos.hero;
+const { eyebrow, titulo, palabraDestacada, subtitulo, cta, obraDestacada } = textos.hero;
 
 // Dividir el título alrededor de la palabra destacada
 const partes = titulo.split(palabraDestacada);
-
-const whatsappUrl = siteConfig.contacto.whatsapp
-  ? `https://wa.me/${siteConfig.contacto.whatsapp}?text=${encodeURIComponent(siteConfig.contacto.mensajeCotizacion)}`
-  : "#";
 ---
 
 <section id="inicio" class="hero">
-  <div class="hero__forma-wrapper">
-    <FormaGeometrica />
-  </div>
-
   <div class="hero__contenido">
+    <p class="hero__eyebrow">{eyebrow}</p>
     <h1 class="hero__titulo">
-      {partes[0]}<em class="hero__titulo-destaque">{palabraDestacada}</em
-      >{partes[1]}
+      {partes[0]}<em class="hero__titulo-destaque">{palabraDestacada}</em>{partes[1]}
     </h1>
     <p class="hero__subtitulo">{subtitulo}</p>
-    <a
-      href={whatsappUrl}
-      class="hero__cta"
-      target="_blank"
-      rel="noopener"
-      id="hero-cta"
-    >
+    <button id="hero-cotizar-btn" class="hero__cta">
       {cta}
-    </a>
+    </button>
   </div>
 
   <div class="hero__imagen-wrapper">
@@ -50,6 +35,10 @@ const whatsappUrl = siteConfig.contacto.whatsapp
       loading="eager"
       fetchpriority="high"
     />
+    <div class="hero__imagen-overlay">
+      <span class="hero__imagen-label">{obraDestacada} / 01</span>
+      <span id="hero-obra-titulo" class="hero__imagen-titulo">Still Life, 2024</span>
+    </div>
   </div>
 </section>
 
@@ -58,24 +47,11 @@ const whatsappUrl = siteConfig.contacto.whatsapp
     display: grid;
     grid-template-columns: 1fr 1fr;
     align-items: center;
-    gap: 3rem;
+    gap: 4rem;
     max-width: 1200px;
     margin: 0 auto;
     padding: var(--espaciado-seccion) 2rem;
-    position: relative;
-    overflow: hidden;
-    min-height: 80vh;
-  }
-
-  /* FormaGeometrica como decoración de fondo */
-  .hero__forma-wrapper {
-    position: absolute;
-    top: -10%;
-    right: 5%;
-    width: 500px;
-    height: 500px;
-    z-index: 0;
-    opacity: 0.7;
+    min-height: 85vh;
   }
 
   .hero__contenido {
@@ -83,13 +59,24 @@ const whatsappUrl = siteConfig.contacto.whatsapp
     z-index: 1;
   }
 
+  .hero__eyebrow {
+    font-family: var(--font-cuerpo);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-primario);
+    margin-bottom: 1.5rem;
+  }
+
   .hero__titulo {
     font-size: var(--tam-h1);
     font-family: var(--font-display);
     color: var(--color-texto);
-    line-height: 1.08;
+    line-height: 1.05;
     margin-bottom: 1.5rem;
     letter-spacing: -0.02em;
+    font-weight: 400;
   }
 
   .hero__titulo-destaque {
@@ -98,23 +85,26 @@ const whatsappUrl = siteConfig.contacto.whatsapp
   }
 
   .hero__subtitulo {
-    font-size: 1.1rem;
-    color: var(--color-texto);
-    opacity: 0.65;
-    line-height: 1.65;
-    margin-bottom: 2.25rem;
-    max-width: 440px;
+    font-size: 1rem;
+    color: var(--color-texto-sec);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 420px;
   }
 
   .hero__cta {
     display: inline-block;
     background-color: var(--color-primario);
     color: #fff;
-    padding: 0.875rem 2rem;
+    padding: 1rem 2.5rem;
     border-radius: var(--radio-base);
-    font-weight: 500;
-    font-size: 1rem;
-    letter-spacing: 0.01em;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-cuerpo);
     transition:
       opacity 0.2s ease,
       transform 0.2s ease,
@@ -123,8 +113,8 @@ const whatsappUrl = siteConfig.contacto.whatsapp
 
   .hero__cta:hover {
     opacity: 0.92;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(218, 165, 32, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(218, 165, 32, 0.3);
   }
 
   .hero__cta:active {
@@ -134,22 +124,42 @@ const whatsappUrl = siteConfig.contacto.whatsapp
   .hero__imagen-wrapper {
     position: relative;
     z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 
   .hero__imagen {
     width: 100%;
-    max-width: 480px;
-    border-radius: 10px;
+    max-width: 520px;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 2px;
     box-shadow: 0 24px 48px rgba(47, 79, 79, 0.12);
-    transform: rotate(1.5deg);
-    transition: transform 0.4s ease;
   }
 
-  .hero__imagen:hover {
-    transform: rotate(0deg) scale(1.01);
+  .hero__imagen-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .hero__imagen-label {
+    font-family: var(--font-cuerpo);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .hero__imagen-titulo {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: #fff;
+    font-style: italic;
   }
 
   /* ---- Responsive ---- */
@@ -159,7 +169,7 @@ const whatsappUrl = siteConfig.contacto.whatsapp
       text-align: center;
       min-height: auto;
       padding: 3rem 1.5rem;
-      gap: 2rem;
+      gap: 2.5rem;
     }
 
     .hero__subtitulo {
@@ -169,15 +179,8 @@ const whatsappUrl = siteConfig.contacto.whatsapp
     }
 
     .hero__imagen {
-      max-width: 360px;
-      transform: none;
-    }
-
-    .hero__forma-wrapper {
-      top: -5%;
-      right: -10%;
-      width: 300px;
-      height: 300px;
+      max-width: 400px;
+      margin: 0 auto;
     }
   }
 </style>
@@ -193,6 +196,8 @@ const whatsappUrl = siteConfig.contacto.whatsapp
         if (destacada) {
           const img = document.getElementById("hero-img-dinamica");
           if (img) img.src = destacada.imagenUrl;
+          const tituloEl = document.getElementById("hero-obra-titulo");
+          if (tituloEl) tituloEl.textContent = destacada.titulo;
         }
       }
     } catch(e) {
