@@ -35,6 +35,15 @@ import { siteConfig } from "../config/site";
       </div>
     </article>
   </template>
+  <!-- Reproductor de Video Emergente -->
+  <dialog id="video-modal" class="modal-video">
+    <div class="modal-video__contenido">
+      <button id="modal-video-cerrar" class="modal-video__cerrar" aria-label="Cerrar video">✕</button>
+      <div class="modal-video__iframe-wrapper">
+        <iframe id="modal-video-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </dialog>
 </section>
 
 <script define:vars={{ apiUrl: siteConfig.api.baseUrl }}>
@@ -79,6 +88,7 @@ import { siteConfig } from "../config/site";
 
         if (obra.videoUrl) {
           clone.querySelector('.tarjeta__video-badge').style.display = 'flex';
+          article.dataset.videoUrl = obra.videoUrl;
         }
 
         grid.appendChild(clone);
@@ -86,6 +96,53 @@ import { siteConfig } from "../config/site";
     } catch (error) {
       grid.innerHTML = "<p>Error al cargar la galería.</p>";
     }
+
+    // Lógica del Reproductor de Video
+    const modal = document.getElementById("video-modal");
+    const iframe = document.getElementById("modal-video-iframe");
+    const btnCerrar = document.getElementById("modal-video-cerrar");
+
+    const cerrarModal = () => {
+      modal.close();
+      iframe.src = ""; // Detiene la reproducción y limpia la memoria
+    };
+
+    btnCerrar?.addEventListener("click", cerrarModal);
+    
+    // Cerrar al hacer clic en el fondo oscuro
+    modal?.addEventListener("click", (e) => {
+      const dialogDimensions = modal.getBoundingClientRect();
+      if (
+        e.clientX < dialogDimensions.left ||
+        e.clientX > dialogDimensions.right ||
+        e.clientY < dialogDimensions.top ||
+        e.clientY > dialogDimensions.bottom
+      ) {
+        cerrarModal();
+      }
+    });
+
+    // Event Delegation: escuchar clics en toda la galería
+    grid.addEventListener("click", (e) => {
+      const tarjeta = e.target.closest(".tarjeta");
+      if (tarjeta && tarjeta.dataset.videoUrl) {
+        e.preventDefault();
+        
+        // Convertir formato de watch?v= a formato /embed/ para iframe
+        let url = tarjeta.dataset.videoUrl;
+        if (url.includes("watch?v=")) {
+          const videoId = new URL(url).searchParams.get("v");
+          url = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        } else if (url.includes("youtu.be/")) {
+          const videoId = url.split("youtu.be/")[1]?.split("?")[0];
+          url = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        }
+        
+        iframe.src = url;
+        modal.showModal();
+      }
+    });
+
   });
 </script>
 
@@ -213,6 +270,73 @@ import { siteConfig } from "../config/site";
     }
     .tarjeta__overlay {
       opacity: 1; 
+    }
+  }
+  /* ---- Ventana Emergente de Video (Modal) ---- */
+  .modal-video {
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    max-width: 1000px;
+    width: 90%;
+    overflow: visible;
+  }
+
+  .modal-video::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+  }
+
+  .modal-video__contenido {
+    position: relative;
+    width: 100%;
+    background: #000;
+    border-radius: 8px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-video__iframe-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* Relación de aspecto 16:9 */
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  .modal-video__iframe-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .modal-video__cerrar {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .modal-video__cerrar:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  @media (max-width: 768px) {
+    .modal-video__cerrar {
+      top: -36px;
+      font-size: 1.75rem;
     }
   }
 </style>
