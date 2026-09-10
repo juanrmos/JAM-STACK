@@ -1,0 +1,24 @@
+---
+/**
+ * Página principal — composición de secciones.
+ * Patrón de secciones activables: doc 05, sección 4.
+ * Solo Hero + Galería + BotonWhatsapp en v1.
+ */
+import LayoutBase from "../layouts/LayoutBase.astro";
+import Hero from "../components/Hero.astro";
+import Galeria from "../components/Galeria.astro";
+import BotonWhatsapp from "../components/BotonWhatsapp.astro";
+import { siteConfig } from "../config/site";
+
+// Componentes fuera de alcance v1 — se agregarán cuando se activen las secciones:
+// import ListaPrecios from "../components/ListaPrecios.astro";
+// import Testimonios from "../components/Testimonios.astro";
+---
+
+<LayoutBase>
+  <Hero />
+  {siteConfig.secciones.galeria && <Galeria />}
+  {/* siteConfig.secciones.listaPrecios && <ListaPrecios /> */}
+  {/* siteConfig.secciones.testimonios && <Testimonios /> */}
+  <BotonWhatsapp />
+</LayoutBase>

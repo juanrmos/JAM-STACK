@@ -1,0 +1,60 @@
+---
+import LayoutBase from "../../layouts/LayoutBase.astro";
+import Login from "../../components/admin/Login.astro";
+import Dashboard from "../../components/admin/Dashboard.astro";
+import FormularioObra from "../../components/admin/FormularioObra.astro";
+---
+
+<LayoutBase tituloDocumento="Administración — Antony Art Studio">
+  <div class="admin-container">
+    <div id="vista-login" style="display: none;">
+      <Login />
+    </div>
+    <div id="vista-dashboard" style="display: none;">
+      <Dashboard />
+    </div>
+    <div id="vista-formulario" style="display: none;">
+      <FormularioObra />
+    </div>
+  </div>
+
+  <script>
+    import { getToken } from "../../lib/auth";
+
+    const vistaLogin = document.getElementById("vista-login");
+    const vistaDashboard = document.getElementById("vista-dashboard");
+    const vistaFormulario = document.getElementById("vista-formulario");
+
+    function renderVista(vista: 'login' | 'dashboard' | 'formulario') {
+      if (vistaLogin) vistaLogin.style.display = vista === 'login' ? 'block' : 'none';
+      if (vistaDashboard) vistaDashboard.style.display = vista === 'dashboard' ? 'block' : 'none';
+      if (vistaFormulario) vistaFormulario.style.display = vista === 'formulario' ? 'block' : 'none';
+    }
+
+    function arrancar() {
+      if (getToken()) {
+        renderVista('dashboard');
+        // Lanzamos un evento para que el dashboard recargue sus datos
+        window.dispatchEvent(new Event('admin:load-dashboard'));
+      } else {
+        renderVista('login');
+      }
+    }
+
+    // Al cargar la página
+    arrancar();
+
+    // API global para que los componentes puedan navegar
+    (window as any).navegarAdmin = renderVista;
+    (window as any).revisarSesion = arrancar;
+  </script>
+</LayoutBase>
+
+<style>
+  .admin-container {
+    padding: var(--espaciado-seccion) 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 80vh;
+  }
+</style>

@@ -1,0 +1,22 @@
+{
+  "name": "back",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "db:init:local": "wrangler d1 execute portafolio-db --local --file=schema.sql",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jose": "^6.0.0",
+    "aws4fetch": "^1.0.20",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260908.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}

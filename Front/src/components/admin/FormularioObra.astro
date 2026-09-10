@@ -1,0 +1,263 @@
+---
+---
+<div class="formulario-box">
+  <div class="formulario-box__header">
+    <h2 class="formulario-box__titulo">Subir Nueva Obra</h2>
+    <button class="formulario-box__btn-cancelar" onclick="window.navegarAdmin('dashboard')">Volver</button>
+  </div>
+
+  <form id="form-obra" class="formulario-box__form">
+    
+    <div class="campo">
+      <label for="f-archivo">Foto de la obra *</label>
+      <input type="file" id="f-archivo" accept="image/jpeg, image/png, image/webp" required />
+    </div>
+
+    <div class="campo">
+      <label for="f-titulo">Título *</label>
+      <input type="text" id="f-titulo" required />
+    </div>
+
+    <div class="campo">
+      <label for="f-cat">Categoría *</label>
+      <select id="f-cat" required>
+        <option value="cuadro">Cuadro / Pintura</option>
+        <option value="mural">Mural</option>
+        <option value="escultura">Escultura</option>
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="f-desc">Descripción técnica</label>
+      <textarea id="f-desc" rows="3"></textarea>
+    </div>
+
+    <div class="campo">
+      <label for="f-video">Video YouTube (opcional)</label>
+      <input type="url" id="f-video" placeholder="https://www.youtube.com/watch?v=..." />
+    </div>
+
+    <div class="campo campo--inline">
+      <input type="checkbox" id="f-destacado" />
+      <label for="f-destacado">Marcar como Destacada (Ocupará el doble de espacio visual en el mosaico)</label>
+    </div>
+
+
+
+    <button type="submit" id="f-btn" class="formulario-box__btn-submit">Subir y Guardar</button>
+    <p id="f-error" class="formulario-box__error"></p>
+  </form>
+</div>
+
+<script>
+  import { apiFetch } from "../../lib/auth";
+
+  const form = document.getElementById("form-obra") as HTMLFormElement;
+  const errorP = document.getElementById("f-error") as HTMLParagraphElement;
+  const btn = document.getElementById("f-btn") as HTMLButtonElement;
+
+  const sanitizeImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        
+        // Mantener proporciones pero limitar tamaño gigante para evitar colapsos
+        const MAX_WIDTH = 2000;
+        const MAX_HEIGHT = 2000;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("No se pudo procesar la imagen en tu navegador."));
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const fileName = file.name.split('.')[0] + '.webp';
+            resolve(new File([blob], fileName, { type: 'image/webp' }));
+          } else {
+            reject(new Error("Error al intentar purificar la imagen."));
+          }
+        }, "image/webp", 0.9);
+      };
+      img.onerror = () => reject(new Error("El archivo seleccionado está corrupto o tiene código inyectado."));
+      img.src = url;
+    });
+  };
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorP.textContent = "⏳ Paso 1: Pidiendo permiso de subida...";
+    errorP.style.color = "var(--color-texto)";
+    btn.disabled = true;
+
+    try {
+      const fileInput = document.getElementById("f-archivo") as HTMLInputElement;
+      const rawFile = fileInput.files?.[0];
+      if (!rawFile) throw new Error("Selecciona una foto.");
+
+      errorP.textContent = "🧹 Lavando imagen (eliminando metadatos)...";
+      const file = await sanitizeImage(rawFile);
+
+      // 1. Pedir URL firmada a nuestro Worker
+      const urlRes = await apiFetch("/api/obras/upload-url", {
+        method: "POST",
+        body: JSON.stringify({
+          nombreArchivo: file.name,
+          tipoMime: file.type
+        })
+      });
+      
+      if (!urlRes.ok) throw new Error("Error al obtener permisos de subida. Verifica tu sesión.");
+      const { uploadUrl, imagenKey } = await urlRes.json();
+
+      // 2. Subir directamente a R2
+      errorP.textContent = "🚀 Paso 2: Transfiriendo foto de alta calidad...";
+      const putRes = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file
+      });
+      
+      if (!putRes.ok) throw new Error("Error subiendo el archivo a los servidores.");
+
+      // 3. Guardar metadatos en la base de datos D1
+      errorP.textContent = "💾 Paso 3: Guardando información en la galería...";
+      const titulo = (document.getElementById("f-titulo") as HTMLInputElement).value;
+      const desc = (document.getElementById("f-desc") as HTMLTextAreaElement).value;
+      const cat = (document.getElementById("f-cat") as HTMLSelectElement).value;
+      const video = (document.getElementById("f-video") as HTMLInputElement).value;
+      const destacado = (document.getElementById("f-destacado") as HTMLInputElement).checked;
+      const orden = 0; // Ya no se usa para ordenar, pero se mantiene en 0 por la estructura de la BD
+
+      const saveRes = await apiFetch("/api/obras", {
+        method: "POST",
+        body: JSON.stringify({
+          titulo,
+          descripcion: desc || undefined,
+          categoria: cat,
+          imagenKey,
+          videoUrl: video || undefined,
+          destacado,
+          orden
+        })
+      });
+
+      if (!saveRes.ok) throw new Error("Error al guardar la metadata en la base de datos.");
+
+      // Éxito total
+      form.reset();
+      errorP.textContent = "";
+      (window as any).navegarAdmin('dashboard');
+      window.dispatchEvent(new Event('admin:load-dashboard'));
+
+    } catch (err: any) {
+      errorP.textContent = "❌ " + err.message;
+      errorP.style.color = "red";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .formulario-box {
+    background: #fff;
+    border-radius: var(--radio-base);
+    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.08);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .formulario-box__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  .formulario-box__titulo {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--color-texto);
+  }
+  .formulario-box__btn-cancelar {
+    background: transparent;
+    border: none;
+    color: var(--color-texto);
+    opacity: 0.7;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .formulario-box__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .campo label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-texto);
+  }
+  .campo input[type="text"],
+  .campo input[type="number"],
+  .campo input[type="url"],
+  .campo select,
+  .campo textarea,
+  .campo input[type="file"] {
+    padding: 0.75rem;
+    border: 1px solid rgba(47, 79, 79, 0.2);
+    border-radius: 4px;
+    font-family: inherit;
+    width: 100%;
+  }
+  .campo--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .campo--inline input {
+    width: auto;
+  }
+  .formulario-box__btn-submit {
+    background: var(--color-texto);
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    border-radius: var(--radio-base);
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+  .formulario-box__btn-submit:disabled {
+    opacity: 0.5;
+  }
+  .formulario-box__error {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+  }
+</style>

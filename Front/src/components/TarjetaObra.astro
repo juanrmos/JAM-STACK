@@ -1,0 +1,126 @@
+---
+/**
+ * TarjetaObra — una obra individual dentro del mosaico.
+ * Recibe todo por props, nunca busca sus datos (architecture skill, principio 4).
+ * Las obras con destacado=true ocupan más espacio en el grid (doc 05, sección 5.3).
+ */
+interface Props {
+  titulo: string;
+  descripcion?: string;
+  imagenUrl: string;
+  destacado?: boolean;
+  videoUrl?: string;
+}
+
+const { titulo, descripcion, imagenUrl, destacado = false, videoUrl } =
+  Astro.props;
+---
+
+<article class:list={["tarjeta", { "tarjeta--destacada": destacado }]}>
+  <img src={imagenUrl} alt={titulo} class="tarjeta__imagen" loading="lazy" />
+  <div class="tarjeta__overlay">
+    <h3 class="tarjeta__titulo">{titulo}</h3>
+    {descripcion && <p class="tarjeta__descripcion">{descripcion}</p>}
+  </div>
+  {
+    videoUrl && (
+      <div class="tarjeta__video-badge" aria-label="Esta obra tiene video">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    )
+  }
+</article>
+
+<style>
+  .tarjeta {
+    position: relative;
+    border-radius: var(--radio-base);
+    overflow: hidden;
+    cursor: pointer;
+    background: rgba(47, 79, 79, 0.03);
+  }
+
+  .tarjeta__imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .tarjeta:hover .tarjeta__imagen {
+    transform: scale(1.03);
+  }
+
+  .tarjeta__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.65) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .tarjeta:hover .tarjeta__overlay {
+    opacity: 1;
+  }
+
+  .tarjeta__titulo {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .tarjeta__descripcion {
+    font-size: 0.825rem;
+    opacity: 0.85;
+    line-height: 1.4;
+  }
+
+  .tarjeta__video-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Destacadas: span en el grid padre (Galeria.astro las posiciona) */
+  .tarjeta--destacada {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  @media (max-width: 768px) {
+    .tarjeta--destacada {
+      grid-column: span 1;
+      grid-row: span 1;
+    }
+
+    .tarjeta__overlay {
+      opacity: 1; /* siempre visible en móvil */
+    }
+  }
+</style>

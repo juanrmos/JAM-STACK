@@ -1,0 +1,24 @@
+# ---- Worker: portafolio-api ----
+# Referencia: doc 04 (stack), skill jam (principio 5)
+
+name = "portafolio-api"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+# --- D1 Database (metadata de obras) ---
+[[d1_databases]]
+binding = "DB"
+database_name = "portafolio-db"
+database_id = "55bd3fbf-fe42-42e1-85e1-a7f0a051b513"
+
+# --- R2 Bucket (fotos de obras) ---
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "portafolio-archivos"
+
+# --- Rate Limiter (skill deep-security, principio 7) ---
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1"
+simple = { limit = 30, period = 60 } # 30 peticiones por minuto por identidad

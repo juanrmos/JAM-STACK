@@ -1,0 +1,202 @@
+---
+/**
+ * Hero — sección principal de entrada al sitio.
+ * Layout editorial: título grande a la izquierda, obra destacada a la derecha.
+ * Textos del diccionario i18n, datos de siteConfig. No hardcodea nada.
+ * Referencia: imágenes de referencia + doc 05 sección 3.
+ */
+import { siteConfig } from "../config/site";
+import textos from "../i18n/es";
+import FormaGeometrica from "./FormaGeometrica.astro";
+
+const { titulo, palabraDestacada, subtitulo, cta } = textos.hero;
+
+// Dividir el título alrededor de la palabra destacada
+const partes = titulo.split(palabraDestacada);
+
+const whatsappUrl = siteConfig.contacto.whatsapp
+  ? `https://wa.me/${siteConfig.contacto.whatsapp}?text=${encodeURIComponent(siteConfig.contacto.mensajeCotizacion)}`
+  : "#";
+---
+
+<section id="inicio" class="hero">
+  <div class="hero__forma-wrapper">
+    <FormaGeometrica />
+  </div>
+
+  <div class="hero__contenido">
+    <h1 class="hero__titulo">
+      {partes[0]}<em class="hero__titulo-destaque">{palabraDestacada}</em
+      >{partes[1]}
+    </h1>
+    <p class="hero__subtitulo">{subtitulo}</p>
+    <a
+      href={whatsappUrl}
+      class="hero__cta"
+      target="_blank"
+      rel="noopener"
+      id="hero-cta"
+    >
+      {cta}
+    </a>
+  </div>
+
+  <div class="hero__imagen-wrapper">
+    <img
+      src="/images/hero-obra.jpg"
+      alt="Obra destacada del estudio"
+      id="hero-img-dinamica"
+      class="hero__imagen"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </div>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--espaciado-seccion) 2rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 80vh;
+  }
+
+  /* FormaGeometrica como decoración de fondo */
+  .hero__forma-wrapper {
+    position: absolute;
+    top: -10%;
+    right: 5%;
+    width: 500px;
+    height: 500px;
+    z-index: 0;
+    opacity: 0.7;
+  }
+
+  .hero__contenido {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__titulo {
+    font-size: var(--tam-h1);
+    font-family: var(--font-display);
+    color: var(--color-texto);
+    line-height: 1.08;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .hero__titulo-destaque {
+    color: var(--color-primario);
+    font-style: italic;
+  }
+
+  .hero__subtitulo {
+    font-size: 1.1rem;
+    color: var(--color-texto);
+    opacity: 0.65;
+    line-height: 1.65;
+    margin-bottom: 2.25rem;
+    max-width: 440px;
+  }
+
+  .hero__cta {
+    display: inline-block;
+    background-color: var(--color-primario);
+    color: #fff;
+    padding: 0.875rem 2rem;
+    border-radius: var(--radio-base);
+    font-weight: 500;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .hero__cta:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(218, 165, 32, 0.3);
+  }
+
+  .hero__cta:active {
+    transform: translateY(0);
+  }
+
+  .hero__imagen-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hero__imagen {
+    width: 100%;
+    max-width: 480px;
+    border-radius: 10px;
+    box-shadow: 0 24px 48px rgba(47, 79, 79, 0.12);
+    transform: rotate(1.5deg);
+    transition: transform 0.4s ease;
+  }
+
+  .hero__imagen:hover {
+    transform: rotate(0deg) scale(1.01);
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+      text-align: center;
+      min-height: auto;
+      padding: 3rem 1.5rem;
+      gap: 2rem;
+    }
+
+    .hero__subtitulo {
+      max-width: none;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero__imagen {
+      max-width: 360px;
+      transform: none;
+    }
+
+    .hero__forma-wrapper {
+      top: -5%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+    }
+  }
+</style>
+
+<script define:vars={{ apiUrl: siteConfig.api.baseUrl }}>
+  // Al cargar la página, intentar obtener la última obra destacada de la API real
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/obras`);
+      if (res.ok) {
+        const obras = await res.json();
+        const destacada = obras.find((o) => o.destacado) || obras[0];
+        if (destacada) {
+          const img = document.getElementById("hero-img-dinamica");
+          if (img) img.src = destacada.imagenUrl;
+        }
+      }
+    } catch(e) {
+      // Si falla, se queda la imagen placeholder
+    }
+  });
+</script>
