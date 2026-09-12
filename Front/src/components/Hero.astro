@@ -61,7 +61,7 @@ const partes = titulo.split(palabraDestacada);
 
   .hero__eyebrow {
     font-family: var(--font-cuerpo);
-    font-size: 0.75rem;
+    font-size: 0.625rem; /* 10px */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -85,11 +85,16 @@ const partes = titulo.split(palabraDestacada);
   }
 
   .hero__subtitulo {
-    font-size: 1rem;
+    font-size: 0.875rem; /* 14px mobile */
     color: var(--color-texto-sec);
     line-height: 1.7;
     margin-bottom: 2.5rem;
     max-width: 420px;
+  }
+  @media (min-width: 1024px) {
+    .hero__subtitulo {
+      font-size: 1rem; /* 16px desktop */
+    }
   }
 
   .hero__cta {
@@ -99,7 +104,7 @@ const partes = titulo.split(palabraDestacada);
     padding: 1rem 2.5rem;
     border-radius: var(--radio-base);
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.875rem; /* 14px */
     letter-spacing: 0.08em;
     text-transform: uppercase;
     border: none;
@@ -128,8 +133,8 @@ const partes = titulo.split(palabraDestacada);
 
   .hero__imagen {
     width: 100%;
-    max-width: 520px;
-    aspect-ratio: 3 / 4;
+    max-width: 620px; /* Reference: max 620px */
+    aspect-ratio: 4 / 5; /* Reference: 4:5 ratio */
     object-fit: cover;
     border-radius: 2px;
     box-shadow: 0 24px 48px rgba(47, 79, 79, 0.12);
@@ -149,7 +154,7 @@ const partes = titulo.split(palabraDestacada);
 
   .hero__imagen-label {
     font-family: var(--font-cuerpo);
-    font-size: 0.65rem;
+    font-size: 0.625rem; /* 10px */
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: rgba(255,255,255,0.7);
@@ -157,7 +162,7 @@ const partes = titulo.split(palabraDestacada);
 
   .hero__imagen-titulo {
     font-family: var(--font-display);
-    font-size: 0.9rem;
+    font-size: 1.25rem; /* 20px */
     color: #fff;
     font-style: italic;
   }
@@ -191,7 +196,8 @@ const partes = titulo.split(palabraDestacada);
     try {
       const res = await fetch(`${apiUrl}/api/obras`);
       if (res.ok) {
-        const obras = await res.json();
+        const data = await res.json();
+        const obras = data.obras || [];
         const destacada = obras.find((o) => o.destacado) || obras[0];
         if (destacada) {
           const img = document.getElementById("hero-img-dinamica");

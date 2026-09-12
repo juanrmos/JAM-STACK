@@ -17,9 +17,9 @@ export const tokens = {
     // General Sans requiere licencia y self-hosting — DM Sans (Google Fonts) como fallback libre.
     cuerpo: "'General Sans', 'DM Sans', sans-serif",
     escala: {
-      h1: "clamp(2.8rem, 5.5vw, 4.5rem)",
-      h2: "clamp(1.8rem, 3vw, 2.5rem)",
-      cuerpo: "1rem",
+      h1: "clamp(3rem, 6vw, 5.5rem)",
+      h2: "clamp(2rem, 4vw, 3.5rem)",
+      cuerpo: "0.875rem", /* 14px default base */
     },
   },
   espaciado: {

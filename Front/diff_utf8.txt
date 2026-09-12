@@ -1,0 +1,1467 @@
+﻿e4caf69 feat: redise├▒o editorial completo con cotizador de murales
+6578df2 feat: implementacion de ventana emergente para videos
+e57ae7e feat: stable version with security and UI fixes
+--- DIFF ---
+diff --git a/Front/src/components/Cotizador.astro b/Front/src/components/Cotizador.astro
+new file mode 100644
+index 0000000..a29f8a2
+--- /dev/null
++++ b/Front/src/components/Cotizador.astro
+@@ -0,0 +1,222 @@
++---
++/**
++ * Cotizador ÔÇö drawer lateral que se desliza desde la derecha.
++ * Recolecta datos del cliente y construye un mensaje para WhatsApp.
++ * Referencia: Builder.io mockup, estilo Brutalismo.
++ */
++import { siteConfig } from "../config/site";
++import textos from "../i18n/es";
++---
++
++<div id="cotizador-overlay" class="cotizador-overlay"></div>
++<aside id="cotizador-drawer" class="cotizador">
++  <button id="cotizador-cerrar" class="cotizador__cerrar" aria-label="Cerrar cotizador">Ô£ò</button>
++  <h2 class="cotizador__titulo">{textos.cotizador.titulo}</h2>
++
++  <form id="cotizador-form" class="cotizador__form">
++    <input type="text" id="cot-obra" class="cotizador__input" placeholder={textos.cotizador.campos.obra} required />
++    <input type="text" id="cot-medidas" class="cotizador__input" placeholder={textos.cotizador.campos.medidas} required />
++    
++    <select id="cot-ubicacion" class="cotizador__input" required>
++      <option value="" disabled selected>{textos.cotizador.campos.ubicacion}</option>
++      <option value="interior">Interior</option>
++      <option value="exterior">Exterior</option>
++    </select>
++
++    <input type="text" id="cot-altura" class="cotizador__input" placeholder={textos.cotizador.campos.altura} required />
++    <input type="text" id="cot-direccion" class="cotizador__input" placeholder={textos.cotizador.campos.direccion} required />
++    <input type="text" id="cot-referencia" class="cotizador__input" placeholder={textos.cotizador.campos.referencia} required />
++
++    <button type="submit" class="cotizador__enviar">
++      {textos.cotizador.enviar}
++    </button>
++  </form>
++</aside>
++
++<script define:vars={{ whatsappNum: siteConfig.contacto.whatsapp }}>
++  document.addEventListener("DOMContentLoaded", () => {
++    const drawer = document.getElementById("cotizador-drawer");
++    const overlay = document.getElementById("cotizador-overlay");
++    const btnCerrar = document.getElementById("cotizador-cerrar");
++    const form = document.getElementById("cotizador-form");
++
++    const abrir = () => {
++      drawer?.classList.add("open");
++      overlay?.classList.add("open");
++      document.body.style.overflow = "hidden";
++    };
++
++    const cerrar = () => {
++      drawer?.classList.remove("open");
++      overlay?.classList.remove("open");
++      document.body.style.overflow = "";
++    };
++
++    // Escuchar clics en los botones "Cotizar" del navbar y del hero
++    document.getElementById("nav-cotizar-btn")?.addEventListener("click", abrir);
++    document.getElementById("hero-cotizar-btn")?.addEventListener("click", abrir);
++    btnCerrar?.addEventListener("click", cerrar);
++    overlay?.addEventListener("click", cerrar);
++
++    // Enviar a WhatsApp
++    form?.addEventListener("submit", (e) => {
++      e.preventDefault();
++      const obra = document.getElementById("cot-obra").value;
++      const medidas = document.getElementById("cot-medidas").value;
++      const ubicacion = document.getElementById("cot-ubicacion").value;
++      const altura = document.getElementById("cot-altura").value;
++      const direccion = document.getElementById("cot-direccion").value;
++      const referencia = document.getElementById("cot-referencia").value;
++
++      const mensaje = `Hola, quiero cotizar un mural de ${obra} de ${medidas}, ${ubicacion}, ${altura}. Te comparto mi direccion: ${direccion}, ${referencia}.`;
++
++      const url = `https://wa.me/${whatsappNum}?text=${encodeURIComponent(mensaje)}`;
++      window.open(url, "_blank");
++      cerrar();
++      form.reset();
++    });
++  });
++</script>
++
++<style>
++  /* ---- Overlay oscuro ---- */
++  .cotizador-overlay {
++    position: fixed;
++    top: 0;
++    left: 0;
++    width: 100%;
++    height: 100%;
++    background: rgba(0, 0, 0, 0.5);
++    z-index: 998;
++    opacity: 0;
++    pointer-events: none;
++    transition: opacity 0.4s ease;
++  }
++
++  .cotizador-overlay.open {
++    opacity: 1;
++    pointer-events: all;
++  }
++
++  /* ---- Drawer lateral ---- */
++  .cotizador {
++    position: fixed;
++    top: 0;
++    right: -50%;
++    width: 50%;
++    max-width: 520px;
++    height: 100%;
++    background: var(--color-fondo);
++    border-left: 1px solid var(--color-borde);
++    z-index: 999;
++    padding: 4rem 3rem;
++    display: flex;
++    flex-direction: column;
++    gap: 2rem;
++    transition: right 0.5s cubic-bezier(0.65, 0, 0.35, 1);
++    overflow-y: auto;
++  }
++
++  .cotizador.open {
++    right: 0;
++  }
++
++  .cotizador__cerrar {
++    align-self: flex-end;
++    background: none;
++    border: none;
++    color: var(--color-texto);
++    font-size: 1.75rem;
++    cursor: pointer;
++    transition: color 0.2s ease;
++  }
++
++  .cotizador__cerrar:hover {
++    color: var(--color-primario);
++  }
++
++  .cotizador__titulo {
++    font-family: var(--font-display);
++    font-size: 2.5rem;
++    font-weight: 400;
++    color: var(--color-texto);
++  }
++
++  .cotizador__form {
++    display: flex;
++    flex-direction: column;
++    gap: 1.5rem;
++    flex: 1;
++  }
++
++  .cotizador__input {
++    background: transparent;
++    border: none;
++    border-bottom: 1px solid var(--color-borde);
++    color: var(--color-texto);
++    font-family: var(--font-cuerpo);
++    font-size: 1rem;
++    padding: 1rem 0;
++    outline: none;
++    width: 100%;
++    transition: border-color 0.2s ease;
++  }
++
++  .cotizador__input:focus {
++    border-color: var(--color-primario);
++  }
++
++  .cotizador__input::placeholder {
++    font-size: 0.8rem;
++    text-transform: uppercase;
++    letter-spacing: 0.1em;
++    color: var(--color-texto-sec);
++  }
++
++  .cotizador__textarea {
++    resize: none;
++    min-height: 80px;
++  }
++
++  select.cotizador__input {
++    cursor: pointer;
++    appearance: none;
++    -webkit-appearance: none;
++    border-radius: 0;
++  }
++
++  select.cotizador__input option {
++    background: var(--color-fondo);
++    color: var(--color-texto);
++  }
++
++  .cotizador__enviar {
++    margin-top: auto;
++    background: var(--color-primario);
++    color: #fff;
++    font-family: var(--font-cuerpo);
++    font-size: 0.9rem;
++    font-weight: 600;
++    text-transform: uppercase;
++    letter-spacing: 0.08em;
++    padding: 1.25rem;
++    border: none;
++    cursor: pointer;
++    transition: opacity 0.2s ease, transform 0.2s ease;
++  }
++
++  .cotizador__enviar:hover {
++    opacity: 0.9;
++    transform: translateY(-1px);
++  }
++
++  /* ---- Responsive ---- */
++  @media (max-width: 768px) {
++    .cotizador {
++      width: 100%;
++      max-width: none;
++      right: -100%;
++      padding: 2.5rem 1.5rem;
++    }
++  }
++</style>
+diff --git a/Front/src/components/Galeria.astro b/Front/src/components/Galeria.astro
+index 70d34eb..4f67684 100644
+--- a/Front/src/components/Galeria.astro
++++ b/Front/src/components/Galeria.astro
+@@ -1,41 +1,63 @@
+ ---
+ /**
+- * Galer├¡a ÔÇö mosaico editorial de obras.
+- * Layout: CSS Grid con obras destacadas que ocupan m├ís espacio (doc 05, 5.3).
+- * Fuente de datos: mock por ahora, ser├í fetch a /api/obras.
+- * Renderiza <TarjetaObra /> por cada obra.
++ * Galer├¡a ÔÇö rieles horizontales estilo Netflix.
++ * Cada categor├¡a tiene su propio carrusel deslizable.
++ * Las im├ígenes est├ín en escala de grises y pasan a color al hover.
++ * Conserva la l├│gica del Modal de video.
++ * Referencia: Builder.io mockup secci├│n 3.
+  */
+ import textos from "../i18n/es";
+ import { siteConfig } from "../config/site";
+ ---
+ 
+-<section id="galeria" class="seccion galeria">
++<section id="galeria" class="galeria">
+   <div class="galeria__header">
+     <div>
++      <p class="galeria__eyebrow">{textos.galeria.eyebrow}</p>
+       <h2 class="galeria__titulo">{textos.galeria.titulo}</h2>
+-      <p class="galeria__subtitulo">{textos.galeria.subtitulo}</p>
+     </div>
++    <p class="galeria__subtitulo">{textos.galeria.subtitulo}</p>
+   </div>
+ 
+-  <div id="galeria-grid" class="galeria__grid">
+-    <!-- Se llena din├ímicamente con la API -->
++  <!-- Riel 1: Murales -->
++  <div class="galeria__riel">
++    <div class="galeria__riel-header">
++      <h3 class="galeria__riel-titulo">{textos.galeria.rieles.murales}</h3>
++      <div class="galeria__riel-nav">
++        <button class="galeria__riel-btn" data-riel="riel-murales" data-dir="-1" aria-label="Anterior">&lt;</button>
++        <button class="galeria__riel-btn" data-riel="riel-murales" data-dir="1" aria-label="Siguiente">&gt;</button>
++      </div>
++    </div>
++    <div class="galeria__riel-scroll" id="riel-murales">
++      <!-- Se llena din├ímicamente con la API -->
++    </div>
+   </div>
+ 
+-  <template id="tarjeta-template">
+-    <article class="tarjeta">
+-      <img src="" alt="" class="tarjeta__imagen" loading="lazy" />
+-      <div class="tarjeta__overlay">
+-        <h3 class="tarjeta__titulo"></h3>
+-        <p class="tarjeta__descripcion"></p>
++  <!-- Riel 2: Cuadros -->
++  <div class="galeria__riel">
++    <div class="galeria__riel-header">
++      <h3 class="galeria__riel-titulo">{textos.galeria.rieles.cuadros}</h3>
++      <div class="galeria__riel-nav">
++        <button class="galeria__riel-btn" data-riel="riel-cuadros" data-dir="-1" aria-label="Anterior">&lt;</button>
++        <button class="galeria__riel-btn" data-riel="riel-cuadros" data-dir="1" aria-label="Siguiente">&gt;</button>
+       </div>
+-      <div class="tarjeta__video-badge" aria-label="Esta obra tiene video" style="display: none;">
+-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+-          <path d="M8 5v14l11-7z" />
+-        </svg>
++    </div>
++    <div class="galeria__riel-scroll" id="riel-cuadros">
++      <!-- Se llena din├ímicamente con la API -->
++    </div>
++  </div>
++
++  <!-- Template para tarjetas del riel -->
++  <template id="riel-tarjeta-template">
++    <div class="riel-tarjeta">
++      <img src="" alt="" class="riel-tarjeta__img" loading="lazy" />
++      <div class="riel-tarjeta__video-badge" style="display: none;">
++        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+       </div>
+-    </article>
++    </div>
+   </template>
+-  <!-- Reproductor de Video Emergente -->
++
++  <!-- Reproductor de Video Emergente (Modal) -->
+   <dialog id="video-modal" class="modal-video">
+     <div class="modal-video__contenido">
+       <button id="modal-video-cerrar" class="modal-video__cerrar" aria-label="Cerrar video">Ô£ò</button>
+@@ -48,68 +70,75 @@ import { siteConfig } from "../config/site";
+ 
+ <script define:vars={{ apiUrl: siteConfig.api.baseUrl }}>
+   document.addEventListener("DOMContentLoaded", async () => {
+-    const grid = document.getElementById("galeria-grid");
+-    const template = document.getElementById("tarjeta-template");
+-    
+-    if (!grid || !template) return;
++    const rielMurales = document.getElementById("riel-murales");
++    const rielCuadros = document.getElementById("riel-cuadros");
++    const template = document.getElementById("riel-tarjeta-template");
++
++    if (!rielMurales || !rielCuadros || !template) return;
+ 
+     try {
+       const res = await fetch(`${apiUrl}/api/obras`);
+       if (!res.ok) throw new Error("Error fetching");
+       const obras = await res.json();
+ 
+-      grid.innerHTML = "";
+-
+       if (obras.length === 0) {
+-        grid.innerHTML = "<p>Galer├¡a vac├¡a. El artista est├í creando nuevas obras...</p>";
++        rielMurales.innerHTML = "<p style='color: var(--color-texto-sec); padding: 1rem;'>No hay murales a├║n.</p>";
++        rielCuadros.innerHTML = "<p style='color: var(--color-texto-sec); padding: 1rem;'>No hay cuadros a├║n.</p>";
+         return;
+       }
+ 
+-      obras.forEach((obra) => {
+-        const clone = template.content.cloneNode(true);
+-        const article = clone.querySelector('article');
+-        
+-        if (obra.destacado) {
+-          article.classList.add('tarjeta--destacada');
+-        }
++      const murales = obras.filter((o) => o.categoria === "mural");
++      const cuadros = obras.filter((o) => o.categoria === "cuadro" || o.categoria === "escultura" || o.categoria === "logo");
++      // Si no hay categor├¡a espec├¡fica, ponerlos en ambos rieles
++      const sinCategoria = obras.filter((o) => !o.categoria || (o.categoria !== "mural" && o.categoria !== "cuadro" && o.categoria !== "escultura" && o.categoria !== "logo"));
+ 
+-        const img = clone.querySelector('img');
+-        img.src = obra.imagenUrl;
+-        img.alt = obra.titulo;
+-
+-        clone.querySelector('.tarjeta__titulo').textContent = obra.titulo;
+-        
+-        const desc = clone.querySelector('.tarjeta__descripcion');
+-        if (obra.descripcion) {
+-          desc.textContent = obra.descripcion;
+-        } else {
+-          desc.remove();
+-        }
++      const renderRiel = (container, items) => {
++        const allItems = items.length > 0 ? items : sinCategoria.length > 0 ? sinCategoria : obras;
++        allItems.forEach((obra) => {
++          const clone = template.content.cloneNode(true);
++          const card = clone.querySelector(".riel-tarjeta");
++          const img = clone.querySelector("img");
++          img.src = obra.imagenUrl;
++          img.alt = obra.titulo;
+ 
+-        if (obra.videoUrl) {
+-          clone.querySelector('.tarjeta__video-badge').style.display = 'flex';
+-          article.dataset.videoUrl = obra.videoUrl;
+-        }
++          if (obra.videoUrl) {
++            clone.querySelector(".riel-tarjeta__video-badge").style.display = "flex";
++            card.dataset.videoUrl = obra.videoUrl;
++          }
++
++          container.appendChild(clone);
++        });
++      };
++
++      renderRiel(rielMurales, murales);
++      renderRiel(rielCuadros, cuadros);
+ 
+-        grid.appendChild(clone);
+-      });
+     } catch (error) {
+-      grid.innerHTML = "<p>Error al cargar la galer├¡a.</p>";
++      rielMurales.innerHTML = "<p style='color: var(--color-texto-sec); padding: 1rem;'>Error al cargar.</p>";
+     }
+ 
+-    // L├│gica del Reproductor de Video
++    // Botones de navegaci├│n de rieles
++    document.querySelectorAll(".galeria__riel-btn").forEach((btn) => {
++      btn.addEventListener("click", () => {
++        const rielId = btn.dataset.riel;
++        const dir = parseInt(btn.dataset.dir);
++        const riel = document.getElementById(rielId);
++        if (riel) riel.scrollBy({ left: dir * 350, behavior: "smooth" });
++      });
++    });
++
++    // L├│gica del Reproductor de Video (Modal)
+     const modal = document.getElementById("video-modal");
+     const iframe = document.getElementById("modal-video-iframe");
+     const btnCerrar = document.getElementById("modal-video-cerrar");
+ 
+     const cerrarModal = () => {
+       modal.close();
+-      iframe.src = ""; // Detiene la reproducci├│n y limpia la memoria
++      iframe.src = "";
+     };
+ 
+     btnCerrar?.addEventListener("click", cerrarModal);
+     
+-    // Cerrar al hacer clic en el fondo oscuro
+     modal?.addEventListener("click", (e) => {
+       const dialogDimensions = modal.getBoundingClientRect();
+       if (
+@@ -122,13 +151,11 @@ import { siteConfig } from "../config/site";
+       }
+     });
+ 
+-    // Event Delegation: escuchar clics en toda la galer├¡a
+-    grid.addEventListener("click", (e) => {
+-      const tarjeta = e.target.closest(".tarjeta");
++    // Event delegation para toda la galer├¡a
++    document.getElementById("galeria")?.addEventListener("click", (e) => {
++      const tarjeta = e.target.closest(".riel-tarjeta");
+       if (tarjeta && tarjeta.dataset.videoUrl) {
+         e.preventDefault();
+-        
+-        // Convertir formato de watch?v= a formato /embed/ para iframe
+         let url = tarjeta.dataset.videoUrl;
+         if (url.includes("watch?v=")) {
+           const videoId = new URL(url).searchParams.get("v");
+@@ -137,142 +164,158 @@ import { siteConfig } from "../config/site";
+           const videoId = url.split("youtu.be/")[1]?.split("?")[0];
+           url = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+         }
+-        
+         iframe.src = url;
+         modal.showModal();
+       }
+     });
+-
+   });
+ </script>
+ 
+ <style>
++  .galeria {
++    padding: var(--espaciado-seccion) 0;
++    border-top: 1px solid var(--color-borde);
++    overflow: hidden;
++  }
++
+   .galeria__header {
+-    margin-bottom: 2.5rem;
++    display: flex;
++    justify-content: space-between;
++    align-items: flex-end;
++    margin-bottom: 3.5rem;
++    gap: 2rem;
++    max-width: 1200px;
++    margin-left: auto;
++    margin-right: auto;
++    padding: 0 2rem;
++    margin-bottom: 3.5rem;
++  }
++
++  .galeria__eyebrow {
++    font-family: var(--font-cuerpo);
++    font-size: 0.75rem;
++    font-weight: 600;
++    text-transform: uppercase;
++    letter-spacing: 0.15em;
++    color: var(--color-primario);
++    margin-bottom: 0.75rem;
+   }
+ 
+   .galeria__titulo {
+     font-family: var(--font-display);
+     font-size: var(--tam-h2);
+     color: var(--color-texto);
+-    margin-bottom: 0.5rem;
++    font-weight: 400;
+   }
+ 
+   .galeria__subtitulo {
+-    font-size: 1rem;
+-    color: var(--color-texto);
+-    opacity: 0.55;
+-    max-width: 420px;
++    font-size: 0.95rem;
++    color: var(--color-texto-sec);
++    max-width: 380px;
++    line-height: 1.6;
++    text-align: right;
+   }
+ 
+-  /* Mosaico editorial ÔÇö doc 05 secci├│n 5.3 */
+-  .galeria__grid {
+-    display: grid;
+-    grid-template-columns: repeat(3, 1fr);
+-    grid-auto-rows: 280px;
+-    gap: 1rem;
++  /* ---- Rieles ---- */
++  .galeria__riel {
++    margin-bottom: 3rem;
+   }
+ 
+-  /* Responsive */
+-  @media (max-width: 900px) {
+-    .galeria__grid {
+-      grid-template-columns: repeat(2, 1fr);
+-      grid-auto-rows: 240px;
+-    }
++  .galeria__riel-header {
++    display: flex;
++    justify-content: space-between;
++    align-items: center;
++    max-width: 1200px;
++    margin: 0 auto;
++    padding: 0 2rem;
++    margin-bottom: 1.25rem;
+   }
+ 
+-  @media (max-width: 600px) {
+-    .galeria__grid {
+-      grid-template-columns: 1fr;
+-      grid-auto-rows: 260px;
+-    }
++  .galeria__riel-titulo {
++    font-family: var(--font-display);
++    font-size: 1.3rem;
++    font-weight: 400;
++    color: var(--color-texto);
+   }
+ 
+-  /* Estilos portados de TarjetaObra.astro para el template */
+-  .tarjeta {
+-    position: relative;
+-    border-radius: var(--radio-base);
+-    overflow: hidden;
++  .galeria__riel-nav {
++    display: flex;
++    gap: 0.5rem;
++  }
++
++  .galeria__riel-btn {
++    width: 36px;
++    height: 36px;
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    border: 1px solid var(--color-borde);
++    background: transparent;
++    color: var(--color-texto-sec);
+     cursor: pointer;
+-    background: rgba(47, 79, 79, 0.03);
+-    height: 100%;
+-    width: 100%;
++    font-size: 0.9rem;
++    transition: border-color 0.2s ease, color 0.2s ease;
+   }
+ 
+-  .tarjeta__imagen {
+-    width: 100%;
+-    height: 100%;
+-    object-fit: cover;
+-    transition: transform 0.5s ease;
++  .galeria__riel-btn:hover {
++    border-color: var(--color-texto);
++    color: var(--color-texto);
+   }
+ 
+-  .tarjeta:hover .tarjeta__imagen {
+-    transform: scale(1.03);
++  .galeria__riel-scroll {
++    display: flex;
++    gap: 1.25rem;
++    overflow-x: auto;
++    padding: 0 2rem;
++    scroll-snap-type: x mandatory;
++    scrollbar-width: none;
+   }
+ 
+-  .tarjeta__overlay {
+-    position: absolute;
+-    bottom: 0;
+-    left: 0;
+-    right: 0;
+-    padding: 1.5rem;
+-    background: linear-gradient(
+-      to top,
+-      rgba(0, 0, 0, 0.65) 0%,
+-      rgba(0, 0, 0, 0) 100%
+-    );
+-    color: #fff;
+-    opacity: 0;
+-    transition: opacity 0.3s ease;
++  .galeria__riel-scroll::-webkit-scrollbar {
++    display: none;
+   }
+ 
+-  .tarjeta:hover .tarjeta__overlay {
+-    opacity: 1;
++  /* ---- Tarjetas del riel ---- */
++  .riel-tarjeta {
++    position: relative;
++    flex-shrink: 0;
++    width: 280px;
++    height: 200px;
++    overflow: hidden;
++    scroll-snap-align: start;
++    cursor: pointer;
+   }
+ 
+-  .tarjeta__titulo {
+-    font-family: var(--font-display);
+-    font-size: 1.1rem;
+-    font-weight: 500;
+-    margin-bottom: 0.25rem;
++  .riel-tarjeta__img {
++    width: 100%;
++    height: 100%;
++    object-fit: cover;
++    filter: grayscale(100%);
++    transition: filter 0.5s ease, transform 0.4s ease;
+   }
+ 
+-  .tarjeta__descripcion {
+-    font-size: 0.825rem;
+-    opacity: 0.85;
+-    line-height: 1.4;
++  .riel-tarjeta:hover .riel-tarjeta__img {
++    filter: grayscale(0%);
++    transform: scale(1.05);
+   }
+ 
+-  .tarjeta__video-badge {
++  .riel-tarjeta__video-badge {
+     position: absolute;
+-    top: 0.75rem;
+-    right: 0.75rem;
++    top: 0.5rem;
++    right: 0.5rem;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+-    width: 32px;
+-    height: 32px;
+-    background: rgba(0, 0, 0, 0.5);
++    width: 28px;
++    height: 28px;
++    background: rgba(0, 0, 0, 0.6);
+     color: #fff;
+     border-radius: 50%;
+     backdrop-filter: blur(4px);
++    z-index: 2;
+   }
+ 
+-  .tarjeta--destacada {
+-    grid-column: span 2;
+-    grid-row: span 2;
+-  }
+-
+-  @media (max-width: 768px) {
+-    .tarjeta--destacada {
+-      grid-column: span 1;
+-      grid-row: span 1;
+-    }
+-    .tarjeta__overlay {
+-      opacity: 1; 
+-    }
+-  }
+-  /* ---- Ventana Emergente de Video (Modal) ---- */
++  /* ---- Modal de Video ---- */
+   .modal-video {
+     margin: auto;
+     padding: 0;
+@@ -299,7 +342,7 @@ import { siteConfig } from "../config/site";
+ 
+   .modal-video__iframe-wrapper {
+     position: relative;
+-    padding-bottom: 56.25%; /* Relaci├│n de aspecto 16:9 */
++    padding-bottom: 56.25%;
+     height: 0;
+     overflow: hidden;
+     border-radius: 8px;
+@@ -333,7 +376,24 @@ import { siteConfig } from "../config/site";
+     transform: scale(1.1);
+   }
+ 
++  /* ---- Responsive ---- */
++  @media (max-width: 900px) {
++    .galeria__header {
++      flex-direction: column;
++      align-items: flex-start;
++    }
++
++    .galeria__subtitulo {
++      text-align: left;
++    }
++  }
++
+   @media (max-width: 768px) {
++    .riel-tarjeta {
++      width: 220px;
++      height: 160px;
++    }
++
+     .modal-video__cerrar {
+       top: -36px;
+       font-size: 1.75rem;
+diff --git a/Front/src/components/Hero.astro b/Front/src/components/Hero.astro
+index c4dede7..159064e 100644
+--- a/Front/src/components/Hero.astro
++++ b/Front/src/components/Hero.astro
+@@ -1,44 +1,29 @@
+ ---
+ /**
+  * Hero ÔÇö secci├│n principal de entrada al sitio.
+- * Layout editorial: t├¡tulo grande a la izquierda, obra destacada a la derecha.
++ * Layout editorial: split 50/50 con eyebrow, t├¡tulo masivo y overlay de imagen.
+  * Textos del diccionario i18n, datos de siteConfig. No hardcodea nada.
+- * Referencia: im├ígenes de referencia + doc 05 secci├│n 3.
++ * Referencia: Builder.io mockup + doc 05 secci├│n 3.
+  */
+ import { siteConfig } from "../config/site";
+ import textos from "../i18n/es";
+-import FormaGeometrica from "./FormaGeometrica.astro";
+ 
+-const { titulo, palabraDestacada, subtitulo, cta } = textos.hero;
++const { eyebrow, titulo, palabraDestacada, subtitulo, cta, obraDestacada } = textos.hero;
+ 
+ // Dividir el t├¡tulo alrededor de la palabra destacada
+ const partes = titulo.split(palabraDestacada);
+-
+-const whatsappUrl = siteConfig.contacto.whatsapp
+-  ? `https://wa.me/${siteConfig.contacto.whatsapp}?text=${encodeURIComponent(siteConfig.contacto.mensajeCotizacion)}`
+-  : "#";
+ ---
+ 
+ <section id="inicio" class="hero">
+-  <div class="hero__forma-wrapper">
+-    <FormaGeometrica />
+-  </div>
+-
+   <div class="hero__contenido">
++    <p class="hero__eyebrow">{eyebrow}</p>
+     <h1 class="hero__titulo">
+-      {partes[0]}<em class="hero__titulo-destaque">{palabraDestacada}</em
+-      >{partes[1]}
++      {partes[0]}<em class="hero__titulo-destaque">{palabraDestacada}</em>{partes[1]}
+     </h1>
+     <p class="hero__subtitulo">{subtitulo}</p>
+-    <a
+-      href={whatsappUrl}
+-      class="hero__cta"
+-      target="_blank"
+-      rel="noopener"
+-      id="hero-cta"
+-    >
++    <button id="hero-cotizar-btn" class="hero__cta">
+       {cta}
+-    </a>
++    </button>
+   </div>
+ 
+   <div class="hero__imagen-wrapper">
+@@ -50,6 +35,10 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+       loading="eager"
+       fetchpriority="high"
+     />
++    <div class="hero__imagen-overlay">
++      <span class="hero__imagen-label">{obraDestacada} / 01</span>
++      <span id="hero-obra-titulo" class="hero__imagen-titulo">Still Life, 2024</span>
++    </div>
+   </div>
+ </section>
+ 
+@@ -58,24 +47,11 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+     display: grid;
+     grid-template-columns: 1fr 1fr;
+     align-items: center;
+-    gap: 3rem;
++    gap: 4rem;
+     max-width: 1200px;
+     margin: 0 auto;
+     padding: var(--espaciado-seccion) 2rem;
+-    position: relative;
+-    overflow: hidden;
+-    min-height: 80vh;
+-  }
+-
+-  /* FormaGeometrica como decoraci├│n de fondo */
+-  .hero__forma-wrapper {
+-    position: absolute;
+-    top: -10%;
+-    right: 5%;
+-    width: 500px;
+-    height: 500px;
+-    z-index: 0;
+-    opacity: 0.7;
++    min-height: 85vh;
+   }
+ 
+   .hero__contenido {
+@@ -83,13 +59,24 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+     z-index: 1;
+   }
+ 
++  .hero__eyebrow {
++    font-family: var(--font-cuerpo);
++    font-size: 0.75rem;
++    font-weight: 600;
++    text-transform: uppercase;
++    letter-spacing: 0.15em;
++    color: var(--color-primario);
++    margin-bottom: 1.5rem;
++  }
++
+   .hero__titulo {
+     font-size: var(--tam-h1);
+     font-family: var(--font-display);
+     color: var(--color-texto);
+-    line-height: 1.08;
++    line-height: 1.05;
+     margin-bottom: 1.5rem;
+     letter-spacing: -0.02em;
++    font-weight: 400;
+   }
+ 
+   .hero__titulo-destaque {
+@@ -98,23 +85,26 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+   }
+ 
+   .hero__subtitulo {
+-    font-size: 1.1rem;
+-    color: var(--color-texto);
+-    opacity: 0.65;
+-    line-height: 1.65;
+-    margin-bottom: 2.25rem;
+-    max-width: 440px;
++    font-size: 1rem;
++    color: var(--color-texto-sec);
++    line-height: 1.7;
++    margin-bottom: 2.5rem;
++    max-width: 420px;
+   }
+ 
+   .hero__cta {
+     display: inline-block;
+     background-color: var(--color-primario);
+     color: #fff;
+-    padding: 0.875rem 2rem;
++    padding: 1rem 2.5rem;
+     border-radius: var(--radio-base);
+-    font-weight: 500;
+-    font-size: 1rem;
+-    letter-spacing: 0.01em;
++    font-weight: 600;
++    font-size: 0.85rem;
++    letter-spacing: 0.08em;
++    text-transform: uppercase;
++    border: none;
++    cursor: pointer;
++    font-family: var(--font-cuerpo);
+     transition:
+       opacity 0.2s ease,
+       transform 0.2s ease,
+@@ -123,8 +113,8 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+ 
+   .hero__cta:hover {
+     opacity: 0.92;
+-    transform: translateY(-1px);
+-    box-shadow: 0 4px 16px rgba(218, 165, 32, 0.3);
++    transform: translateY(-2px);
++    box-shadow: 0 8px 24px rgba(218, 165, 32, 0.3);
+   }
+ 
+   .hero__cta:active {
+@@ -134,22 +124,42 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+   .hero__imagen-wrapper {
+     position: relative;
+     z-index: 1;
+-    display: flex;
+-    justify-content: center;
+-    align-items: center;
+   }
+ 
+   .hero__imagen {
+     width: 100%;
+-    max-width: 480px;
+-    border-radius: 10px;
++    max-width: 520px;
++    aspect-ratio: 3 / 4;
++    object-fit: cover;
++    border-radius: 2px;
+     box-shadow: 0 24px 48px rgba(47, 79, 79, 0.12);
+-    transform: rotate(1.5deg);
+-    transition: transform 0.4s ease;
+   }
+ 
+-  .hero__imagen:hover {
+-    transform: rotate(0deg) scale(1.01);
++  .hero__imagen-overlay {
++    position: absolute;
++    bottom: 0;
++    left: 0;
++    right: 0;
++    padding: 1.5rem;
++    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
++    display: flex;
++    justify-content: space-between;
++    align-items: flex-end;
++  }
++
++  .hero__imagen-label {
++    font-family: var(--font-cuerpo);
++    font-size: 0.65rem;
++    text-transform: uppercase;
++    letter-spacing: 0.1em;
++    color: rgba(255,255,255,0.7);
++  }
++
++  .hero__imagen-titulo {
++    font-family: var(--font-display);
++    font-size: 0.9rem;
++    color: #fff;
++    font-style: italic;
+   }
+ 
+   /* ---- Responsive ---- */
+@@ -159,7 +169,7 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+       text-align: center;
+       min-height: auto;
+       padding: 3rem 1.5rem;
+-      gap: 2rem;
++      gap: 2.5rem;
+     }
+ 
+     .hero__subtitulo {
+@@ -169,15 +179,8 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+     }
+ 
+     .hero__imagen {
+-      max-width: 360px;
+-      transform: none;
+-    }
+-
+-    .hero__forma-wrapper {
+-      top: -5%;
+-      right: -10%;
+-      width: 300px;
+-      height: 300px;
++      max-width: 400px;
++      margin: 0 auto;
+     }
+   }
+ </style>
+@@ -193,6 +196,8 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+         if (destacada) {
+           const img = document.getElementById("hero-img-dinamica");
+           if (img) img.src = destacada.imagenUrl;
++          const tituloEl = document.getElementById("hero-obra-titulo");
++          if (tituloEl) tituloEl.textContent = destacada.titulo;
+         }
+       }
+     } catch(e) {
+diff --git a/Front/src/components/Servicios.astro b/Front/src/components/Servicios.astro
+new file mode 100644
+index 0000000..e3f0039
+--- /dev/null
++++ b/Front/src/components/Servicios.astro
+@@ -0,0 +1,167 @@
++---
++/**
++ * Servicios ÔÇö secci├│n "01 / LA PR├üCTICA".
++ * Grid de 4 columnas con fotos verticales, n├║meros dorados y t├¡tulos.
++ * Referencia: Builder.io mockup secci├│n 2.
++ */
++import textos from "../i18n/es";
++---
++
++<section id="servicios" class="servicios">
++  <div class="servicios__header">
++    <div>
++      <p class="servicios__eyebrow">{textos.servicios.eyebrow}</p>
++      <h2 class="servicios__titulo">{textos.servicios.titulo}</h2>
++    </div>
++    <p class="servicios__subtitulo">{textos.servicios.subtitulo}</p>
++  </div>
++
++  <div class="servicios__grid">
++    {textos.servicios.items.map((item) => (
++      <div class="servicios__card">
++        <div class="servicios__card-img-wrapper">
++          <img src={item.imagen} alt={item.titulo} class="servicios__card-img" loading="lazy" />
++        </div>
++        <div class="servicios__card-body">
++          <span class="servicios__card-num">{item.numero}</span>
++          <h3 class="servicios__card-titulo">{item.titulo}</h3>
++          <p class="servicios__card-sub">{item.subtitulo}</p>
++        </div>
++      </div>
++    ))}
++  </div>
++</section>
++
++<style>
++  .servicios {
++    padding: var(--espaciado-seccion) 2rem;
++    max-width: 1200px;
++    margin: 0 auto;
++    border-top: 1px solid var(--color-borde);
++  }
++
++  .servicios__header {
++    display: flex;
++    justify-content: space-between;
++    align-items: flex-end;
++    margin-bottom: 3.5rem;
++    gap: 2rem;
++  }
++
++  .servicios__eyebrow {
++    font-family: var(--font-cuerpo);
++    font-size: 0.75rem;
++    font-weight: 600;
++    text-transform: uppercase;
++    letter-spacing: 0.15em;
++    color: var(--color-primario);
++    margin-bottom: 0.75rem;
++  }
++
++  .servicios__titulo {
++    font-family: var(--font-display);
++    font-size: var(--tam-h2);
++    color: var(--color-texto);
++    font-weight: 400;
++  }
++
++  .servicios__subtitulo {
++    font-size: 0.95rem;
++    color: var(--color-texto-sec);
++    max-width: 380px;
++    line-height: 1.6;
++    text-align: right;
++  }
++
++  .servicios__grid {
++    display: grid;
++    grid-template-columns: repeat(3, 1fr);
++    gap: 1.25rem;
++  }
++
++  .servicios__card {
++    border: 1px solid var(--color-borde);
++    overflow: hidden;
++    display: flex;
++    flex-direction: column;
++    transition: transform 0.3s ease, box-shadow 0.3s ease;
++  }
++
++  .servicios__card:hover {
++    transform: translateY(-4px);
++    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.1);
++  }
++
++  .servicios__card-img-wrapper {
++    width: 100%;
++    height: 280px;
++    overflow: hidden;
++  }
++
++  .servicios__card-img {
++    width: 100%;
++    height: 100%;
++    object-fit: cover;
++    transition: transform 0.5s ease;
++  }
++
++  .servicios__card:hover .servicios__card-img {
++    transform: scale(1.05);
++  }
++
++  .servicios__card-body {
++    padding: 1.5rem;
++    display: flex;
++    flex-direction: column;
++    gap: 0.5rem;
++  }
++
++  .servicios__card-num {
++    font-family: var(--font-cuerpo);
++    font-size: 0.75rem;
++    font-weight: 600;
++    color: var(--color-primario);
++  }
++
++  .servicios__card-titulo {
++    font-family: var(--font-display);
++    font-size: 1.4rem;
++    font-weight: 400;
++    color: var(--color-texto);
++  }
++
++  .servicios__card-sub {
++    font-family: var(--font-cuerpo);
++    font-size: 0.65rem;
++    font-weight: 600;
++    text-transform: uppercase;
++    letter-spacing: 0.12em;
++    color: var(--color-texto-sec);
++  }
++
++  /* ---- Responsive ---- */
++  @media (max-width: 900px) {
++    .servicios__header {
++      flex-direction: column;
++      align-items: flex-start;
++    }
++
++    .servicios__subtitulo {
++      text-align: left;
++    }
++
++    .servicios__grid {
++      grid-template-columns: repeat(2, 1fr);
++    }
++  }
++
++  @media (max-width: 500px) {
++    .servicios__grid {
++      grid-template-columns: 1fr;
++    }
++
++    .servicios__card-img-wrapper {
++      height: 220px;
++    }
++  }
++</style>
+diff --git a/Front/src/config/tokens.ts b/Front/src/config/tokens.ts
+index 77829b5..d70f939 100644
+--- a/Front/src/config/tokens.ts
++++ b/Front/src/config/tokens.ts
+@@ -9,14 +9,16 @@ export const tokens = {
+     texto: "#2F4F4F",
+     primario: "#DAA520",
+     acentoSecundario: "#B0C4DE",
++    textoSecundario: "#6B7B7B",   // Gris suave para subt├¡tulos y metadatos
++    bordeLinea: "rgba(47, 79, 79, 0.12)", // L├¡neas divisorias finas del dise├▒o editorial
+   },
+   tipografia: {
+     display: "'Newsreader', serif",
+     // General Sans requiere licencia y self-hosting ÔÇö DM Sans (Google Fonts) como fallback libre.
+     cuerpo: "'General Sans', 'DM Sans', sans-serif",
+     escala: {
+-      h1: "clamp(2.5rem, 5vw, 4rem)",
+-      h2: "2rem",
++      h1: "clamp(2.8rem, 5.5vw, 4.5rem)",
++      h2: "clamp(1.8rem, 3vw, 2.5rem)",
+       cuerpo: "1rem",
+     },
+   },
+diff --git a/Front/src/layouts/LayoutBase.astro b/Front/src/layouts/LayoutBase.astro
+index 41ef4a6..3af34de 100644
+--- a/Front/src/layouts/LayoutBase.astro
++++ b/Front/src/layouts/LayoutBase.astro
+@@ -14,6 +14,8 @@ const cssVars = [
+   `--color-texto: ${tokens.color.texto}`,
+   `--color-primario: ${tokens.color.primario}`,
+   `--color-acento: ${tokens.color.acentoSecundario}`,
++  `--color-texto-sec: ${tokens.color.textoSecundario}`,
++  `--color-borde: ${tokens.color.bordeLinea}`,
+   `--font-display: ${tokens.tipografia.display}`,
+   `--font-cuerpo: ${tokens.tipografia.cuerpo}`,
+   `--tam-h1: ${tokens.tipografia.escala.h1}`,
+@@ -23,10 +25,6 @@ const cssVars = [
+   `--espaciado-tarjeta: ${tokens.espaciado.tarjeta}`,
+   `--radio-base: ${tokens.radio}`,
+ ].join(";");
+-
+-const whatsappUrl = siteConfig.contacto.whatsapp
+-  ? `https://wa.me/${siteConfig.contacto.whatsapp}?text=${encodeURIComponent(siteConfig.contacto.mensajeCotizacion)}`
+-  : "#";
+ ---
+ 
+ <html lang="es" style={cssVars}>
+@@ -62,14 +60,15 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+     <header class="header">
+       <nav class="nav" id="nav-principal">
+         <a href="/" class="nav__logo">
+-          <span class="nav__logo-inicial">{siteConfig.artista.nombreEstudio.split(' ')[0]}</span> {siteConfig.artista.nombreEstudio.split(' ').slice(1).join(' ')}
++          {siteConfig.artista.nombreEstudio}
+         </a>
+         <div class="nav__links">
+           <a href="#inicio" class="nav__link">{textos.nav.inicio}</a>
++          <a href="#servicios" class="nav__link">{textos.nav.servicios}</a>
+           <a href="#galeria" class="nav__link">{textos.nav.galeria}</a>
+-          <a href={whatsappUrl} class="nav__link nav__link--cta" target="_blank" rel="noopener">
++          <button id="nav-cotizar-btn" class="nav__link nav__link--cta">
+             {textos.nav.cotizar}
+-          </a>
++          </button>
+         </div>
+       </nav>
+     </header>
+@@ -79,10 +78,34 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+     </main>
+ 
+     <footer class="footer">
+-      <p>
+-        &copy; {new Date().getFullYear()} {siteConfig.artista.nombreEstudio}.{" "}
+-        {textos.footer.derechos}
+-      </p>
++      <div class="footer__inner">
++        <div class="footer__col footer__col--brand">
++          <p class="footer__logo">{siteConfig.artista.nombreEstudio}</p>
++          <p class="footer__desc">{textos.footer.branding}</p>
++          <div class="footer__socials">
++            <a href="#" aria-label="Instagram" class="footer__social-icon">
++              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="5" /><circle cx="17.5" cy="6.5" r="1.5" /></svg>
++            </a>
++            <a href="#" aria-label="Behance" class="footer__social-icon">
++              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 2.029h3.168zm-7.686-4h4.965c-.105-1.547-1.136-2.219-2.477-2.219-1.466 0-2.277.768-2.488 2.219zM9 15.963c2.514 0 2.943-1.693 2.943-2.755 0-3.228-2.842-2.674-2.842-2.674H2V22h7.156S13 21.58 13 18.68c0-1.988-1.574-2.717-4-2.717zm-4-4.248h4c1.287 0 1.672.852 1.672 1.713 0 .999-.717 1.635-1.793 1.635H5v-3.348zm3.943 9.323H5v-3.804h4.037c1.258 0 1.894.852 1.894 1.9 0 1.145-.752 1.904-1.988 1.904zM9 5H2v2h7V5z"/></svg>
++            </a>
++          </div>
++        </div>
++        <div class="footer__col">
++          <p class="footer__col-title">{textos.footer.explorar}</p>
++          <a href="#inicio" class="footer__col-link">{textos.nav.inicio}</a>
++          <a href="#servicios" class="footer__col-link">{textos.nav.servicios}</a>
++          <a href="#galeria" class="footer__col-link">{textos.nav.galeria}</a>
++        </div>
++        <div class="footer__col">
++          <p class="footer__col-title">{textos.footer.estudio}</p>
++          <p class="footer__col-link">­ƒôì {textos.footer.ubicacion}</p>
++        </div>
++      </div>
++      <div class="footer__bottom">
++        <p>&copy; {new Date().getFullYear()} {siteConfig.artista.nombreEstudio.toUpperCase()}</p>
++        <p>{textos.footer.lema}</p>
++      </div>
+     </footer>
+ 
+     <script>
+@@ -93,12 +116,13 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+ </html>
+ 
+ <style>
++  /* ---- Header ---- */
+   .header {
+     position: sticky;
+     top: 0;
+     z-index: 100;
+     background-color: var(--color-fondo);
+-    border-bottom: 1px solid rgba(47, 79, 79, 0.06);
++    border-bottom: 1px solid var(--color-borde);
+     backdrop-filter: blur(8px);
+   }
+ 
+@@ -119,11 +143,6 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+     letter-spacing: -0.01em;
+   }
+ 
+-  .nav__logo-inicial {
+-    color: var(--color-primario);
+-    font-weight: 600;
+-  }
+-
+   .nav__links {
+     display: flex;
+     align-items: center;
+@@ -131,10 +150,16 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+   }
+ 
+   .nav__link {
+-    font-size: 0.925rem;
++    font-size: 0.8rem;
+     font-weight: 500;
+     color: var(--color-texto);
++    text-transform: uppercase;
++    letter-spacing: 0.08em;
+     transition: color 0.2s ease;
++    background: none;
++    border: none;
++    cursor: pointer;
++    font-family: var(--font-cuerpo);
+   }
+ 
+   .nav__link:hover {
+@@ -156,26 +181,119 @@ const whatsappUrl = siteConfig.contacto.whatsapp
+     color: #fff;
+   }
+ 
++  /* ---- Footer Editorial 3 Columnas ---- */
+   .footer {
+-    text-align: center;
+-    padding: 2.5rem 2rem;
+-    font-size: 0.875rem;
+-    opacity: 0.5;
+-    border-top: 1px solid rgba(47, 79, 79, 0.06);
++    border-top: 1px solid var(--color-borde);
++    padding: 4rem 2rem 1.5rem;
++  }
++
++  .footer__inner {
++    display: grid;
++    grid-template-columns: 2fr 1fr 1fr;
++    gap: 3rem;
++    max-width: 1200px;
++    margin: 0 auto;
++    padding-bottom: 3rem;
++    border-bottom: 1px solid var(--color-borde);
++  }
++
++  .footer__logo {
++    font-family: var(--font-display);
++    font-size: 1.3rem;
++    font-weight: 500;
++    color: var(--color-texto);
++    margin-bottom: 1rem;
++  }
++
++  .footer__desc {
++    font-size: 0.85rem;
++    color: var(--color-texto-sec);
++    line-height: 1.6;
++    max-width: 320px;
++    margin-bottom: 1.5rem;
++  }
++
++  .footer__socials {
++    display: flex;
++    gap: 0.75rem;
++  }
++
++  .footer__social-icon {
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    width: 36px;
++    height: 36px;
++    border: 1px solid var(--color-borde);
++    border-radius: 4px;
++    color: var(--color-texto-sec);
++    transition: color 0.2s ease, border-color 0.2s ease;
++  }
++
++  .footer__social-icon:hover {
++    color: var(--color-primario);
++    border-color: var(--color-primario);
++  }
++
++  .footer__col-title {
++    font-size: 0.75rem;
++    font-weight: 600;
++    text-transform: uppercase;
++    letter-spacing: 0.1em;
++    color: var(--color-primario);
++    margin-bottom: 1.25rem;
++  }
++
++  .footer__col-link {
++    display: block;
++    font-size: 0.9rem;
++    color: var(--color-texto-sec);
++    margin-bottom: 0.75rem;
++    transition: color 0.2s ease;
++  }
++
++  a.footer__col-link:hover {
++    color: var(--color-texto);
++  }
++
++  .footer__bottom {
++    display: flex;
++    justify-content: space-between;
++    max-width: 1200px;
++    margin: 0 auto;
++    padding-top: 1.5rem;
++    font-size: 0.7rem;
++    text-transform: uppercase;
++    letter-spacing: 0.08em;
++    color: var(--color-texto-sec);
++    opacity: 0.6;
+   }
+ 
+   /* ---- Responsive ---- */
++  @media (max-width: 768px) {
++    .footer__inner {
++      grid-template-columns: 1fr;
++      gap: 2rem;
++    }
++
++    .footer__bottom {
++      flex-direction: column;
++      gap: 0.5rem;
++      text-align: center;
++    }
++  }
++
+   @media (max-width: 640px) {
+     .nav {
+       padding: 1rem 1.25rem;
+     }
+ 
+     .nav__links {
+-      gap: 1.25rem;
++      gap: 1rem;
+     }
+ 
+     .nav__link:not(.nav__link--cta) {
+-      font-size: 0.85rem;
++      font-size: 0.75rem;
+     }
+   }
+ </style>
+diff --git a/Front/src/pages/index.astro b/Front/src/pages/index.astro
+index 3b9835b..b847759 100644
+--- a/Front/src/pages/index.astro
++++ b/Front/src/pages/index.astro
+@@ -2,23 +2,21 @@
+ /**
+  * P├ígina principal ÔÇö composici├│n de secciones.
+  * Patr├│n de secciones activables: doc 05, secci├│n 4.
+- * Solo Hero + Galer├¡a + BotonWhatsapp en v1.
++ * Redise├▒o editorial: Hero + Servicios + Galer├¡a Netflix + Cotizador Drawer.
+  */
+ import LayoutBase from "../layouts/LayoutBase.astro";
+ import Hero from "../components/Hero.astro";
++import Servicios from "../components/Servicios.astro";
+ import Galeria from "../components/Galeria.astro";
++import Cotizador from "../components/Cotizador.astro";
+ import BotonWhatsapp from "../components/BotonWhatsapp.astro";
+ import { siteConfig } from "../config/site";
+-
+-// Componentes fuera de alcance v1 ÔÇö se agregar├ín cuando se activen las secciones:
+-// import ListaPrecios from "../components/ListaPrecios.astro";
+-// import Testimonios from "../components/Testimonios.astro";
+ ---
+ 
+ <LayoutBase>
+   <Hero />
++  <Servicios />
+   {siteConfig.secciones.galeria && <Galeria />}
+-  {/* siteConfig.secciones.listaPrecios && <ListaPrecios /> */}
+-  {/* siteConfig.secciones.testimonios && <Testimonios /> */}
++  <Cotizador />
+   <BotonWhatsapp />
+ </LayoutBase>

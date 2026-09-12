@@ -28,8 +28,8 @@ export const crearObraSchema = z.object({
     .string()
     .url("URL de video inválida")
     .refine(
-      (url) => url.includes("youtube.com") || url.includes("youtu.be"),
-      "Solo se aceptan URLs de YouTube"
+      (url) => url.includes("youtube.com") || url.includes("youtu.be") || url.includes("tiktok.com"),
+      "Solo se aceptan URLs de YouTube o TikTok"
     )
     .optional(),
   orden: z.number().int("El orden debe ser un entero").min(0),
@@ -45,8 +45,8 @@ export const actualizarObraSchema = z.object({
     .string()
     .url()
     .refine(
-      (url) => url.includes("youtube.com") || url.includes("youtu.be"),
-      "Solo se aceptan URLs de YouTube"
+      (url) => url.includes("youtube.com") || url.includes("youtu.be") || url.includes("tiktok.com"),
+      "Solo se aceptan URLs de YouTube o TikTok"
     )
     .optional()
     .nullable(),

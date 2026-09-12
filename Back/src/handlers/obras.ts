@@ -43,6 +43,13 @@ export async function listarObras(
   const categoria = url.searchParams.get("categoria");
   const destacado = url.searchParams.get("destacado");
 
+  const limitStr = url.searchParams.get("limit");
+  const offsetStr = url.searchParams.get("offset");
+
+  const limit = limitStr ? parseInt(limitStr, 10) : 50; // Límite razonable por defecto
+  const offset = offsetStr ? parseInt(offsetStr, 10) : 0;
+
+  let queryCount = "SELECT COUNT(*) as total FROM obras";
   let query = "SELECT * FROM obras";
   const condiciones: string[] = [];
   const params: unknown[] = [];
@@ -56,12 +63,21 @@ export async function listarObras(
   }
 
   if (condiciones.length > 0) {
-    query += " WHERE " + condiciones.join(" AND ");
+    const where = " WHERE " + condiciones.join(" AND ");
+    query += where;
+    queryCount += where;
   }
-  query += " ORDER BY fecha_creacion DESC";
+  
+  query += " ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?";
+
+  // Obtener el total de elementos (sin paginación) para saber si hay más
+  const countResult = await env.DB.prepare(queryCount)
+    .bind(...params)
+    .first<{ total: number }>();
+  const total = countResult?.total || 0;
 
   const { results } = await env.DB.prepare(query)
-    .bind(...params)
+    .bind(...params, limit, offset)
     .all();
 
   // Resolver imagen_key a URL pública (doc 03: "el Worker convierte imagen_key en una URL")
@@ -76,7 +92,9 @@ export async function listarObras(
     destacado: Boolean(obra.destacado),
   }));
 
-  return jsonResponse(obras);
+  const hasMore = offset + obras.length < total;
+
+  return jsonResponse({ obras, hasMore, total });
 }
 
 /** POST /api/obras/upload-url — genera URL firmada de subida a R2 */

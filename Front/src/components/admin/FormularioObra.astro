@@ -21,9 +21,12 @@
     <div class="campo">
       <label for="f-cat">Categoría *</label>
       <select id="f-cat" required>
-        <option value="cuadro">Cuadro / Pintura</option>
+        <option value="" disabled selected>Selecciona una categoría...</option>
         <option value="mural">Mural</option>
+        <option value="cuadro">Cuadro / Pintura</option>
         <option value="escultura">Escultura</option>
+        <option value="restauracion">Restauración</option>
+        <option value="logo">Diseño de Logo / Marca</option>
       </select>
     </div>
 
@@ -45,7 +48,10 @@
 
 
     <button type="submit" id="f-btn" class="formulario-box__btn-submit">Subir y Guardar</button>
-    <p id="f-error" class="formulario-box__error"></p>
+    <div class="formulario-box__status-container">
+      <div id="f-spinner" class="spinner" style="display: none;"></div>
+      <p id="f-error" class="formulario-box__error"></p>
+    </div>
   </form>
 </div>
 
@@ -54,6 +60,7 @@
 
   const form = document.getElementById("form-obra") as HTMLFormElement;
   const errorP = document.getElementById("f-error") as HTMLParagraphElement;
+  const spinner = document.getElementById("f-spinner") as HTMLDivElement;
   const btn = document.getElementById("f-btn") as HTMLButtonElement;
 
   const sanitizeImage = async (file: File): Promise<File> => {
@@ -105,7 +112,8 @@
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    errorP.textContent = "⏳ Paso 1: Pidiendo permiso de subida...";
+    spinner.style.display = "block";
+    errorP.textContent = "Paso 1: Pidiendo permiso de subida...";
     errorP.style.color = "var(--color-texto)";
     btn.disabled = true;
 
@@ -114,7 +122,7 @@
       const rawFile = fileInput.files?.[0];
       if (!rawFile) throw new Error("Selecciona una foto.");
 
-      errorP.textContent = "🧹 Lavando imagen (eliminando metadatos)...";
+      errorP.textContent = "Lavando imagen (eliminando metadatos)...";
       const file = await sanitizeImage(rawFile);
 
       // 1. Pedir URL firmada a nuestro Worker
@@ -130,7 +138,7 @@
       const { uploadUrl, imagenKey } = await urlRes.json();
 
       // 2. Subir directamente a R2
-      errorP.textContent = "🚀 Paso 2: Transfiriendo foto de alta calidad...";
+      errorP.textContent = "Paso 2: Transfiriendo foto de alta calidad...";
       const putRes = await fetch(uploadUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type },
@@ -140,7 +148,7 @@
       if (!putRes.ok) throw new Error("Error subiendo el archivo a los servidores.");
 
       // 3. Guardar metadatos en la base de datos D1
-      errorP.textContent = "💾 Paso 3: Guardando información en la galería...";
+      errorP.textContent = "Paso 3: Guardando información en la galería...";
       const titulo = (document.getElementById("f-titulo") as HTMLInputElement).value;
       const desc = (document.getElementById("f-desc") as HTMLTextAreaElement).value;
       const cat = (document.getElementById("f-cat") as HTMLSelectElement).value;
@@ -166,12 +174,14 @@
       // Éxito total
       form.reset();
       errorP.textContent = "";
+      spinner.style.display = "none";
       (window as any).navegarAdmin('dashboard');
       window.dispatchEvent(new Event('admin:load-dashboard'));
 
     } catch (err: any) {
-      errorP.textContent = "❌ " + err.message;
+      errorP.textContent = "Error: " + err.message;
       errorP.style.color = "red";
+      spinner.style.display = "none";
     } finally {
       btn.disabled = false;
     }
@@ -254,10 +264,28 @@
   .formulario-box__btn-submit:disabled {
     opacity: 0.5;
   }
+  .formulario-box__status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
   .formulario-box__error {
-    margin-top: 0.5rem;
     font-size: 0.9rem;
     font-weight: 500;
     text-align: center;
+    margin: 0;
+  }
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(47, 79, 79, 0.2);
+    border-top-color: var(--color-texto);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 </style>

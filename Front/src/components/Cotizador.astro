@@ -11,7 +11,11 @@ import textos from "../i18n/es";
 <div id="cotizador-overlay" class="cotizador-overlay"></div>
 <aside id="cotizador-drawer" class="cotizador">
   <button id="cotizador-cerrar" class="cotizador__cerrar" aria-label="Cerrar cotizador">✕</button>
-  <h2 class="cotizador__titulo">{textos.cotizador.titulo}</h2>
+  <div class="cotizador__encabezado">
+    <p class="cotizador__eyebrow">J. Art Studio / 01 <br/> Private commissions</p>
+    <h2 class="cotizador__titulo">{textos.cotizador.titulo}</h2>
+    <p class="cotizador__desc">Por favor comparte los detalles de tu proyecto. Nos pondremos en contacto contigo a la brevedad.</p>
+  </div>
 
   <form id="cotizador-form" class="cotizador__form">
     <input type="text" id="cot-obra" class="cotizador__input" placeholder={textos.cotizador.campos.obra} required />
@@ -135,11 +139,30 @@ import textos from "../i18n/es";
     color: var(--color-primario);
   }
 
+  .cotizador__encabezado {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cotizador__eyebrow {
+    font-size: 0.75rem; /* 12px */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-texto-sec);
+  }
+
+  .cotizador__desc {
+    font-size: 0.875rem; /* 14px */
+    color: var(--color-texto-sec);
+  }
+
   .cotizador__titulo {
     font-family: var(--font-display);
-    font-size: 2.5rem;
+    font-size: clamp(2.5rem, 5vw, 4rem);
     font-weight: 400;
     color: var(--color-texto);
+    line-height: 1.1;
   }
 
   .cotizador__form {
@@ -155,7 +178,7 @@ import textos from "../i18n/es";
     border-bottom: 1px solid var(--color-borde);
     color: var(--color-texto);
     font-family: var(--font-cuerpo);
-    font-size: 1rem;
+    font-size: 1.125rem; /* 18px */
     padding: 1rem 0;
     outline: none;
     width: 100%;
@@ -167,7 +190,7 @@ import textos from "../i18n/es";
   }
 
   .cotizador__input::placeholder {
-    font-size: 0.8rem;
+    font-size: 0.6875rem; /* 11px */
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--color-texto-sec);
@@ -195,7 +218,7 @@ import textos from "../i18n/es";
     background: var(--color-primario);
     color: #fff;
     font-family: var(--font-cuerpo);
-    font-size: 0.9rem;
+    font-size: 1.125rem; /* 18px */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;

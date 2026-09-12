@@ -112,6 +112,7 @@ const cssVars = [
       import { registrarServiceWorker } from "../lib/pwa/registerServiceWorker";
       registrarServiceWorker();
     </script>
+    <!-- BUILD-CHECK: v2 -->
   </body>
 </html>
 
@@ -137,10 +138,16 @@ const cssVars = [
 
   .nav__logo {
     font-family: var(--font-display);
-    font-size: 1.25rem;
+    font-size: 1.25rem; /* 20px mobile */
     font-weight: 500;
     color: var(--color-texto);
     letter-spacing: -0.01em;
+  }
+
+  @media (min-width: 1024px) {
+    .nav__logo {
+      font-size: 1.5rem; /* 24px desktop */
+    }
   }
 
   .nav__links {
@@ -150,7 +157,7 @@ const cssVars = [
   }
 
   .nav__link {
-    font-size: 0.8rem;
+    font-size: 0.6875rem; /* 11px desktop */
     font-weight: 500;
     color: var(--color-texto);
     text-transform: uppercase;
@@ -199,14 +206,14 @@ const cssVars = [
 
   .footer__logo {
     font-family: var(--font-display);
-    font-size: 1.3rem;
+    font-size: 1.5rem; /* 24px */
     font-weight: 500;
     color: var(--color-texto);
     margin-bottom: 1rem;
   }
 
   .footer__desc {
-    font-size: 0.85rem;
+    font-size: 0.875rem; /* 14px */
     color: var(--color-texto-sec);
     line-height: 1.6;
     max-width: 320px;
@@ -236,7 +243,7 @@ const cssVars = [
   }
 
   .footer__col-title {
-    font-size: 0.75rem;
+    font-size: 0.625rem; /* 10px */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -246,7 +253,7 @@ const cssVars = [
 
   .footer__col-link {
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.875rem; /* 14px */
     color: var(--color-texto-sec);
     margin-bottom: 0.75rem;
     transition: color 0.2s ease;
@@ -262,7 +269,7 @@ const cssVars = [
     max-width: 1200px;
     margin: 0 auto;
     padding-top: 1.5rem;
-    font-size: 0.7rem;
+    font-size: 0.625rem; /* 10px */
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--color-texto-sec);
@@ -293,7 +300,11 @@ const cssVars = [
     }
 
     .nav__link:not(.nav__link--cta) {
-      font-size: 0.75rem;
+      font-size: 0.75rem; /* 12px mobile */
+    }
+
+    .nav__link--cta {
+      font-size: 0.75rem; /* 12px mobile */
     }
   }
 </style>

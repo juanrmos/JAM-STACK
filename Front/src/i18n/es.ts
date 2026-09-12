@@ -22,7 +22,7 @@ export default {
     obraDestacada: "OBRA DESTACADA",
   },
   servicios: {
-    eyebrow: "01 / LA PRÁCTICA",
+    eyebrow: "Servicios que ofrecemos",
     titulo: "Hecho para perdurar.",
     subtitulo:
       "Del primer boceto al barniz final, cada encargo se construye con intención.",
@@ -36,10 +36,9 @@ export default {
     ],
   },
   galeria: {
-    eyebrow: "02 / OBRAS SELECCIONADAS",
-    titulo: "El archivo.",
-    subtitulo:
-      "Desliza para explorar encargos recientes, estudios y obras a gran escala.",
+    eyebrow: "Obras y Referencias de nuestro Trabajo",
+    titulo: "Colección de Obras.",
+    subtitulo: "",
     rieles: {
       murales: "Murales Magistrales",
       cuadros: "Cuadros al Óleo",

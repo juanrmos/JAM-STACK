@@ -32,7 +32,8 @@
     try {
       const res = await apiFetch("/api/obras");
       if (!res.ok) throw new Error("Error al cargar");
-      const obras = await res.json();
+      const data = await res.json();
+      const obras = data.obras || [];
       
       if (obras.length === 0) {
         contenedor.innerHTML = "<p>No hay obras en tu portafolio. ¡Sube la primera!</p>";

@@ -50,7 +50,7 @@ import textos from "../i18n/es";
 
   .servicios__eyebrow {
     font-family: var(--font-cuerpo);
-    font-size: 0.75rem;
+    font-size: 0.625rem; /* 10px */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -60,13 +60,13 @@ import textos from "../i18n/es";
 
   .servicios__titulo {
     font-family: var(--font-display);
-    font-size: var(--tam-h2);
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
     color: var(--color-texto);
     font-weight: 400;
   }
 
   .servicios__subtitulo {
-    font-size: 0.95rem;
+    font-size: 0.875rem; /* 14px */
     color: var(--color-texto-sec);
     max-width: 380px;
     line-height: 1.6;
@@ -118,21 +118,21 @@ import textos from "../i18n/es";
 
   .servicios__card-num {
     font-family: var(--font-cuerpo);
-    font-size: 0.75rem;
+    font-size: 0.75rem; /* 12px */
     font-weight: 600;
     color: var(--color-primario);
   }
 
   .servicios__card-titulo {
     font-family: var(--font-display);
-    font-size: 1.4rem;
+    font-size: 1.875rem; /* 30px */
     font-weight: 400;
     color: var(--color-texto);
   }
 
   .servicios__card-sub {
     font-family: var(--font-cuerpo);
-    font-size: 0.65rem;
+    font-size: 0.75rem; /* 12px */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.12em;
