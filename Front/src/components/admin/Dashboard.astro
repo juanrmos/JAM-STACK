@@ -1,19 +1,21 @@
 ---
+import Paginacion from "./Paginacion.astro";
 ---
 <div class="dashboard">
   <div class="dashboard__header">
     <h2 class="dashboard__titulo">Tus Obras</h2>
     <div style="display: flex; gap: 1rem;">
-      <button class="dashboard__btn-add" onclick="window.navegarAdmin('formulario')">
+      <button class="dashboard__btn-add" onclick="window.navegarAdmin('formulario-obra')">
         + Nueva Obra
       </button>
-      <button class="dashboard__btn-logout" id="btn-logout">Cerrar Sesión</button>
     </div>
   </div>
 
   <div id="obras-lista" class="dashboard__lista">
     <p>Cargando obras...</p>
   </div>
+  
+  <Paginacion eventoRecarga="admin:load-dashboard-obras" idContenedor="paginacion-obras" />
 </div>
 
 <script>
@@ -21,57 +23,72 @@
 
   const contenedor = document.getElementById("obras-lista");
   
-  document.getElementById("btn-logout")?.addEventListener("click", () => {
-    removeToken();
-    (window as any).revisarSesion();
-  });
+  // (Eliminado el listener de btn-logout)
 
-  async function cargarObras() {
+  let currentPage = 1;
+
+  async function cargarObras(pagina = 1) {
+    currentPage = pagina;
     if (!contenedor) return;
     contenedor.innerHTML = "<p>Cargando obras...</p>";
     try {
-      const res = await apiFetch("/api/obras");
+      const limit = 10;
+      const offset = (pagina - 1) * limit;
+      const res = await apiFetch(`/api/obras?limit=${limit}&offset=${offset}`);
       if (!res.ok) throw new Error("Error al cargar");
       const data = await res.json();
       const obras = data.obras || [];
+      const totalItems = data.total || 0;
       
       if (obras.length === 0) {
         contenedor.innerHTML = "<p>No hay obras en tu portafolio. ¡Sube la primera!</p>";
-        return;
+      } else {
+        contenedor.innerHTML = obras.map((o: any) => `
+          <div class="obra-card">
+            <img src="${o.imagenUrl}" alt="${o.titulo}" class="obra-card__img" loading="lazy" />
+            <div class="obra-card__info">
+              <strong>${o.titulo}</strong>
+              <span>${o.categoria || 'Sin categoría'} | Orden: ${o.orden}</span>
+            </div>
+            <button class="btn-borrar" data-id="${o.id}">🗑️</button>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.btn-borrar').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = (e.currentTarget as HTMLButtonElement).dataset.id;
+            if (confirm("¿Seguro que deseas borrar esta obra? Esto no se puede deshacer.")) {
+              try {
+                (e.currentTarget as HTMLButtonElement).disabled = true;
+                await apiFetch(`/api/obras/${id}`, { method: "DELETE" });
+                cargarObras(1); // Volver a la primera página tras borrar
+              } catch (err) {
+                alert("Error al borrar");
+              }
+            }
+          });
+        });
       }
 
-      contenedor.innerHTML = obras.map((o: any) => `
-        <div class="obra-card">
-          <img src="${o.imagenUrl}" alt="${o.titulo}" class="obra-card__img" loading="lazy" />
-          <div class="obra-card__info">
-            <strong>${o.titulo}</strong>
-            <span>${o.categoria || 'Sin categoría'} | Orden: ${o.orden}</span>
-          </div>
-          <button class="btn-borrar" data-id="${o.id}">🗑️</button>
-        </div>
-      `).join('');
-
-      document.querySelectorAll('.btn-borrar').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const id = (e.currentTarget as HTMLButtonElement).dataset.id;
-          if (confirm("¿Seguro que deseas borrar esta obra? Esto no se puede deshacer.")) {
-            try {
-              (e.currentTarget as HTMLButtonElement).disabled = true;
-              await apiFetch(`/api/obras/${id}`, { method: "DELETE" });
-              cargarObras();
-            } catch (err) {
-              alert("Error al borrar");
-            }
-          }
-        });
-      });
+      // Actualizar paginador
+      const totalPaginas = Math.ceil(totalItems / limit) || 1;
+      window.dispatchEvent(new CustomEvent('admin:load-dashboard-obras:update-pagination', {
+        detail: { pagina, totalPaginas, totalItems }
+      }));
 
     } catch (err) {
       contenedor.innerHTML = "<p>Error al cargar las obras. Verifica tu conexión.</p>";
     }
   }
 
-  window.addEventListener('admin:load-dashboard', cargarObras);
+  // Soporte para ambos eventos (retrocompatibilidad local y nuevo estándar)
+  window.addEventListener('admin:load-dashboard', () => cargarObras(1));
+  window.addEventListener('admin:load-dashboard-obras', () => cargarObras(1));
+  
+  // Escuchar cuando el componente de paginación pide otra página
+  window.addEventListener('admin:load-dashboard-obras:request-page', (e: any) => {
+    cargarObras(e.detail.pagina);
+  });
 </script>
 
 <style>

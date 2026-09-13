@@ -295,11 +295,11 @@ import { siteConfig } from "../config/site";
   }
 
   /* ---- Rieles ---- */
-  .galeria__riel {
+  :global(.galeria__riel) {
     margin-bottom: 3rem;
   }
 
-  .galeria__riel-header {
+  :global(.galeria__riel-header) {
     display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
@@ -308,60 +308,59 @@ import { siteConfig } from "../config/site";
     margin-bottom: 1.75rem;
   }
 
-  .galeria__riel-titulo {
+  :global(.galeria__riel-titulo) {
     font-family: var(--font-display);
     font-size: clamp(1.75rem, 3vw, 2.5rem);
     font-weight: 400;
     color: var(--color-texto);
   }
 
-  .galeria__riel-nav {
+  :global(.galeria__riel-nav) {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-shrink: 0;
   }
 
-  .galeria__riel-btn {
-    width: 38px;
-    height: 38px;
+  :global(.galeria__riel-btn) {
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--color-borde);
-    border-radius: 50%;
-    background: var(--color-fondo);
+    border-radius: 6px;
+    background: transparent;
     color: var(--color-texto);
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    flex-shrink: 0;
+    transition: all 0.25s ease;
   }
 
-  .galeria__riel-btn:hover:not(:disabled) {
+  :global(.galeria__riel-btn:hover:not(:disabled)) {
     border-color: var(--color-texto);
     background: var(--color-texto);
-    color: #fff;
-    transform: scale(1.05);
+    color: var(--color-fondo);
   }
 
-  .galeria__riel-btn:disabled {
-    cursor: not-allowed;
+  :global(.galeria__riel-btn:disabled) {
+    color: var(--color-texto-sec);
     opacity: 0.3;
+    cursor: not-allowed;
   }
 
-  .galeria__riel-btn svg {
+  :global(.galeria__riel-btn svg) {
     transition: transform 0.3s ease;
   }
 
-  .galeria__riel-btn[data-dir="-1"]:hover svg {
+  :global(.galeria__riel-btn[data-dir="-1"]:hover svg) {
     transform: translateX(-2px);
   }
 
-  .galeria__riel-btn[data-dir="1"]:hover svg {
+  :global(.galeria__riel-btn[data-dir="1"]:hover svg) {
     transform: translateX(2px);
   }
 
-  .galeria__riel-scroll {
+  :global(.galeria__riel-scroll) {
     display: flex;
     gap: 1.25rem;
     overflow-x: auto;
@@ -369,12 +368,12 @@ import { siteConfig } from "../config/site";
     scrollbar-width: none;
   }
 
-  .galeria__riel-scroll::-webkit-scrollbar {
+  :global(.galeria__riel-scroll::-webkit-scrollbar) {
     display: none;
   }
 
   /* ---- Tarjetas del riel ---- */
-  .riel-tarjeta {
+  :global(.riel-tarjeta) {
     position: relative;
     flex-shrink: 0;
     /* Responsive width: 72vw mobile, 42vw tablet, 28vw desktop, 22vw lg */
@@ -383,15 +382,15 @@ import { siteConfig } from "../config/site";
     scroll-snap-align: start;
     cursor: pointer;
   }
-  @media (min-width: 768px) { .riel-tarjeta { width: 42vw; } }
-  @media (min-width: 1024px) { .riel-tarjeta { width: 28vw; } }
-  @media (min-width: 1440px) { .riel-tarjeta { width: 22vw; } }
+  @media (min-width: 768px) { :global(.riel-tarjeta) { width: 42vw; } }
+  @media (min-width: 1024px) { :global(.riel-tarjeta) { width: 28vw; } }
+  @media (min-width: 1440px) { :global(.riel-tarjeta) { width: 22vw; } }
 
-  .riel-tarjeta--mural { aspect-ratio: 16 / 9; }
-  .riel-tarjeta--cuadro { aspect-ratio: 3 / 4; }
-  .riel-tarjeta--default { aspect-ratio: 1 / 1; }
+  :global(.riel-tarjeta--mural) { aspect-ratio: 16 / 9; }
+  :global(.riel-tarjeta--cuadro) { aspect-ratio: 3 / 4; }
+  :global(.riel-tarjeta--default) { aspect-ratio: 1 / 1; }
 
-  .riel-tarjeta__img {
+  :global(.riel-tarjeta__img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -399,12 +398,12 @@ import { siteConfig } from "../config/site";
     transition: filter 0.5s ease, transform 0.4s ease;
   }
 
-  .riel-tarjeta:hover .riel-tarjeta__img {
+  :global(.riel-tarjeta:hover .riel-tarjeta__img) {
     filter: grayscale(0%);
     transform: scale(1.05);
   }
   
-  .riel-tarjeta__info {
+  :global(.riel-tarjeta__info) {
     position: absolute;
     bottom: 0; left: 0; right: 0;
     padding: 1.5rem;
@@ -414,18 +413,18 @@ import { siteConfig } from "../config/site";
     transform: translateY(10px);
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
-  .riel-tarjeta:hover .riel-tarjeta__info {
+  :global(.riel-tarjeta:hover .riel-tarjeta__info) {
     opacity: 1;
     transform: translateY(0);
   }
-  .riel-tarjeta__titulo {
+  :global(.riel-tarjeta__titulo) {
     font-family: var(--font-display);
     font-size: 1.5rem; /* 24px */
     font-style: italic;
     font-weight: 400;
   }
 
-  .riel-tarjeta__video-badge {
+  :global(.riel-tarjeta__video-badge) {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
@@ -442,7 +441,7 @@ import { siteConfig } from "../config/site";
   }
 
   /* ---- Modal de Video ---- */
-  .modal-video {
+  :global(.modal-video) {
     margin: auto;
     padding: 0;
     border: none;
@@ -453,12 +452,12 @@ import { siteConfig } from "../config/site";
     overflow: visible;
   }
 
-  .modal-video::backdrop {
+  :global(.modal-video::backdrop) {
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
   }
 
-  .modal-video__contenido {
+  :global(.modal-video__contenido) {
     position: relative;
     width: 100%;
     background: #000;
@@ -466,7 +465,7 @@ import { siteConfig } from "../config/site";
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
   }
 
-  .modal-video__iframe-wrapper {
+  :global(.modal-video__iframe-wrapper) {
     position: relative;
     padding-bottom: 56.25%;
     height: 0;
@@ -474,7 +473,7 @@ import { siteConfig } from "../config/site";
     border-radius: 8px;
   }
 
-  .modal-video__iframe-wrapper iframe {
+  :global(.modal-video__iframe-wrapper iframe) {
     position: absolute;
     top: 0;
     left: 0;
@@ -483,7 +482,7 @@ import { siteConfig } from "../config/site";
     border: none;
   }
 
-  .modal-video__cerrar {
+  :global(.modal-video__cerrar) {
     position: absolute;
     top: -40px;
     right: 0;
@@ -497,17 +496,17 @@ import { siteConfig } from "../config/site";
     transition: opacity 0.2s ease, transform 0.2s ease;
   }
 
-  .modal-video__cerrar:hover {
+  :global(.modal-video__cerrar:hover) {
     opacity: 1;
     transform: scale(1.1);
   }
 
   /* ---- Soporte Vertical (TikTok) ---- */
-  .modal-video.is-vertical {
+  :global(.modal-video.is-vertical) {
     max-width: 450px;
   }
 
-  .modal-video.is-vertical .modal-video__iframe-wrapper {
+  :global(.modal-video.is-vertical .modal-video__iframe-wrapper) {
     padding-bottom: 177.77%; /* Aspect ratio 9:16 */
   }
 
@@ -524,7 +523,7 @@ import { siteConfig } from "../config/site";
   }
 
   @media (max-width: 768px) {
-    .modal-video__cerrar {
+    :global(.modal-video__cerrar) {
       top: -36px;
       font-size: 1.75rem;
     }

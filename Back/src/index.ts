@@ -23,6 +23,15 @@ import {
   actualizarObra,
   eliminarObra,
 } from "./handlers/obras";
+import {
+  listarLogos,
+  obtenerLogo,
+  obtenerUrlSubidaLogo,
+  crearLogo,
+  actualizarLogo,
+  activarLogo,
+  eliminarLogo,
+} from "./handlers/logos";
 
 // ---- Utilidad de respuesta JSON (exportada para handlers) ----
 
@@ -77,6 +86,11 @@ export default {
       // GET /api/obras — lectura pública, sin auth
       if (method === "GET" && pathname === "/api/obras") {
         return withCors(await listarObras(request, env));
+      }
+
+      // GET /api/logos — lectura pública, sin auth
+      if (method === "GET" && pathname === "/api/logos") {
+        return withCors(await listarLogos(request, env));
       }
 
       // POST /api/auth/login — solo rate limiting, sin auth de capas
@@ -154,6 +168,41 @@ export default {
           }
           if (method === "DELETE") {
             return withCors(await eliminarObra(request, env, obraId));
+          }
+        }
+
+        // --- Despacho de rutas protegidas de LOGOS ---
+
+        // GET /api/logos/:id
+        const logoGetMatch = pathname.match(/^\/api\/logos\/([a-f0-9-]+)$/);
+        if (method === "GET" && logoGetMatch) {
+          return withCors(await obtenerLogo(request, env, logoGetMatch[1]));
+        }
+
+        // POST /api/logos/upload-url
+        if (method === "POST" && pathname === "/api/logos/upload-url") {
+          return withCors(await obtenerUrlSubidaLogo(request, env));
+        }
+
+        // POST /api/logos
+        if (method === "POST" && pathname === "/api/logos") {
+          return withCors(await crearLogo(request, env));
+        }
+
+        // PUT/DELETE /api/logos/:id o /api/logos/:id/activar
+        const logoMatch = pathname.match(/^\/api\/logos\/([a-f0-9-]+)(?:\/(activar))?$/);
+        if (logoMatch) {
+          const logoId = logoMatch[1];
+          const accion = logoMatch[2];
+          if (method === "PUT") {
+            if (accion === "activar") {
+              return withCors(await activarLogo(request, env, logoId));
+            } else {
+              return withCors(await actualizarLogo(request, env, logoId));
+            }
+          }
+          if (method === "DELETE" && !accion) {
+            return withCors(await eliminarLogo(request, env, logoId));
           }
         }
       }

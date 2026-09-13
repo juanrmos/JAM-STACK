@@ -3,7 +3,7 @@
 <div class="formulario-box">
   <div class="formulario-box__header">
     <h2 class="formulario-box__titulo">Subir Nueva Obra</h2>
-    <button class="formulario-box__btn-cancelar" onclick="window.navegarAdmin('dashboard')">Volver</button>
+    <button class="formulario-box__btn-cancelar" onclick="window.navegarAdmin('dashboard-obras')">Volver</button>
   </div>
 
   <form id="form-obra" class="formulario-box__form">
@@ -175,7 +175,7 @@
       form.reset();
       errorP.textContent = "";
       spinner.style.display = "none";
-      (window as any).navegarAdmin('dashboard');
+      (window as any).navegarAdmin('dashboard-obras');
       window.dispatchEvent(new Event('admin:load-dashboard'));
 
     } catch (err: any) {

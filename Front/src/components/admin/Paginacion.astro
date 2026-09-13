@@ -1,0 +1,93 @@
+---
+interface Props {
+  eventoRecarga: string; // Ej: "admin:load-dashboard-obras"
+  idContenedor: string; // ID único para evitar colisiones si hay varias paginaciones
+}
+const { eventoRecarga, idContenedor } = Astro.props;
+---
+<div class="paginacion" id={idContenedor} style="display: none;">
+  <button class="paginacion__btn" data-accion="prev">←</button>
+  <span class="paginacion__info">Página <span class="paginacion__actual">1</span> de <span class="paginacion__total">1</span></span>
+  <button class="paginacion__btn" data-accion="next">→</button>
+</div>
+
+<script define:vars={{ eventoRecarga, idContenedor }}>
+  document.addEventListener("DOMContentLoaded", () => {
+    const contenedor = document.getElementById(idContenedor);
+    if (!contenedor) return;
+
+    const btnPrev = contenedor.querySelector('[data-accion="prev"]');
+    const btnNext = contenedor.querySelector('[data-accion="next"]');
+    let paginaActual = 1;
+    let totalPaginas = 1;
+
+    // Escuchar actualizaciones desde el dashboard padre
+    window.addEventListener(`${eventoRecarga}:update-pagination`, (e) => {
+      const data = e.detail;
+      paginaActual = data.pagina;
+      totalPaginas = data.totalPaginas;
+      
+      contenedor.querySelector('.paginacion__actual').textContent = paginaActual;
+      contenedor.querySelector('.paginacion__total').textContent = totalPaginas;
+
+      btnPrev.disabled = paginaActual <= 1;
+      btnNext.disabled = paginaActual >= totalPaginas;
+
+      // Mostrar solo si hay más de 1 página (opcional, o mantener siempre visible)
+      if (data.totalItems > 0) {
+        contenedor.style.display = 'flex';
+      } else {
+        contenedor.style.display = 'none';
+      }
+    });
+
+    btnPrev.addEventListener("click", () => {
+      if (paginaActual > 1) {
+        window.dispatchEvent(new CustomEvent(`${eventoRecarga}:request-page`, { detail: { pagina: paginaActual - 1 } }));
+      }
+    });
+
+    btnNext.addEventListener("click", () => {
+      if (paginaActual < totalPaginas) {
+        window.dispatchEvent(new CustomEvent(`${eventoRecarga}:request-page`, { detail: { pagina: paginaActual + 1 } }));
+      }
+    });
+  });
+</script>
+
+<style>
+  .paginacion {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-borde);
+  }
+  .paginacion__btn {
+    background: transparent;
+    border: 1px solid var(--color-borde);
+    color: var(--color-texto);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radio-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .paginacion__btn:hover:not(:disabled) {
+    border-color: var(--color-texto);
+  }
+  .paginacion__btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .paginacion__info {
+    font-family: var(--font-cuerpo);
+    font-size: 0.875rem;
+    color: var(--color-texto-sec);
+  }
+</style>

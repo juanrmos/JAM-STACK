@@ -1,41 +1,98 @@
 ---
 import LayoutBase from "../../layouts/LayoutBase.astro";
+import AdminHeader from "../../components/admin/AdminHeader.astro";
 import Login from "../../components/admin/Login.astro";
 import Dashboard from "../../components/admin/Dashboard.astro";
 import FormularioObra from "../../components/admin/FormularioObra.astro";
+import DashboardLogos from "../../components/admin/DashboardLogos.astro";
+import FormularioLogo from "../../components/admin/FormularioLogo.astro";
 ---
 
 <LayoutBase tituloDocumento="Administración — Antony Art Studio">
+  <div id="admin-header-container" style="display: none;">
+    <AdminHeader />
+  </div>
+  
   <div class="admin-container">
     <div id="vista-login" style="display: none;">
       <Login />
     </div>
-    <div id="vista-dashboard" style="display: none;">
+    
+    <div id="vista-dashboard-obras" style="display: none;">
       <Dashboard />
     </div>
-    <div id="vista-formulario" style="display: none;">
+    
+    <div id="vista-formulario-obra" style="display: none;">
       <FormularioObra />
+    </div>
+
+    <!-- Contenedores nuevos para Eje 1 (Logos) -->
+    <div id="vista-dashboard-logos" style="display: none;">
+      <DashboardLogos />
+    </div>
+    
+    <div id="vista-formulario-logo" style="display: none;">
+      <FormularioLogo />
     </div>
   </div>
 
   <script>
     import { getToken } from "../../lib/auth";
 
-    const vistaLogin = document.getElementById("vista-login");
-    const vistaDashboard = document.getElementById("vista-dashboard");
-    const vistaFormulario = document.getElementById("vista-formulario");
+    type VistaAdmin = 
+      | 'login' 
+      | 'dashboard-obras' 
+      | 'dashboard-logos' 
+      | 'formulario-obra' 
+      | 'formulario-logo';
 
-    function renderVista(vista: 'login' | 'dashboard' | 'formulario') {
-      if (vistaLogin) vistaLogin.style.display = vista === 'login' ? 'block' : 'none';
-      if (vistaDashboard) vistaDashboard.style.display = vista === 'dashboard' ? 'block' : 'none';
-      if (vistaFormulario) vistaFormulario.style.display = vista === 'formulario' ? 'block' : 'none';
+    const vistas: Record<VistaAdmin, HTMLElement | null> = {
+      'login': document.getElementById("vista-login"),
+      'dashboard-obras': document.getElementById("vista-dashboard-obras"),
+      'dashboard-logos': document.getElementById("vista-dashboard-logos"),
+      'formulario-obra': document.getElementById("vista-formulario-obra"),
+      'formulario-logo': document.getElementById("vista-formulario-logo")
+    };
+    
+    const headerContainer = document.getElementById("admin-header-container");
+
+    function renderVista(vista: string) {
+      // Fallback a dashboard-obras si la vista no existe
+      let vistaSegura = vista as VistaAdmin;
+      if (!vistas[vistaSegura]) {
+        vistaSegura = 'dashboard-obras';
+      }
+
+      // Ocultar todas
+      (Object.keys(vistas) as VistaAdmin[]).forEach(k => {
+        if (vistas[k]) vistas[k]!.style.display = 'none';
+      });
+
+      // Mostrar la seleccionada
+      if (vistas[vistaSegura]) {
+        vistas[vistaSegura]!.style.display = 'block';
+      }
+      
+      // El header se muestra en todas menos en login
+      if (headerContainer) {
+        headerContainer.style.display = vistaSegura === 'login' ? 'none' : 'block';
+      }
+
+      // Despachar evento para el header
+      window.dispatchEvent(new CustomEvent('admin:vista-cambiada', { detail: { vista: vistaSegura } }));
+      
+      // Despachar eventos de recarga para los dashboards
+      if (vistaSegura === 'dashboard-obras') {
+        window.dispatchEvent(new Event('admin:load-dashboard')); // Retrocompatibilidad local
+        window.dispatchEvent(new Event('admin:load-dashboard-obras'));
+      } else if (vistaSegura === 'dashboard-logos') {
+        window.dispatchEvent(new Event('admin:load-dashboard-logos'));
+      }
     }
 
     function arrancar() {
       if (getToken()) {
-        renderVista('dashboard');
-        // Lanzamos un evento para que el dashboard recargue sus datos
-        window.dispatchEvent(new Event('admin:load-dashboard'));
+        renderVista('dashboard-obras');
       } else {
         renderVista('login');
       }
@@ -51,8 +108,13 @@ import FormularioObra from "../../components/admin/FormularioObra.astro";
 </LayoutBase>
 
 <style>
+  /* Ocultar el header público de LayoutBase */
+  :global(.header) {
+    display: none !important;
+  }
+  
   .admin-container {
-    padding: var(--espaciado-seccion) 2rem;
+    padding: 0 2rem var(--espaciado-seccion);
     max-width: 1200px;
     margin: 0 auto;
     min-height: 80vh;

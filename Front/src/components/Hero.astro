@@ -8,7 +8,7 @@
 import { siteConfig } from "../config/site";
 import textos from "../i18n/es";
 
-const { eyebrow, titulo, palabraDestacada, subtitulo, cta, obraDestacada } = textos.hero;
+const { eyebrow, titulo, palabraDestacada, subtitulo, cta } = textos.hero;
 
 // Dividir el título alrededor de la palabra destacada
 const partes = titulo.split(palabraDestacada);
@@ -29,16 +29,12 @@ const partes = titulo.split(palabraDestacada);
   <div class="hero__imagen-wrapper">
     <img
       src="/images/hero-obra.jpg"
-      alt="Obra destacada del estudio"
+      alt="Logo principal"
       id="hero-img-dinamica"
       class="hero__imagen"
       loading="eager"
       fetchpriority="high"
     />
-    <div class="hero__imagen-overlay">
-      <span class="hero__imagen-label">{obraDestacada} / 01</span>
-      <span id="hero-obra-titulo" class="hero__imagen-titulo">Still Life, 2024</span>
-    </div>
   </div>
 </section>
 
@@ -140,32 +136,7 @@ const partes = titulo.split(palabraDestacada);
     box-shadow: 0 24px 48px rgba(47, 79, 79, 0.12);
   }
 
-  .hero__imagen-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 1.5rem;
-    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-
-  .hero__imagen-label {
-    font-family: var(--font-cuerpo);
-    font-size: 0.625rem; /* 10px */
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.7);
-  }
-
-  .hero__imagen-titulo {
-    font-family: var(--font-display);
-    font-size: 1.25rem; /* 20px */
-    color: #fff;
-    font-style: italic;
-  }
+  /* El overlay de imagen fue eliminado, ya no se requiere CSS para overlay, label o titulo */
 
   /* ---- Responsive ---- */
   @media (max-width: 900px) {
@@ -191,19 +162,16 @@ const partes = titulo.split(palabraDestacada);
 </style>
 
 <script define:vars={{ apiUrl: siteConfig.api.baseUrl }}>
-  // Al cargar la página, intentar obtener la última obra destacada de la API real
+  // Al cargar la página, intentar obtener el logo activo
   document.addEventListener("DOMContentLoaded", async () => {
     try {
-      const res = await fetch(`${apiUrl}/api/obras`);
+      const res = await fetch(`${apiUrl}/api/logos?activo=1`);
       if (res.ok) {
         const data = await res.json();
-        const obras = data.obras || [];
-        const destacada = obras.find((o) => o.destacado) || obras[0];
-        if (destacada) {
+        const logo = data.logos?.[0];
+        if (logo) {
           const img = document.getElementById("hero-img-dinamica");
-          if (img) img.src = destacada.imagenUrl;
-          const tituloEl = document.getElementById("hero-obra-titulo");
-          if (tituloEl) tituloEl.textContent = destacada.titulo;
+          if (img) img.src = logo.imagenUrl;
         }
       }
     } catch(e) {

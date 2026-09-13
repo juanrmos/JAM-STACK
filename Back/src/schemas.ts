@@ -53,3 +53,17 @@ export const actualizarObraSchema = z.object({
   orden: z.number().int().min(0).optional(),
   destacado: z.boolean().optional(),
 });
+
+/** POST /api/logos */
+export const crearLogoSchema = z.object({
+  nombre: z.string().min(1, "El nombre es obligatorio").max(200),
+  imagenKey: z.string().min(1, "La clave de imagen es obligatoria"),
+  activo: z.boolean().optional().default(false),
+});
+
+/** PUT /api/logos/:id */
+export const actualizarLogoSchema = z.object({
+  nombre: z.string().min(1).max(200).optional(),
+  imagenKey: z.string().min(1).optional(),
+  activo: z.boolean().optional(),
+});

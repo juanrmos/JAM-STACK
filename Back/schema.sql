@@ -23,3 +23,18 @@ CREATE INDEX IF NOT EXISTS idx_obras_orden ON obras(orden);
 
 -- Índice para filtros por categoría
 CREATE INDEX IF NOT EXISTS idx_obras_categoria ON obras(categoria);
+
+-- ============================================================
+-- Esquema D1 — Tabla logos (v1)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS logos (
+  id              TEXT    PRIMARY KEY,
+  nombre          TEXT    NOT NULL,
+  imagen_key      TEXT    NOT NULL,
+  activo          INTEGER NOT NULL DEFAULT 0,
+  fecha_creacion  TEXT    NOT NULL,
+  fecha_actualizacion TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_logos_activo ON logos(activo);
