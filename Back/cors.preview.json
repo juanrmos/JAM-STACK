@@ -2,7 +2,7 @@
   "rules": [
     {
       "allowed": {
-        "origins": ["https://codex-refactor-arquitectura-publico.portafolio-front.pages.dev"],
+        "origins": ["https://codex-refactor-arquitectura.portafolio-front.pages.dev"],
         "methods": ["PUT"],
         "headers": ["Content-Type"]
       },
