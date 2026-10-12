@@ -73,7 +73,11 @@ try {
 
   await page.goto(`http://127.0.0.1:4331/admin/obras/editar?id=${obraId}`);
   await page.locator('#f-titulo').waitFor();
-  await page.waitForFunction(() => document.querySelector('#f-titulo')?.value === 'Prueba navegador local');
+  await page.waitForFunction(() =>
+    document.querySelector('#f-titulo')?.value === 'Prueba navegador local' &&
+    document.querySelector('#f-desc')?.value === 'Descripción temporal' &&
+    document.querySelector('#f-video')?.value === 'https://www.youtube.com/watch?v=abcdefghijk'
+  );
   await page.locator('#f-titulo').fill('Prueba navegador editada');
   await page.locator('#f-desc').fill('');
   await page.locator('#f-video').fill('');

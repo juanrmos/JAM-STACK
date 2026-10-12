@@ -179,6 +179,8 @@ const { modo = "nueva" } = Astro.props;
 
         if (obra && !obra.error) {
           (document.getElementById('f-titulo') as HTMLInputElement).value = obra.titulo;
+          (document.getElementById('f-desc') as HTMLTextAreaElement).value = obra.descripcion || '';
+          (document.getElementById('f-video') as HTMLInputElement).value = obra.videoUrl || '';
 
           // Registrar el slot actual antes de cargar las posiciones de la categoría.
           categoriaOriginal = obra.categoria;
@@ -186,9 +188,6 @@ const { modo = "nueva" } = Astro.props;
           ordenElegido = obra.orden;
           selectCat.value = obra.categoria;
           await cargarSlotsFormulario(obra.categoria);
-
-          (document.getElementById('f-desc') as HTMLTextAreaElement).value = obra.descripcion || '';
-          (document.getElementById('f-video') as HTMLInputElement).value = obra.videoUrl || '';
 
           // Preview de imagen actual
           const previewContainer = document.getElementById('f-imagen-preview-container');
