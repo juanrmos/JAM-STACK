@@ -26,7 +26,8 @@ export async function generarUrlSubida(
   });
 
   const endpoint = env.R2_BUCKET_ENDPOINT.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const url = new URL(`https://${endpoint}/portafolio-archivos/${clave}`);
+  if (!env.R2_BUCKET_NAME) throw new Error("Falta R2_BUCKET_NAME");
+  const url = new URL(`https://${endpoint}/${env.R2_BUCKET_NAME}/${clave}`);
   url.searchParams.set("X-Amz-Expires", "300"); // 5 minutos
 
   const firmada = await cliente.sign(

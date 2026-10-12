@@ -1,0 +1,19 @@
+# API pública de ensayo: solo lecturas de la D1/R2 de ensayo.
+name = "portafolio-api-refactor-public-preview"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+[vars]
+API_PUBLIC_ONLY = "true"
+PREVIEW_MEDIA = "true"
+R2_BUCKET_NAME = "portafolio-refactor-preview"
+R2_PUBLIC_URL = "https://portafolio-api-refactor-public-preview.skyheart.workers.dev/api/media"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "portafolio-refactor-preview-db"
+database_id = "dcf8e24b-bfb0-447a-a5d9-8d3fc14a7098"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "portafolio-refactor-preview"

@@ -14,9 +14,10 @@ interface Props {
 const { tituloDocumento = siteConfig.artista.nombreEstudio } = Astro.props;
 
 import "../visual/styles/base.css";
-import { apiBaseUrl } from '../config/env';
+import { apiBaseUrl, adminApiBaseUrl } from '../config/env';
 // Validate configuration during the build, before generating any page.
 void apiBaseUrl;
+void adminApiBaseUrl;
 
 ---
 <html lang="es" style={cssVars}>

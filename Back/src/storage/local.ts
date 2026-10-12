@@ -9,6 +9,15 @@ function esWorkerLocal(request: Request, env: Env): boolean {
   return env.LOCAL_MEDIA === 'true' && ['localhost', '127.0.0.1', '[::1]'].includes(host);
 }
 
+function esMediaPreview(request: Request, env: Env): boolean {
+  if (env.PREVIEW_MEDIA !== 'true' || !env.R2_PUBLIC_URL) return false;
+  const urlPublica = new URL(env.R2_PUBLIC_URL);
+  const urlRequest = new URL(request.url);
+  return urlPublica.protocol === 'https:' &&
+    urlPublica.origin === urlRequest.origin &&
+    urlPublica.pathname === '/api/media';
+}
+
 function secretoLocal(env: Env): Uint8Array {
   if (!env.JWT_SECRET) throw new Error('Falta JWT_SECRET local');
   return new TextEncoder().encode(env.JWT_SECRET);
@@ -57,9 +66,9 @@ export async function recibirSubidaLocal(request: Request, env: Env): Promise<Re
   return new Response(null, { status: 201, headers: { 'Cache-Control': 'no-store' } });
 }
 
-export async function servirMediaLocal(request: Request, env: Env): Promise<Response> {
+export async function servirMedia(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
-  if (!esWorkerLocal(request, env)) {
+  if (!esWorkerLocal(request, env) && !esMediaPreview(request, env)) {
     return new Response(null, { status: 404 });
   }
   const key = decodeURIComponent(url.pathname.slice('/api/media/'.length));

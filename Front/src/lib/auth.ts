@@ -1,4 +1,4 @@
-import { apiRequest } from "../services/api/client";
+import { adminApiRequest } from "../services/api/client";
 
 const TOKEN_KEY = "admin_jwt";
 
@@ -28,7 +28,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   // Header requerido por CORS de Cloudflare Access aunque estemos en bypass
   headers.set("Content-Type", "application/json");
 
-  const response = await apiRequest(endpoint, {
+  const response = await adminApiRequest(endpoint, {
     ...options,
     credentials: 'include',
     headers,

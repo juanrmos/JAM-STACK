@@ -1,0 +1,23 @@
+# API administrativa de producción. Desplegar solo tras configurar Access,
+# secretos y la URL pública de Pages en FRONTEND_ORIGIN.
+name = "portafolio-api-admin"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+[vars]
+R2_BUCKET_NAME = "portafolio-archivos"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "portafolio-db"
+database_id = "55bd3fbf-fe42-42e1-85e1-a7f0a051b513"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "portafolio-archivos"
+
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1"
+simple = { limit = 30, period = 60 }

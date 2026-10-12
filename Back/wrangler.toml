@@ -5,6 +5,10 @@ name = "portafolio-api"
 main = "src/index.ts"
 compatibility_date = "2026-01-01"
 
+[vars]
+R2_BUCKET_NAME = "portafolio-archivos"
+API_PUBLIC_ONLY = "true"
+
 # --- D1 Database (metadata de obras) ---
 [[d1_databases]]
 binding = "DB"

@@ -12,6 +12,8 @@ interface RateLimiter {
 export interface Env {
   LOCAL_MEDIA?: string;
   LOCAL_UPLOAD?: string;
+  PREVIEW_MEDIA?: string;
+  API_PUBLIC_ONLY?: string;
   // --- Bindings de infraestructura ---
   /** D1 Database — metadata de obras */
   DB: D1Database;
@@ -30,6 +32,8 @@ export interface Env {
   R2_SECRET_ACCESS_KEY: string;
   /** Endpoint público del bucket R2 (dominio custom o .r2.dev) */
   R2_BUCKET_ENDPOINT: string;
+  /** Nombre del bucket usado al firmar subidas; debe coincidir con BUCKET */
+  R2_BUCKET_NAME: string;
   /** URL pública de lectura (.r2.dev) */
   R2_PUBLIC_URL: string;
   /** Nombre del equipo de Cloudflare Access (ej: "mi-equipo") */

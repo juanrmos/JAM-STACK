@@ -37,10 +37,17 @@ import {
 // ---- Utilidad de respuesta JSON (exportada para handlers) ----
 
 import { jsonResponse } from "./routes/response";
-import { servirMediaLocal, recibirSubidaLocal } from "./storage/local";
+import { servirMedia, recibirSubidaLocal } from "./storage/local";
 
 // ---- CORS ----
 function corsHeaders(request: Request, env: Env): Record<string, string> {
+  if (env.API_PUBLIC_ONLY === 'true') {
+    return {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    };
+  }
   const origin = request.headers.get('Origin');
   const requestHost = new URL(request.url).hostname;
   const local = env.LOCAL_MEDIA === 'true' && ['localhost', '127.0.0.1', '[::1]'].includes(requestHost);
@@ -97,7 +104,7 @@ export default {
     try {
       // ---- Rutas públicas ----
       if (method === "GET" && pathname.startsWith("/api/media/")) {
-        return withCors(await servirMediaLocal(request, env));
+        return withCors(await servirMedia(request, env));
       }
       if (method === "PUT" && pathname.startsWith("/api/local-upload/")) {
         return withCors(await recibirSubidaLocal(request, env));
@@ -111,6 +118,12 @@ export default {
       // GET /api/logos — lectura pública, sin auth
       if (method === "GET" && pathname === "/api/logos") {
         return withCors(await listarLogos(request, env));
+      }
+
+      // El Worker público solo entrega lecturas. El panel usa otro Worker,
+      // protegido por Access, que comparte los bindings D1/R2.
+      if (env.API_PUBLIC_ONLY === 'true') {
+        return withCors(jsonResponse({ error: { codigo: "RUTA_NO_ENCONTRADA" } }, 404));
       }
 
       // ---- Rutas protegidas (requieren doble autenticación) ----
