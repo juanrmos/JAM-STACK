@@ -26,7 +26,7 @@ function sanitizarNombre(nombre: string): string {
     .replace(/^-|-$/g, "");
 }
 
-/** 
+/**
  * Desactiva todos los logos y activa únicamente el logo especificado.
  * Transacción unificada (Batch) para garantizar que solo un logo esté activo.
  */
@@ -53,7 +53,7 @@ export async function obtenerLogo(
   if (!logo) {
     return jsonResponse({ error: { codigo: "NO_ENCONTRADO", mensaje: "Logo no encontrado." } }, 404);
   }
-  
+
   return jsonResponse({
     id: logo.id,
     nombre: logo.nombre,

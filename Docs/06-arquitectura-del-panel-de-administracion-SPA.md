@@ -45,11 +45,11 @@ Formulario de Logo	vista-formulario-logo	Formulario de subida/edición de logo	F
 La función window.navegarAdmin(vista) debe aceptar los siguientes valores:
 
 typescript
-type VistaAdmin = 
-  | 'login' 
-  | 'dashboard-obras' 
-  | 'dashboard-logos' 
-  | 'formulario-obra' 
+type VistaAdmin =
+  | 'login'
+  | 'dashboard-obras'
+  | 'dashboard-logos'
+  | 'formulario-obra'
   | 'formulario-logo';
 El header del admin (título "Corporacion Antony Rodriguez" + "PANEL DE ADMINISTRACIÓN", pestañas OBRAS/LOGOS, botón Cerrar Sesión) es común a todas las vistas excepto vista-login.
 

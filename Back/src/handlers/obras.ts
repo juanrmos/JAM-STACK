@@ -41,7 +41,7 @@ export async function obtenerObra(
   if (!obra) {
     return jsonResponse({ error: { codigo: "NO_ENCONTRADO", mensaje: "Obra no encontrada." } }, 404);
   }
-  
+
   return jsonResponse({
     id: obra.id,
     titulo: obra.titulo,
