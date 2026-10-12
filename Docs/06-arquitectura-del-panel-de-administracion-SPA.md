@@ -51,7 +51,7 @@ type VistaAdmin =
   | 'dashboard-logos' 
   | 'formulario-obra' 
   | 'formulario-logo';
-El header del admin (título "Antony Art Studio" + "PANEL DE ADMINISTRACIÓN", pestañas OBRAS/LOGOS, botón Cerrar Sesión) es común a todas las vistas excepto vista-login.
+El header del admin (título "Corporacion Antony Rodriguez" + "PANEL DE ADMINISTRACIÓN", pestañas OBRAS/LOGOS, botón Cerrar Sesión) es común a todas las vistas excepto vista-login.
 
 Las pestañas OBRAS y LOGOS controlan la navegación entre vista-dashboard-obras y vista-dashboard-logos. La pestaña activa tiene un subrayado dorado de 2px.
 
@@ -80,7 +80,7 @@ Actualizar la función arrancar() para que el estado inicial sea coherente (si h
 5.2 Header del Admin
 Actualmente el header del admin es el mismo que el de la página pública (LayoutBase.astro). Con la nueva sección, el header del admin debe ser exclusivo del panel y no debe mostrar los enlaces públicos (INICIO, SERVICIOS, GALERÍA, COTIZAR). Debe mostrar:
 
-Izquierda: "Antony Art Studio" + "PANEL DE ADMINISTRACIÓN".
+Izquierda: "Corporacion Antony Rodriguez" + "PANEL DE ADMINISTRACIÓN".
 
 Centro: Pestañas OBRAS / LOGOS.
 

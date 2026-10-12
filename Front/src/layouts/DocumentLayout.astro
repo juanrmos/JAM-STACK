@@ -1,0 +1,48 @@
+---
+
+/**
+ * Documento compartido: metadatos, tokens y slot; sin navegación pública.
+ */
+import { cssVars } from '../visual/tokens/cssVars';
+import FontLinks from '../visual/components/shared/FontLinks.astro';
+import { siteConfig } from "../config/site";
+
+interface Props {
+  tituloDocumento?: string;
+}
+
+const { tituloDocumento = siteConfig.artista.nombreEstudio } = Astro.props;
+
+import "../visual/styles/base.css";
+import { apiBaseUrl } from '../config/env';
+// Validate configuration during the build, before generating any page.
+void apiBaseUrl;
+
+---
+<html lang="es" style={cssVars}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- PWA / iOS Config (Ref: pwa-sin-friccion skill) -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#2F4F4F" />
+
+    <meta
+      name="description"
+      content="Portafolio de arte — murales, retratos y esculturas personalizadas con la maestría del realismo"
+    />
+    <title>{tituloDocumento}</title>
+
+    <FontLinks />
+  </head>
+  <body>
+<slot />
+</body>
+</html>

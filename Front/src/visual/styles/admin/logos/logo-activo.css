@@ -1,0 +1,57 @@
+.dashboard[data-admin-view="dashboardlogos"] .logo-activo-bloque {
+    margin-bottom: 3rem;
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .logo-activo-bloque__titulo {
+    font-family: var(--font-cuerpo);
+    font-size: 1rem;
+    color: var(--color-texto);
+    margin-bottom: 1rem;
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .logo-activo-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 3rem;
+    border: 1px dashed var(--color-borde);
+    border-radius: var(--radio-base);
+    background: #F9F9F9;
+    text-align: center;
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .logo-activo-card--empty {
+    border-color: var(--color-borde);
+    background: transparent;
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .logo-activo-card__img {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: contain;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .logo-activo-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .logo-activo-card__info strong {
+    font-size: 1.5rem;
+    color: var(--color-texto);
+    font-family: var(--font-display);
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .logo-activo-card__badge {
+    background: var(--color-texto);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: inline-block;
+    width: fit-content;
+  }
+.dashboard[data-admin-view="dashboardlogos"] .logo-activo-card__img--placeholder {
+  opacity: 0.3;
+}

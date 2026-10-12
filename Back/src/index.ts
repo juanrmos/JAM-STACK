@@ -22,6 +22,7 @@ import {
   crearObra,
   actualizarObra,
   eliminarObra,
+  obtenerObra,
 } from "./handlers/obras";
 import {
   listarLogos,
@@ -35,29 +36,41 @@ import {
 
 // ---- Utilidad de respuesta JSON (exportada para handlers) ----
 
-export function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+import { jsonResponse } from "./routes/response";
+import { servirMediaLocal, recibirSubidaLocal } from "./storage/local";
 
 // ---- CORS ----
-// TODO: restringir Access-Control-Allow-Origin al dominio real del frontend en producción.
-
-function corsHeaders(): Record<string, string> {
+function corsHeaders(request: Request, env: Env): Record<string, string> {
+  const origin = request.headers.get('Origin');
+  const requestHost = new URL(request.url).hostname;
+  const local = env.LOCAL_MEDIA === 'true' && ['localhost', '127.0.0.1', '[::1]'].includes(requestHost);
+  let permitido = false;
+  if (origin) {
+    try {
+      const url = new URL(origin);
+      permitido = local
+        ? url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+        : url.protocol === 'https:' && origin === env.FRONTEND_ORIGIN;
+    } catch {
+      permitido = false;
+    }
+  }
   return {
-    "Access-Control-Allow-Origin": "*",
+    'Vary': 'Origin',
+    ...(permitido ? {
+      'Access-Control-Allow-Origin': origin!,
+      'Access-Control-Allow-Credentials': 'true',
+    } : {}),
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, Cf-Access-Jwt-Assertion",
+      "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
   };
 }
 
-function withCors(response: Response): Response {
+function withRequestCors(request: Request, env: Env, response: Response): Response {
   const headers = new Headers(response.headers);
-  for (const [key, value] of Object.entries(corsHeaders())) {
+  for (const [key, value] of Object.entries(corsHeaders(request, env))) {
     headers.set(key, value);
   }
   return new Response(response.body, {
@@ -74,14 +87,21 @@ export default {
     const url = new URL(request.url);
     const { pathname } = url;
     const method = request.method;
+    const withCors = (response: Response) => withRequestCors(request, env, response);
 
     // CORS preflight
     if (method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders() });
+      return new Response(null, { status: 204, headers: corsHeaders(request, env) });
     }
 
     try {
       // ---- Rutas públicas ----
+      if (method === "GET" && pathname.startsWith("/api/media/")) {
+        return withCors(await servirMediaLocal(request, env));
+      }
+      if (method === "PUT" && pathname.startsWith("/api/local-upload/")) {
+        return withCors(await recibirSubidaLocal(request, env));
+      }
 
       // GET /api/obras — lectura pública, sin auth
       if (method === "GET" && pathname === "/api/obras") {
@@ -91,11 +111,6 @@ export default {
       // GET /api/logos — lectura pública, sin auth
       if (method === "GET" && pathname === "/api/logos") {
         return withCors(await listarLogos(request, env));
-      }
-
-      // POST /api/auth/login — solo rate limiting, sin auth de capas
-      if (method === "POST" && pathname === "/api/auth/login") {
-        return withCors(await handleLogin(request, env));
       }
 
       // ---- Rutas protegidas (requieren doble autenticación) ----
@@ -114,6 +129,11 @@ export default {
               403,
             ),
           );
+        }
+
+        // El login también requiere Access; el rate limit y secreto se validan en el handler.
+        if (method === "POST" && pathname === "/api/auth/login") {
+          return withCors(await handleLogin(request, env));
         }
 
         // Capa 2: JWT propio del Worker
@@ -157,6 +177,12 @@ export default {
         // POST /api/obras
         if (method === "POST" && pathname === "/api/obras") {
           return withCors(await crearObra(request, env));
+        }
+
+        // GET /api/obras/:id
+        const obraGetMatch = pathname.match(/^\/api\/obras\/([a-f0-9-]+)$/);
+        if (method === "GET" && obraGetMatch) {
+          return withCors(await obtenerObra(request, env, obraGetMatch[1]));
         }
 
         // PUT/DELETE /api/obras/:id

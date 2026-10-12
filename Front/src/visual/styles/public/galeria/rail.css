@@ -1,0 +1,77 @@
+/* ---- Rieles ---- */
+  .galeria__riel {
+    margin-bottom: 3rem;
+  }
+
+  .galeria__riel-header {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .galeria__riel-titulo {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 400;
+    color: var(--color-texto);
+  }
+
+  .galeria__riel-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .galeria__riel-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-borde);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-texto);
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .galeria__riel-btn:hover:not(:disabled) {
+    border-color: var(--color-texto);
+    background: var(--color-texto);
+    color: var(--color-fondo);
+  }
+
+  .galeria__riel-btn:disabled {
+    color: var(--color-texto-sec);
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .galeria__riel-btn svg {
+    transition: transform 0.3s ease;
+  }
+
+  .galeria__riel-btn[data-dir="-1"]:hover svg {
+    transform: translateX(-2px);
+  }
+
+  .galeria__riel-btn[data-dir="1"]:hover svg {
+    transform: translateX(2px);
+  }
+
+  .galeria__riel-scroll {
+    display: flex;
+    gap: 1.25rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .galeria__riel-scroll::-webkit-scrollbar {
+    display: none;
+  }

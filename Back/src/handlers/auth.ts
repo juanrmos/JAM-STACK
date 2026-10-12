@@ -8,7 +8,7 @@ import type { Env } from "../types";
 import { loginSchema } from "../schemas";
 import { emitirToken } from "../middleware/verificarJwt";
 import { verificarLimite } from "../lib/rateLimiter";
-import { jsonResponse } from "../index";
+import { jsonResponse } from "../routes/response";
 
 export async function handleLogin(
   request: Request,

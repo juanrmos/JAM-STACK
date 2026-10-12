@@ -1,0 +1,53 @@
+.paginacion[data-admin-view="paginacion"] {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-borde);
+  }
+  .paginacion[data-admin-view="paginacion"] .paginacion__numeros {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .paginacion[data-admin-view="paginacion"] .paginacion__btn {
+    background: transparent;
+    border: 1px solid var(--color-borde);
+    color: var(--color-texto);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radio-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-cuerpo);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  .paginacion[data-admin-view="paginacion"] .paginacion__btn:hover:not(:disabled) {
+    border-color: var(--color-primario);
+    color: var(--color-primario);
+  }
+  .paginacion[data-admin-view="paginacion"] .paginacion__btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .paginacion[data-admin-view="paginacion"] .paginacion__btn--activo {
+    background: var(--color-primario);
+    color: #fff;
+    border-color: var(--color-primario);
+  }
+  .paginacion[data-admin-view="paginacion"] .paginacion__btn--activo:hover {
+    color: #fff;
+  }
+  .paginacion[data-admin-view="paginacion"] .paginacion__dots {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    width: 36px;
+    color: var(--color-texto-sec);
+    padding-bottom: 0.2rem;
+  }

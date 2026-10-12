@@ -4,10 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --port 8787",
+    "dev": "wrangler dev --local --config wrangler.local.toml --port 8787",
+    "secrets:init:local": "node scripts/create-local-secrets.mjs",
     "deploy": "wrangler deploy",
-    "db:init:local": "wrangler d1 execute portafolio-db --local --file=schema.sql",
-    "typecheck": "tsc --noEmit"
+    "db:init:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=schema.sql",
+    "typecheck": "tsc --noEmit",
+    "db:seed:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=fixtures/public.sql",
+    "media:seed:local": "wrangler r2 object put portafolio-local/fixtures/obra.jpg --local --config wrangler.local.toml --file=../Front/public/images/hero-obra.jpg --content-type=image/jpeg"
   },
   "dependencies": {
     "jose": "^6.0.0",

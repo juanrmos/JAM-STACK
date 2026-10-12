@@ -1,0 +1,12 @@
+---
+interface Props {
+  idContenedor: string; // ID único para evitar colisiones si hay varias paginaciones
+}
+const { idContenedor } = Astro.props;
+import "../../../styles/admin/shared/paginacion.css";
+---
+<div data-admin-view="paginacion" class="paginacion admin-hidden" id={idContenedor}>
+  <button class="paginacion__btn" data-accion="prev">←</button>
+  <div class="paginacion__numeros" id={`${idContenedor}-numeros`}></div>
+  <button class="paginacion__btn" data-accion="next">→</button>
+</div>

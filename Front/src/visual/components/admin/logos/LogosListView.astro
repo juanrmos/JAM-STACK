@@ -1,0 +1,32 @@
+---
+import Paginacion from "../../../../components/admin/Paginacion.astro";
+import "../../../styles/admin/logos/logos-lista.css";
+import "../../../styles/admin/logos/logo-activo.css";
+import "../../../styles/admin/logos/logos-almacen.css";
+---
+<div data-admin-view="dashboardlogos" class="dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__titulo">Gestión de Logos</h1>
+    <div class="dashboard__actions">
+      <button class="dashboard__btn-add" onclick="window.location.href='/admin/logos/nueva'">
+        + Nuevo Logo
+      </button>
+    </div>
+  </div>
+
+  <div class="logo-activo-bloque">
+    <h3 class="logo-activo-bloque__titulo">Logo Activo (Público)</h3>
+    <div id="logo-activo-container" class="logo-activo-bloque__content">
+      <p>Cargando logo activo...</p>
+    </div>
+  </div>
+
+  <div class="almacen-bloque">
+    <h3 class="almacen-bloque__titulo">Almacén de Logos</h3>
+    <div id="logos-lista" class="almacen-bloque__grid">
+      <p>Cargando almacén...</p>
+    </div>
+
+    <Paginacion eventoRecarga="admin:load-dashboard-logos" idContenedor="paginacion-logos" />
+  </div>
+</div>

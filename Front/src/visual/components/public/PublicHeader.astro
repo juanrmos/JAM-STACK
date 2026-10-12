@@ -1,0 +1,19 @@
+---
+const { siteConfig, textos } = Astro.props;
+import "../../styles/public/header.css";
+---
+<header class="header">
+      <nav class="nav" id="nav-principal">
+        <a href="/" class="nav__logo">
+          {siteConfig.artista.nombreEstudio}
+        </a>
+        <div class="nav__links">
+          <a href="#inicio" class="nav__link">{textos.nav.inicio}</a>
+          <a href="#servicios" class="nav__link">{textos.nav.servicios}</a>
+          {siteConfig.secciones.galeria && <a href="#galeria" class="nav__link">{textos.nav.galeria}</a>}
+          <button id="nav-cotizar-btn" data-action="open-cotizador" class="nav__link nav__link--cta">
+            {textos.nav.cotizar}
+          </button>
+        </div>
+      </nav>
+    </header>

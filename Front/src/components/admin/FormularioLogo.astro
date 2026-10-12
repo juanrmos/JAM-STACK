@@ -1,81 +1,56 @@
 ---
+import LogoFormView from "../../visual/components/admin/logos/LogoFormView.astro";
+interface Props {
+  modo?: "nuevo" | "editar";
+}
+const { modo = "nuevo" } = Astro.props;
 ---
-<div class="formulario-box">
-  <div class="formulario-box__header">
-    <h2 class="formulario-box__titulo" id="fl-titulo-ui">Subir Nuevo Logo</h2>
-    <button class="formulario-box__btn-cancelar" onclick="window.navegarAdmin('dashboard-logos')">Volver</button>
-  </div>
-
-  <form id="form-logo" class="formulario-box__form">
-    <!-- ID oculto para edición -->
-    <input type="hidden" id="fl-id" value="" />
-    
-    <div class="campo">
-      <label for="fl-archivo">Imagen del logo (PNG/JPG/WebP) *</label>
-      <input type="file" id="fl-archivo" accept="image/jpeg, image/png, image/webp" />
-      <small id="fl-archivo-help" style="color: var(--color-texto-sec); display:none; margin-top: 0.25rem;">Dejar vacío para conservar la imagen actual.</small>
-    </div>
-
-    <div class="campo">
-      <label for="fl-nombre">Nombre descriptivo del logo *</label>
-      <input type="text" id="fl-nombre" required placeholder="Ej: Logo Principal 2026" />
-    </div>
-
-    <div class="campo campo--inline">
-      <input type="checkbox" id="fl-activo" />
-      <label for="fl-activo">Activar este logo al guardar (reemplazará al actual en el sitio público)</label>
-    </div>
-
-    <button type="submit" id="fl-btn" class="formulario-box__btn-submit">Subir y Guardar</button>
-    <div class="formulario-box__status-container">
-      <div id="fl-spinner" class="spinner" style="display: none;"></div>
-      <p id="fl-error" class="formulario-box__error"></p>
-    </div>
-  </form>
-</div>
-
+<LogoFormView modo={modo} />
 <script>
   import { apiFetch } from "../../lib/auth";
+
+  // Determinar modo desde la URL
+  const params = new URLSearchParams(window.location.search);
+  const idEdit: string | null = params.get("id");
+  const isEdit = !!idEdit;
 
   const form = document.getElementById("form-logo") as HTMLFormElement;
   const errorP = document.getElementById("fl-error") as HTMLParagraphElement;
   const spinner = document.getElementById("fl-spinner") as HTMLDivElement;
   const btn = document.getElementById("fl-btn") as HTMLButtonElement;
-  
-  const inputId = document.getElementById("fl-id") as HTMLInputElement;
+
   const inputArchivo = document.getElementById("fl-archivo") as HTMLInputElement;
   const inputNombre = document.getElementById("fl-nombre") as HTMLInputElement;
   const checkActivo = document.getElementById("fl-activo") as HTMLInputElement;
   const labelArchivo = document.getElementById("fl-archivo-help") as HTMLElement;
-  const tituloUI = document.getElementById("fl-titulo-ui") as HTMLElement;
 
-  // Lógica de precarga (RF-05)
-  (window as any).prepararFormularioLogo = async (id: string | null) => {
-    form.reset();
-    errorP.textContent = "";
-    inputId.value = id || "";
-    
-    if (id) {
-      tituloUI.textContent = "Editar Logo";
+  // AUTO-INIT: si hay ?id= en la URL, cargar los datos del logo
+  async function inicializar() {
+    if (isEdit && idEdit) {
       inputArchivo.required = false;
-      labelArchivo.style.display = "block";
-      
+      labelArchivo.classList.remove('admin-hidden');
+
       try {
-        const res = await apiFetch(`/api/logos/${id}`);
+        const res = await apiFetch(`/api/logos/${idEdit}`);
         if (res.ok) {
           const logo = await res.json();
           inputNombre.value = logo.nombre;
           checkActivo.checked = logo.activo;
+        } else {
+          throw new Error(`HTTP ${res.status}`);
         }
       } catch (err) {
         console.error("Error al cargar logo para editar", err);
+        errorP.textContent = "Error al cargar los datos del logo.";
+        errorP.classList.add('formulario-box__error--danger');
       }
     } else {
-      tituloUI.textContent = "Subir Nuevo Logo";
       inputArchivo.required = true;
-      labelArchivo.style.display = "none";
+      labelArchivo.classList.add('admin-hidden');
     }
-  };
+  }
+
+  inicializar();
 
   const sanitizeImage = async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
@@ -101,7 +76,7 @@
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("No se pudo procesar la imagen en tu navegador."));
-        
+
         ctx.drawImage(img, 0, 0, width, height);
         canvas.toBlob((blob) => {
           if (blob) {
@@ -119,15 +94,12 @@
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    spinner.style.display = "block";
+    spinner.classList.remove('admin-hidden');
     errorP.textContent = "Paso 1: Procesando datos...";
-    errorP.style.color = "var(--color-texto)";
+    errorP.classList.remove('formulario-box__error--danger');
     btn.disabled = true;
 
     try {
-      const idEdit = inputId.value;
-      const isEdit = !!idEdit;
-      
       const rawFile = inputArchivo.files?.[0];
       let imagenKey = undefined;
 
@@ -158,10 +130,10 @@
 
       // Guardar metadatos en D1
       errorP.textContent = "Paso 3: Guardando información del logo...";
-      
+
       const endpoint = isEdit ? `/api/logos/${idEdit}` : "/api/logos";
       const method = isEdit ? "PUT" : "POST";
-      
+
       const payload: any = {
         nombre: inputNombre.value,
         activo: checkActivo.checked
@@ -175,117 +147,15 @@
 
       if (!saveRes.ok) throw new Error("Error al guardar la metadata en la base de datos.");
 
-      // Éxito total
-      form.reset();
-      errorP.textContent = "";
-      spinner.style.display = "none";
-      (window as any).navegarAdmin('dashboard-logos');
-      window.dispatchEvent(new Event('admin:load-dashboard-logos'));
+      // Éxito total — volver al dashboard
+      window.location.href = "/admin/logos";
 
     } catch (err: any) {
       errorP.textContent = "Error: " + err.message;
-      errorP.style.color = "red";
-      spinner.style.display = "none";
+      errorP.classList.add('formulario-box__error--danger');
+      spinner.classList.add('admin-hidden');
     } finally {
       btn.disabled = false;
     }
   });
 </script>
-
-<style>
-  .formulario-box {
-    background: #fff;
-    border-radius: var(--radio-base);
-    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.08);
-    padding: 2rem;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .formulario-box__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  .formulario-box__titulo {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
-    color: var(--color-texto);
-  }
-  .formulario-box__btn-cancelar {
-    background: transparent;
-    border: none;
-    color: var(--color-texto);
-    opacity: 0.7;
-    cursor: pointer;
-    text-decoration: underline;
-  }
-  .formulario-box__form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-  .campo {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .campo label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--color-texto);
-  }
-  .campo input[type="text"],
-  .campo input[type="file"] {
-    padding: 0.75rem;
-    border: 1px solid rgba(47, 79, 79, 0.2);
-    border-radius: 4px;
-    font-family: inherit;
-    width: 100%;
-  }
-  .campo--inline {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .campo--inline input {
-    width: auto;
-  }
-  .formulario-box__btn-submit {
-    background: var(--color-texto);
-    color: #fff;
-    border: none;
-    padding: 1rem;
-    border-radius: var(--radio-base);
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 1rem;
-  }
-  .formulario-box__btn-submit:disabled {
-    opacity: 0.5;
-  }
-  .formulario-box__status-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-  .formulario-box__error {
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-align: center;
-    margin: 0;
-  }
-  .spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid rgba(47, 79, 79, 0.2);
-    border-top-color: var(--color-texto);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-</style>

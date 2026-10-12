@@ -4,6 +4,11 @@
  * Skill deep-security, principio 6.
  */
 import { z } from "zod";
+import { categorias } from "../../Shared/contracts/categorias";
+import { prepararVideoPermitido } from "../../Shared/contracts/video";
+
+const videoUrlSchema = z.string().url("URL de video inválida")
+  .refine((url) => prepararVideoPermitido(url) !== null, "Solo se aceptan enlaces reproducibles de YouTube o TikTok");
 
 /** POST /api/auth/login */
 export const loginSchema = z.object({
@@ -21,18 +26,11 @@ export const uploadUrlSchema = z.object({
 /** POST /api/obras */
 export const crearObraSchema = z.object({
   titulo: z.string().min(1, "El título es obligatorio").max(200),
-  descripcion: z.string().max(1000).optional(),
-  categoria: z.string().max(50).optional(),
+  descripcion: z.string().max(1000).optional().nullable(),
+  categoria: z.enum(categorias),
   imagenKey: z.string().min(1, "La clave de imagen es obligatoria"),
-  videoUrl: z
-    .string()
-    .url("URL de video inválida")
-    .refine(
-      (url) => url.includes("youtube.com") || url.includes("youtu.be") || url.includes("tiktok.com"),
-      "Solo se aceptan URLs de YouTube o TikTok"
-    )
-    .optional(),
-  orden: z.number().int("El orden debe ser un entero").min(0),
+  videoUrl: videoUrlSchema.optional(),
+  orden: z.number().int("El orden debe ser un entero").min(0).max(5).optional().default(0),
   destacado: z.boolean().optional().default(false),
 });
 
@@ -40,17 +38,10 @@ export const crearObraSchema = z.object({
 export const actualizarObraSchema = z.object({
   titulo: z.string().min(1).max(200).optional(),
   descripcion: z.string().max(1000).optional().nullable(),
-  categoria: z.string().max(50).optional().nullable(),
-  videoUrl: z
-    .string()
-    .url()
-    .refine(
-      (url) => url.includes("youtube.com") || url.includes("youtu.be") || url.includes("tiktok.com"),
-      "Solo se aceptan URLs de YouTube o TikTok"
-    )
-    .optional()
-    .nullable(),
-  orden: z.number().int().min(0).optional(),
+  categoria: z.enum(categorias).optional().nullable(),
+  videoUrl: videoUrlSchema.optional().nullable(),
+  imagenKey: z.string().min(1).optional(),
+  orden: z.number().int().min(0).max(5).optional(),
   destacado: z.boolean().optional(),
 });
 

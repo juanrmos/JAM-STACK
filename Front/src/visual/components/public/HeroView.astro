@@ -1,0 +1,29 @@
+---
+const { textos } = Astro.props;
+const { eyebrow, titulo, palabraDestacada, subtitulo, cta } = textos.hero;
+const partes = titulo.split(palabraDestacada);
+import "../../styles/public/hero.css";
+---
+<section id="inicio" class="hero">
+  <div class="hero__contenido">
+    <p class="hero__eyebrow">{eyebrow}</p>
+    <h1 class="hero__titulo">
+      {partes[0]}<em class="hero__titulo-destaque">{palabraDestacada}</em>{partes[1]}
+    </h1>
+    <p class="hero__subtitulo">{subtitulo}</p>
+    <button id="hero-cotizar-btn" data-action="open-cotizador" class="hero__cta">
+      {cta}
+    </button>
+  </div>
+
+  <div class="hero__imagen-wrapper">
+    <img
+      src="/images/hero-obra.jpg"
+      alt="Logo principal"
+      id="hero-img-dinamica"
+      class="hero__imagen"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </div>
+</section>
