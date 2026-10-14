@@ -11,6 +11,8 @@ R2_PUBLIC_URL = "https://pub-8d2d800097a241338f88eaa4a77ad190.r2.dev"
 CF_ACCESS_TEAM = "wild-pond-b1e4"
 CF_ACCESS_AUD = "a9080380af99f117b1f015f2c91a0a5ab91d358ca93b88d5d879471bc6633e3c"
 FRONTEND_ORIGIN = "https://portafolio-front.pages.dev"
+# Las URLs inmutables de Pages de este mismo proyecto usan el mismo Access.
+ALLOW_PAGES_PREVIEW_ORIGINS = "true"
 # ADMIN_SECRET, JWT_SECRET y las credenciales R2 se guardan como secretos del Worker.
 
 [[d1_databases]]
