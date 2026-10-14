@@ -17,7 +17,10 @@ export async function verificarAccessJwt(
   if (env.LOCAL_MEDIA === 'true' && ['localhost', '127.0.0.1', '[::1]'].includes(hostname)) {
     return true;
   }
-  if (!teamDomain || !env.CF_ACCESS_AUD) return false;
+  const audiences = [env.CF_ACCESS_AUD, env.CF_ACCESS_AUD_FRONTEND].filter(
+    (audience): audience is string => Boolean(audience),
+  );
+  if (!teamDomain || audiences.length === 0) return false;
 
   const token = request.headers.get("Cf-Access-Jwt-Assertion");
   if (!token) return false;
@@ -31,7 +34,7 @@ export async function verificarAccessJwt(
 
     await jwtVerify(token, JWKS, {
       issuer: `https://${teamDomain}.cloudflareaccess.com`,
-      audience: env.CF_ACCESS_AUD,
+      audience: audiences,
     });
     return true;
   } catch {

@@ -1,11 +1,14 @@
-import { apiBaseUrl, adminApiBaseUrl } from '../../config/env';
+import { apiBaseUrl, adminApiBaseUrl, adminApiUsesPagesProxy } from '../../config/env';
 
 export function apiRequest(endpoint: string, options?: RequestInit): Promise<Response> {
   return fetch(`${apiBaseUrl}${endpoint}`, options);
 }
 
 export function adminApiRequest(endpoint: string, options?: RequestInit): Promise<Response> {
-  return fetch(`${adminApiBaseUrl}${endpoint}`, options);
+  const url = adminApiUsesPagesProxy
+    ? `/admin/api${endpoint.replace(/^\/api(?=\/|$)/, '')}`
+    : `${adminApiBaseUrl}${endpoint}`;
+  return fetch(url, options);
 }
 
 export async function apiJson<T>(endpoint: string): Promise<T> {
