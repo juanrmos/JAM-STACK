@@ -14,6 +14,8 @@ export interface Env {
   LOCAL_UPLOAD?: string;
   PREVIEW_MEDIA?: string;
   API_PUBLIC_ONLY?: string;
+  /** Permite los alias HTTPS del proyecto Pages solo en el Worker aislado de Preview. */
+  ALLOW_PAGES_PREVIEW_ORIGINS?: string;
   // --- Bindings de infraestructura ---
   /** D1 Database — metadata de obras */
   DB: D1Database;

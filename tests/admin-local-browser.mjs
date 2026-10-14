@@ -42,6 +42,12 @@ await context.route('**/*', route => {
 
 try {
   await page.goto('http://127.0.0.1:4331/admin/login');
+  await page.locator('#access-start').waitFor({state:'visible'});
+  assert.equal(await page.locator('#form-login').isVisible(), false);
+  await page.locator('#access-start').click();
+  await page.waitForURL('**/admin/login/?access=ready');
+  assert.equal(await page.locator('#form-login').isVisible(), true);
+  assert.equal(await page.locator('#access-start').isVisible(), false);
   await page.locator('#input-secreto').fill(secret);
   await page.locator('#btn-login').click();
   await page.waitForURL('**/admin/obras');

@@ -8,6 +8,7 @@ LOCAL_MEDIA = "true"
 LOCAL_UPLOAD = "true"
 R2_PUBLIC_URL = "http://127.0.0.1:8787/api/media"
 R2_BUCKET_NAME = "portafolio-local"
+FRONTEND_ORIGIN = "http://127.0.0.1:4321"
 
 [[d1_databases]]
 binding = "DB"

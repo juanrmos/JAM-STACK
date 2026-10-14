@@ -1,12 +1,21 @@
 ---
 
 import "../../../styles/admin/login/login.css";
+interface Props { accessUrl: string }
+const { accessUrl } = Astro.props;
 ---
 <div data-admin-view="login" class="login-box">
   <h1 class="login-box__titulo">Acceso Privado</h1>
-  <p class="login-box__desc">Ingresa el secreto de administrador para gestionar el portafolio.</p>
+  <p class="login-box__desc">Verifica tu acceso seguro y luego ingresa el secreto de administrador.</p>
 
-  <form id="form-login" class="login-box__form">
+  <p id="access-status" class="login-box__access-status" aria-live="polite">
+    Primero inicia sesión con tu cuenta autorizada de Cloudflare.
+  </p>
+  <a id="access-start" class="login-box__access" href={accessUrl}>
+    Continuar con acceso seguro
+  </a>
+
+  <form id="form-login" class="login-box__form" hidden>
     <input
       type="password"
       id="input-secreto"
