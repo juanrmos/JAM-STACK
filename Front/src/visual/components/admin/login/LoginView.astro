@@ -1,0 +1,22 @@
+---
+
+import "../../../styles/admin/login/login.css";
+---
+<div data-admin-view="login" class="login-box">
+  <h1 class="login-box__titulo">Acceso Privado</h1>
+  <p class="login-box__desc">Ingresa el secreto de administrador para gestionar el portafolio.</p>
+
+  <form id="form-login" class="login-box__form">
+    <input
+      type="password"
+      id="input-secreto"
+      placeholder="Secreto de administrador..."
+      class="login-box__input"
+      required
+    />
+    <button type="submit" class="login-box__btn" id="btn-login">
+      Ingresar
+    </button>
+    <p id="login-error" class="login-box__error"></p>
+  </form>
+</div>

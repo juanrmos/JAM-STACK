@@ -1,0 +1,30 @@
+---
+import DocumentLayout from "./DocumentLayout.astro";
+import AdminShell from "../visual/components/admin/shell/AdminShell.astro";
+import UpdateNotice from "../visual/components/shared/UpdateNotice.astro";
+import { siteConfig } from "../config/site";
+
+interface Props {
+  titulo?: string;
+  seccionActiva?: "obras" | "logos";
+}
+
+const { titulo = `Admin — ${siteConfig.artista.nombreEstudio}`, seccionActiva = "obras" } = Astro.props;
+---
+
+<DocumentLayout tituloDocumento={titulo}>
+  <!-- Verificación de auth client-side -->
+  <script>
+    import { getToken } from "../lib/auth";
+    if (!getToken()) {
+      window.location.replace("/admin/login");
+    }
+  </script>
+
+  <AdminShell {seccionActiva}><slot /></AdminShell>
+  <UpdateNotice />
+</DocumentLayout>
+<script>
+  import { iniciarPwa } from "../features/pwa";
+  iniciarPwa();
+</script>

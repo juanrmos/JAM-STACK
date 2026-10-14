@@ -1,0 +1,161 @@
+---
+import LogoFormView from "../../visual/components/admin/logos/LogoFormView.astro";
+interface Props {
+  modo?: "nuevo" | "editar";
+}
+const { modo = "nuevo" } = Astro.props;
+---
+<LogoFormView modo={modo} />
+<script>
+  import { apiFetch } from "../../lib/auth";
+
+  // Determinar modo desde la URL
+  const params = new URLSearchParams(window.location.search);
+  const idEdit: string | null = params.get("id");
+  const isEdit = !!idEdit;
+
+  const form = document.getElementById("form-logo") as HTMLFormElement;
+  const errorP = document.getElementById("fl-error") as HTMLParagraphElement;
+  const spinner = document.getElementById("fl-spinner") as HTMLDivElement;
+  const btn = document.getElementById("fl-btn") as HTMLButtonElement;
+
+  const inputArchivo = document.getElementById("fl-archivo") as HTMLInputElement;
+  const inputNombre = document.getElementById("fl-nombre") as HTMLInputElement;
+  const checkActivo = document.getElementById("fl-activo") as HTMLInputElement;
+  const labelArchivo = document.getElementById("fl-archivo-help") as HTMLElement;
+
+  // AUTO-INIT: si hay ?id= en la URL, cargar los datos del logo
+  async function inicializar() {
+    if (isEdit && idEdit) {
+      inputArchivo.required = false;
+      labelArchivo.classList.remove('admin-hidden');
+
+      try {
+        const res = await apiFetch(`/api/logos/${idEdit}`);
+        if (res.ok) {
+          const logo = await res.json();
+          inputNombre.value = logo.nombre;
+          checkActivo.checked = logo.activo;
+        } else {
+          throw new Error(`HTTP ${res.status}`);
+        }
+      } catch (err) {
+        console.error("Error al cargar logo para editar", err);
+        errorP.textContent = "Error al cargar los datos del logo.";
+        errorP.classList.add('formulario-box__error--danger');
+      }
+    } else {
+      inputArchivo.required = true;
+      labelArchivo.classList.add('admin-hidden');
+    }
+  }
+
+  inicializar();
+
+  const sanitizeImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 2000;
+        const MAX_HEIGHT = 2000;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        } else if (height > width && height > MAX_HEIGHT) {
+          width = Math.round((width * MAX_HEIGHT) / height);
+          height = MAX_HEIGHT;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("No se pudo procesar la imagen en tu navegador."));
+
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const fileName = file.name.split('.')[0] + '.webp';
+            resolve(new File([blob], fileName, { type: 'image/webp' }));
+          } else {
+            reject(new Error("Error al intentar purificar la imagen."));
+          }
+        }, "image/webp", 0.9);
+      };
+      img.onerror = () => reject(new Error("El archivo seleccionado está corrupto o tiene código inyectado."));
+      img.src = url;
+    });
+  };
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    spinner.classList.remove('admin-hidden');
+    errorP.textContent = "Paso 1: Procesando datos...";
+    errorP.classList.remove('formulario-box__error--danger');
+    btn.disabled = true;
+
+    try {
+      const rawFile = inputArchivo.files?.[0];
+      let imagenKey = undefined;
+
+      if (rawFile) {
+        errorP.textContent = "Lavando imagen (eliminando metadatos)...";
+        const file = await sanitizeImage(rawFile);
+
+        // Pedir URL firmada
+        const urlRes = await apiFetch("/api/logos/upload-url", {
+          method: "POST",
+          body: JSON.stringify({ nombreArchivo: file.name, tipoMime: file.type })
+        });
+        if (!urlRes.ok) throw new Error("Error al obtener permisos de subida.");
+        const dataUpload = await urlRes.json();
+        imagenKey = dataUpload.imagenKey;
+
+        // Subir directamente a R2
+        errorP.textContent = "Paso 2: Transfiriendo archivo de alta calidad...";
+        const putRes = await fetch(dataUpload.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file
+        });
+        if (!putRes.ok) throw new Error("Error subiendo el archivo a los servidores.");
+      } else if (!isEdit) {
+        throw new Error("Debes seleccionar una imagen para subir un nuevo logo.");
+      }
+
+      // Guardar metadatos en D1
+      errorP.textContent = "Paso 3: Guardando información del logo...";
+
+      const endpoint = isEdit ? `/api/logos/${idEdit}` : "/api/logos";
+      const method = isEdit ? "PUT" : "POST";
+
+      const payload: any = {
+        nombre: inputNombre.value,
+        activo: checkActivo.checked
+      };
+      if (imagenKey) payload.imagenKey = imagenKey;
+
+      const saveRes = await apiFetch(endpoint, {
+        method,
+        body: JSON.stringify(payload)
+      });
+
+      if (!saveRes.ok) throw new Error("Error al guardar la metadata en la base de datos.");
+
+      // Éxito total — volver al dashboard
+      window.location.href = "/admin/logos";
+
+    } catch (err: any) {
+      errorP.textContent = "Error: " + err.message;
+      errorP.classList.add('formulario-box__error--danger');
+      spinner.classList.add('admin-hidden');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>

@@ -1,0 +1,101 @@
+/* ---- Footer Editorial 3 Columnas ---- */
+  .footer {
+    border-top: 1px solid var(--color-borde);
+    padding: 4rem 2rem 1.5rem;
+  }
+
+  .footer__inner {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid var(--color-borde);
+  }
+
+  .footer__logo {
+    font-family: var(--font-display);
+    font-size: 1.5rem; /* 24px */
+    font-weight: 500;
+    color: var(--color-texto);
+    margin-bottom: 1rem;
+  }
+
+  .footer__desc {
+    font-size: 0.875rem; /* 14px */
+    color: var(--color-texto-sec);
+    line-height: 1.6;
+    max-width: 320px;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer__socials {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .footer__social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-borde);
+    border-radius: 4px;
+    color: var(--color-texto-sec);
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .footer__social-icon:hover {
+    color: var(--color-primario);
+    border-color: var(--color-primario);
+  }
+
+  .footer__col-title {
+    font-size: 0.625rem; /* 10px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-primario);
+    margin-bottom: 1.25rem;
+  }
+
+  .footer__col-link {
+    display: block;
+    font-size: 0.875rem; /* 14px */
+    color: var(--color-texto-sec);
+    margin-bottom: 0.75rem;
+    transition: color 0.2s ease;
+  }
+
+  a.footer__col-link:hover {
+    color: var(--color-texto);
+  }
+
+  .footer__bottom {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 1.5rem;
+    font-size: 0.625rem; /* 10px */
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-texto-sec);
+    opacity: 0.6;
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 768px) {
+    .footer__inner {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .footer__bottom {
+      flex-direction: column;
+      gap: 0.5rem;
+      text-align: center;
+    }
+  }

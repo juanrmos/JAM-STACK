@@ -1,4 +1,4 @@
-import { siteConfig } from "../config/site";
+import { adminApiRequest } from "../services/api/client";
 
 const TOKEN_KEY = "admin_jwt";
 
@@ -28,9 +28,9 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   // Header requerido por CORS de Cloudflare Access aunque estemos en bypass
   headers.set("Content-Type", "application/json");
 
-  const baseUrl = siteConfig.api.baseUrl || "https://portafolio-api.skyheart.workers.dev";
-  const response = await fetch(`${baseUrl}${endpoint}`, {
+  const response = await adminApiRequest(endpoint, {
     ...options,
+    credentials: 'include',
     headers,
   });
 

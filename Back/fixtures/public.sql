@@ -1,0 +1,26 @@
+-- Local-only deterministic fixtures. Run only with wrangler.local.toml --local.
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-1','Prueba mural 1','mural','fixtures/obra.jpg','https://www.youtube.com/watch?v=dQw4w9WgXcQ',1,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-2','Prueba mural 2','mural','fixtures/obra.jpg',NULL,2,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-3','Prueba mural 3','mural','fixtures/obra.jpg',NULL,3,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-4','Prueba mural 4','mural','fixtures/obra.jpg',NULL,4,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-5','Prueba mural 5','mural','fixtures/obra.jpg',NULL,5,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-6','Prueba mural 6','mural','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-7','Prueba mural 7','mural','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-8','Prueba mural 8','mural','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-9','Prueba mural 9','mural','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-10','Prueba mural 10','mural','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-11','Prueba mural 11','mural','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-mural-12','Prueba mural 12','mural','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-fachada-1','Prueba fachada 1','fachada','fixtures/obra.jpg','https://www.youtube.com/watch?v=dQw4w9WgXcQ',1,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-fachada-2','Prueba fachada 2','fachada','fixtures/obra.jpg',NULL,2,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-fachada-3','Prueba fachada 3','fachada','fixtures/obra.jpg',NULL,3,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-fachada-4','Prueba fachada 4','fachada','fixtures/obra.jpg',NULL,4,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-fachada-5','Prueba fachada 5','fachada','fixtures/obra.jpg',NULL,5,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-fachada-6','Prueba fachada 6','fachada','fixtures/obra.jpg',NULL,0,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-cuadro-1','Prueba cuadro 1','cuadro','fixtures/obra.jpg','https://www.youtube.com/watch?v=dQw4w9WgXcQ',1,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-cuadro-2','Prueba cuadro 2','cuadro','fixtures/obra.jpg',NULL,2,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-cuadro-3','Prueba cuadro 3','cuadro','fixtures/obra.jpg',NULL,3,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-cuadro-4','Prueba cuadro 4','cuadro','fixtures/obra.jpg',NULL,4,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-cuadro-5','Prueba cuadro 5','cuadro','fixtures/obra.jpg',NULL,5,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO obras (id,titulo,categoria,imagen_key,video_url,orden,fecha_creacion) VALUES ('fixture-escultura-1','Prueba escultura 1','escultura','fixtures/obra.jpg','https://www.youtube.com/watch?v=dQw4w9WgXcQ',1,'2026-10-11T00:00:00Z');
+INSERT OR REPLACE INTO logos (id,nombre,imagen_key,activo,fecha_creacion) VALUES ('fixture-logo','Logo local','fixtures/obra.jpg',1,'2026-10-11T00:00:00Z');

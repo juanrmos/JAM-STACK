@@ -5,23 +5,29 @@
  */
 import { AwsClient } from "aws4fetch";
 import type { Env } from "../types";
+import { generarUrlSubidaLocal } from "../storage/local";
 
 /**
  * Genera una URL firmada de subida a R2 (PUT, 5 min de expiración).
  * La app cliente sube el archivo directo a esta URL — el Worker nunca ve pasar el binario.
  */
 export async function generarUrlSubida(
+  request: Request,
   env: Env,
   clave: string,
   tipoMime: string,
 ): Promise<string> {
+  if (env.LOCAL_UPLOAD === 'true') {
+    return generarUrlSubidaLocal(request, env, clave, tipoMime);
+  }
   const cliente = new AwsClient({
     accessKeyId: env.R2_ACCESS_KEY_ID,
     secretAccessKey: env.R2_SECRET_ACCESS_KEY,
   });
 
   const endpoint = env.R2_BUCKET_ENDPOINT.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  const url = new URL(`https://${endpoint}/portafolio-archivos/${clave}`);
+  if (!env.R2_BUCKET_NAME) throw new Error("Falta R2_BUCKET_NAME");
+  const url = new URL(`https://${endpoint}/${env.R2_BUCKET_NAME}/${clave}`);
   url.searchParams.set("X-Amz-Expires", "300"); // 5 minutos
 
   const firmada = await cliente.sign(
@@ -41,5 +47,8 @@ export async function generarUrlSubida(
  */
 export function generarUrlPublica(env: Env, clave: string): string {
   const publicUrl = (env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+  if (!publicUrl) throw new Error("Falta R2_PUBLIC_URL");
+  const url = new URL(publicUrl);
+  if (!["http:", "https:"].includes(url.protocol)) throw new Error("R2_PUBLIC_URL inválida");
   return `${publicUrl}/${clave}`;
 }

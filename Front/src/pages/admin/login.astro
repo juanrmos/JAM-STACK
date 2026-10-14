@@ -1,0 +1,26 @@
+---
+import DocumentLayout from "../../layouts/DocumentLayout.astro";
+import Login from "../../components/admin/Login.astro";
+import UpdateNotice from "../../visual/components/shared/UpdateNotice.astro";
+import { siteConfig } from "../../config/site";
+import "../../visual/styles/admin/login/page.css";
+---
+
+<DocumentLayout tituloDocumento={`Login — ${siteConfig.artista.nombreEstudio}`}>
+  <script>
+    import { getToken } from "../../lib/auth";
+    // Si ya está autenticado, redirigir al dashboard
+    if (getToken()) {
+      window.location.replace("/admin/obras");
+    }
+  </script>
+
+  <main class="login-page">
+    <Login />
+  </main>
+  <UpdateNotice />
+</DocumentLayout>
+<script>
+  import { iniciarPwa } from "../../features/pwa";
+  iniciarPwa();
+</script>

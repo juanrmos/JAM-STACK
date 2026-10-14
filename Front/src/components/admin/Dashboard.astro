@@ -1,157 +1,135 @@
 ---
+import ObrasListView from "../../visual/components/admin/obras/ObrasListView.astro";
+
 ---
-<div class="dashboard">
-  <div class="dashboard__header">
-    <h2 class="dashboard__titulo">Tus Obras</h2>
-    <div style="display: flex; gap: 1rem;">
-      <button class="dashboard__btn-add" onclick="window.navegarAdmin('formulario')">
-        + Nueva Obra
-      </button>
-      <button class="dashboard__btn-logout" id="btn-logout">Cerrar Sesión</button>
-    </div>
-  </div>
-
-  <div id="obras-lista" class="dashboard__lista">
-    <p>Cargando obras...</p>
-  </div>
-</div>
-
+<ObrasListView />
 <script>
-  import { apiFetch, removeToken } from "../../lib/auth";
+  import { apiFetch } from "../../lib/auth";
+  import { renderSlotsObras, renderTarjetasObras } from "../../visual/templates/admin/obras";
 
-  const contenedor = document.getElementById("obras-lista");
-  
-  document.getElementById("btn-logout")?.addEventListener("click", () => {
-    removeToken();
-    (window as any).revisarSesion();
-  });
+  const slotsContainer = document.getElementById("slots-riel");
+  const grillaContainer = document.getElementById("obras-grilla");
+  const filtroCat = document.getElementById("filtro-categoria") as HTMLSelectElement;
+  const filtroBuscar = document.getElementById("filtro-buscar") as HTMLInputElement;
 
-  async function cargarObras() {
-    if (!contenedor) return;
-    contenedor.innerHTML = "<p>Cargando obras...</p>";
+  let currentTimer: any = null;
+  let slotsVersion = 0;
+  let gridVersion = 0;
+
+  async function cargarSlots(categoria: string, version: number) {
+    if (!slotsContainer) return;
+    slotsContainer.innerHTML = "<p>Cargando slots...</p>";
     try {
-      const res = await apiFetch("/api/obras");
-      if (!res.ok) throw new Error("Error al cargar");
-      const obras = await res.json();
-      
-      if (obras.length === 0) {
-        contenedor.innerHTML = "<p>No hay obras en tu portafolio. ¡Sube la primera!</p>";
-        return;
-      }
+      const res = await apiFetch(`/api/obras?categoria=${categoria}&limit=5&orden=1-5`);
+      if (!res.ok) throw new Error("Error fetching slots");
+      const data = await res.json();
+      if (version !== slotsVersion) return;
+      const obras = data.obras || [];
 
-      contenedor.innerHTML = obras.map((o: any) => `
-        <div class="obra-card">
-          <img src="${o.imagenUrl}" alt="${o.titulo}" class="obra-card__img" loading="lazy" />
-          <div class="obra-card__info">
-            <strong>${o.titulo}</strong>
-            <span>${o.categoria || 'Sin categoría'} | Orden: ${o.orden}</span>
-          </div>
-          <button class="btn-borrar" data-id="${o.id}">🗑️</button>
-        </div>
-      `).join('');
+      slotsContainer.innerHTML = renderSlotsObras(obras);
 
-      document.querySelectorAll('.btn-borrar').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const id = (e.currentTarget as HTMLButtonElement).dataset.id;
-          if (confirm("¿Seguro que deseas borrar esta obra? Esto no se puede deshacer.")) {
-            try {
-              (e.currentTarget as HTMLButtonElement).disabled = true;
-              await apiFetch(`/api/obras/${id}`, { method: "DELETE" });
-              cargarObras();
-            } catch (err) {
-              alert("Error al borrar");
-            }
+      // Eventos de slots
+      document.querySelectorAll('.slot-card--ocupado, .btn-slot-editar').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const target = e.currentTarget as HTMLElement;
+          const id = target.dataset.id;
+          if (id) {
+            window.location.href = `/admin/obras/editar?id=${id}`;
           }
         });
       });
-
-    } catch (err) {
-      contenedor.innerHTML = "<p>Error al cargar las obras. Verifica tu conexión.</p>";
+    } catch (e) {
+      if (version === slotsVersion) slotsContainer.innerHTML = "<p>Error al cargar posiciones destacadas.</p>";
     }
   }
 
-  window.addEventListener('admin:load-dashboard', cargarObras);
-</script>
+  async function cargarGrilla(pagina: number, version: number) {
+    if (!grillaContainer) return;
+    grillaContainer.innerHTML = "<p>Cargando obras...</p>";
 
-<style>
-  .dashboard {
-    background: #fff;
-    border-radius: var(--radio-base);
-    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.08);
-    padding: 2rem;
+    const categoria = filtroCat.value;
+    const buscar = filtroBuscar.value;
+    const limit = 10;
+    const offset = (pagina - 1) * limit;
+
+    try {
+      let url = `/api/obras?categoria=${categoria}&limit=${limit}&offset=${offset}`;
+      if (buscar.trim()) {
+        url += `&buscar=${encodeURIComponent(buscar)}`;
+      }
+
+      const res = await apiFetch(url);
+      if (!res.ok) throw new Error("Error fetching grilla");
+      const data = await res.json();
+      if (version !== gridVersion) return;
+      const obras = data.obras || [];
+      const totalItems = data.total || 0;
+
+      grillaContainer.innerHTML = renderTarjetasObras(obras);
+      if (obras.length > 0) {
+
+        // Eventos de grilla
+        document.querySelectorAll('.btn-grilla-editar').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = (e.currentTarget as HTMLButtonElement).dataset.id;
+            if (id) {
+              window.location.href = `/admin/obras/editar?id=${id}`;
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-grilla-borrar').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = (e.currentTarget as HTMLButtonElement).dataset.id;
+            if (id && confirm("¿Seguro que deseas borrar esta obra? Esta acción no se puede deshacer.")) {
+              const button = e.currentTarget as HTMLButtonElement;
+              try {
+                button.disabled = true;
+                const response = await apiFetch(`/api/obras/${id}`, { method: "DELETE" });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                await cargarDashboard(1);
+              } catch (err) {
+                alert("Error al borrar la obra.");
+                button.disabled = false;
+              }
+            }
+          });
+        });
+      }
+
+      // Actualizar paginador
+      const totalPaginas = Math.ceil(totalItems / limit) || 1;
+      window.dispatchEvent(new CustomEvent('admin:load-dashboard-obras:update-pagination', {
+        detail: { pagina, totalPaginas, totalItems }
+      }));
+    } catch (e) {
+      if (version === gridVersion) grillaContainer.innerHTML = "<p>Error al cargar la grilla.</p>";
+    }
   }
-  .dashboard__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(47, 79, 79, 0.1);
+
+  async function cargarDashboard(pagina = 1) {
+    await Promise.all([cargarSlots(filtroCat.value, ++slotsVersion), cargarGrilla(pagina, ++gridVersion)]);
   }
-  .dashboard__titulo {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
-    color: var(--color-texto);
+
+  // Escuchar filtros
+  if (filtroCat) {
+    filtroCat.addEventListener('change', () => cargarDashboard(1));
   }
-  .dashboard__btn-add {
-    background: var(--color-primario);
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: var(--radio-base);
-    font-weight: 600;
-    cursor: pointer;
+  if (filtroBuscar) {
+    filtroBuscar.addEventListener('input', () => {
+      clearTimeout(currentTimer);
+      currentTimer = setTimeout(() => {
+        cargarGrilla(1, ++gridVersion);
+      }, 300);
+    });
   }
-  .dashboard__btn-logout {
-    background: transparent;
-    color: var(--color-texto);
-    border: 1px solid rgba(47, 79, 79, 0.2);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radio-base);
-    cursor: pointer;
-  }
-  .dashboard__lista {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .obra-card {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1rem;
-    border: 1px solid rgba(47, 79, 79, 0.1);
-    border-radius: var(--radio-base);
-  }
-  .obra-card__img {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 4px;
-  }
-  .obra-card__info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .obra-card__info strong {
-    font-size: 1.1rem;
-    color: var(--color-texto);
-  }
-  .obra-card__info span {
-    font-size: 0.85rem;
-    opacity: 0.7;
-  }
-  .btn-borrar {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    opacity: 0.6;
-  }
-  .btn-borrar:hover {
-    opacity: 1;
-    color: red;
-  }
-</style>
+
+  window.addEventListener('admin:load-dashboard-obras', () => cargarDashboard(1));
+  window.addEventListener('admin:load-dashboard', () => cargarDashboard(1));
+
+  window.addEventListener('admin:load-dashboard-obras:request-page', (e: any) => {
+    cargarGrilla(e.detail.pagina, ++gridVersion);
+  });
+  cargarDashboard(1);
+</script>

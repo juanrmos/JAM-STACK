@@ -1,0 +1,99 @@
+---
+import PaginationView from "../../visual/components/admin/shared/PaginationView.astro";
+interface Props {
+  eventoRecarga: string; // Ej: "admin:load-dashboard-obras"
+  idContenedor: string; // ID único para evitar colisiones si hay varias paginaciones
+}
+const { eventoRecarga, idContenedor } = Astro.props;
+---
+<PaginationView idContenedor={idContenedor} />
+<script define:vars={{ eventoRecarga, idContenedor }}>
+  document.addEventListener("DOMContentLoaded", () => {
+    const contenedor = document.getElementById(idContenedor);
+    if (!contenedor) return;
+
+    const numsContainer = contenedor.querySelector('.paginacion__numeros');
+    const btnPrev = contenedor.querySelector('[data-accion="prev"]');
+    const btnNext = contenedor.querySelector('[data-accion="next"]');
+    let paginaActual = 1;
+    let totalPaginas = 1;
+
+    function renderNumeros() {
+      numsContainer.innerHTML = '';
+
+      const addBtn = (num, text = num) => {
+        const btn = document.createElement('button');
+        btn.className = `paginacion__btn ${num === paginaActual ? 'paginacion__btn--activo' : ''}`;
+        btn.textContent = text;
+        btn.onclick = () => {
+          if (num !== paginaActual) {
+            window.dispatchEvent(new CustomEvent(`${eventoRecarga}:request-page`, { detail: { pagina: num } }));
+          }
+        };
+        numsContainer.appendChild(btn);
+      };
+
+      const addDots = () => {
+        const span = document.createElement('span');
+        span.className = 'paginacion__dots';
+        span.textContent = '...';
+        numsContainer.appendChild(span);
+      };
+
+      if (totalPaginas <= 7) {
+        for (let i = 1; i <= totalPaginas; i++) {
+          addBtn(i);
+        }
+      } else {
+        if (paginaActual <= 4) {
+          for (let i = 1; i <= 5; i++) addBtn(i);
+          addDots();
+          addBtn(totalPaginas);
+        } else if (paginaActual >= totalPaginas - 3) {
+          addBtn(1);
+          addDots();
+          for (let i = totalPaginas - 4; i <= totalPaginas; i++) addBtn(i);
+        } else {
+          addBtn(1);
+          addDots();
+          addBtn(paginaActual - 1);
+          addBtn(paginaActual);
+          addBtn(paginaActual + 1);
+          addDots();
+          addBtn(totalPaginas);
+        }
+      }
+    }
+
+    // Escuchar actualizaciones desde el dashboard padre
+    window.addEventListener(`${eventoRecarga}:update-pagination`, (e) => {
+      const data = e.detail;
+      paginaActual = data.pagina;
+      totalPaginas = data.totalPaginas;
+
+      btnPrev.disabled = paginaActual <= 1;
+      btnNext.disabled = paginaActual >= totalPaginas;
+
+      renderNumeros();
+
+      // Mostrar solo si hay items
+      if (data.totalItems > 0) {
+        contenedor.classList.remove('admin-hidden');
+      } else {
+        contenedor.classList.add('admin-hidden');
+      }
+    });
+
+    btnPrev.addEventListener("click", () => {
+      if (paginaActual > 1) {
+        window.dispatchEvent(new CustomEvent(`${eventoRecarga}:request-page`, { detail: { pagina: paginaActual - 1 } }));
+      }
+    });
+
+    btnNext.addEventListener("click", () => {
+      if (paginaActual < totalPaginas) {
+        window.dispatchEvent(new CustomEvent(`${eventoRecarga}:request-page`, { detail: { pagina: paginaActual + 1 } }));
+      }
+    });
+  });
+</script>

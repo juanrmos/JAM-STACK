@@ -1,0 +1,21 @@
+---
+import '../../../styles/public/galeria/rail.css';
+interface Props { categoria: string; titulo: string; reintentar: string }
+const { categoria, titulo, reintentar } = Astro.props;
+---
+<div class="galeria__riel" data-categoria={categoria} hidden>
+  <div class="galeria__riel-header">
+    <h3 class="galeria__riel-titulo">{titulo}</h3>
+    <div class="galeria__riel-nav" id={`nav-${categoria}`}>
+      <button class="galeria__riel-btn" data-dir="-1" aria-label="Anterior" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" /></svg>
+      </button>
+      <button class="galeria__riel-btn" data-dir="1" aria-label="Siguiente" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" /></svg>
+      </button>
+    </div>
+  </div>
+  <div class="galeria__riel-scroll" id={`riel-${categoria}`}></div>
+  <p class="galeria__estado" data-estado role="status"></p>
+  <button class="galeria__reintentar" data-reintentar hidden>{reintentar}</button>
+</div>

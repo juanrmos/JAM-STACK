@@ -22,24 +22,20 @@ export default {
     obraDestacada: "OBRA DESTACADA",
   },
   servicios: {
-    eyebrow: "01 / LA PRÁCTICA",
+    eyebrow: "Servicios que ofrecemos",
     titulo: "Hecho para perdurar.",
     subtitulo:
       "Del primer boceto al barniz final, cada encargo se construye con intención.",
-    items: [
-      { numero: "01", titulo: "Murales", subtitulo: "ESTILO ÚNICO MONUMENTAL", imagen: "/images/servicio-murales.jpg" },
-      { numero: "02", titulo: "Esculturas", subtitulo: "ACABADOS DE LUJO A1", imagen: "/images/servicio-esculturas.jpg" },
-      { numero: "03", titulo: "Restauración", subtitulo: "ESPACIOS Y MONUMENTOS", imagen: "/images/servicio-restauracion.jpg" },
-      { numero: "04", titulo: "Diseños", subtitulo: "LETRAS, LOGOS Y SEÑALÉTICA", imagen: "/images/servicio-logos.jpg" },
-      { numero: "05", titulo: "Fachadas", subtitulo: "INTERIORES Y EXTERIORES", imagen: "/images/servicio-fachadas.jpg" },
-      { numero: "06", titulo: "Cuadros", subtitulo: "ÓLEO PERSONALIZADO", imagen: "/images/servicio-cuadros.jpg" },
-    ],
   },
   galeria: {
-    eyebrow: "02 / OBRAS SELECCIONADAS",
-    titulo: "El archivo.",
-    subtitulo:
-      "Desliza para explorar encargos recientes, estudios y obras a gran escala.",
+    cargando: 'Cargando obras…',
+    vacia: 'Aún no hay obras publicadas en el portafolio.',
+    errorCategoria: 'Error al cargar las obras de esta categoría.',
+    errorGeneral: 'No se pudieron cargar todas las categorías.',
+    reintentar: 'Reintentar',
+    eyebrow: "Obras y Referencias de nuestro Trabajo",
+    titulo: "Colección de Obras.",
+    subtitulo: "",
     rieles: {
       murales: "Murales Magistrales",
       cuadros: "Cuadros al Óleo",
@@ -55,6 +51,9 @@ export default {
     lema: "REALISMO / OFICIO / INTENCIÓN",
   },
   cotizador: {
+    eyebrow: '01',
+    commissions: 'Private commissions',
+    descripcion: 'Por favor comparte los detalles de tu proyecto. Nos pondremos en contacto contigo a la brevedad.',
     titulo: "COTIZADOR.",
     campos: {
       obra: "¿QUÉ OBRA TIENES EN MENTE?",

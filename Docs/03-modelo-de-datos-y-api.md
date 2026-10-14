@@ -1,5 +1,7 @@
 # 03 — Modelo de Datos y Contrato de API
 
+> **Estado de implementación (11-10-2026):** la autenticación vigente en la rama de refactorización usa Cloudflare Access interactivo y JWT propio. Las posiciones destacadas son slots `1..5` por categoría; `orden=0` representa el almacén. La integración productiva sigue pendiente de ensayo; véase `12-procedimiento-promocion-production.md`.
+
 ## 1. Esquema de D1
 
 ### Tabla `obras`
@@ -54,14 +56,10 @@ No se deben usar nombres de archivo originales sin sanitizar (evitar espacios, c
 
 **Convención de rutas (confirmada):** prefijo `/api/`, seguido del nombre del recurso en plural y en español (`/api/obras`, `/api/auth`, etc.). Sin prefijo de versión para v1 — si en el futuro se necesita romper el contrato, se agrega `/api/v2/…` sin tocar las rutas existentes.
 
-**Política de Cloudflare Access:** Los endpoints de escritura/administración deben estar protegidos por una política de Access configurada en Cloudflare. Para acceder a ellos, la aplicación cliente (PWA) debe enviar obligatoriamente los Service Tokens en los headers de cada petición:
-- `CF-Access-Client-Id: <id>`
-- `CF-Access-Client-Secret: <secret>`
-
-Además de estos headers de Access (primera capa), los endpoints de escritura requieren el header `Authorization: Bearer <token>` (JWT - segunda capa).
+**Política de Cloudflare Access:** Los endpoints de administración deben estar protegidos por una aplicación Access interactiva. El navegador usa su cookie de Access con `credentials: include`; el Worker verifica `Cf-Access-Jwt-Assertion` (firma, emisor y audiencia) antes de procesar login o rutas privadas. Las operaciones posteriores al login requieren además `Authorization: Bearer <token>` (JWT propio). Nunca se embebe un Service Token en la PWA. La configuración real de Access y CORS aún debe validarse en ensayo aislado.
 
 ### `POST /api/auth/login`
-- **Auth:** No (endpoint de login inicial)
+- **Auth:** Access sí; JWT propio todavía no (se emite al iniciar sesión)
 - **Body:** credencial del único usuario administrador (definir mecanismo exacto en implementación — recomendado: secreto compartido de alta entropía, no usuario/contraseña tradicional, dado que es un solo usuario)
 - **Respuesta:** JWT de vida corta (recomendado: 1 hora, con refresh)
 

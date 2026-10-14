@@ -6,7 +6,7 @@
  */
 export const siteConfig = {
   artista: {
-    nombreEstudio: "Antony Art Studio",
+    nombreEstudio: "Corporacion Antony Rodriguez",
     estilo: ["Exclusividad", "Excelencia plástica", "Rigor profesional"],
   },
   contacto: {
@@ -19,8 +19,5 @@ export const siteConfig = {
     biografia: false,       // confirmado: sin biografía
     listaPrecios: false,    // fuera de alcance v1
     testimonios: false,     // fuera de alcance v1
-  },
-  api: {
-    baseUrl: import.meta.env.PUBLIC_API_BASE_URL || "", 
   },
 } as const;

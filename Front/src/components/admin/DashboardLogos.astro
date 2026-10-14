@@ -1,0 +1,112 @@
+---
+import LogosListView from "../../visual/components/admin/logos/LogosListView.astro";
+
+---
+<LogosListView />
+<script>
+  import { apiFetch } from "../../lib/auth";
+  import { renderLogoActivo, renderAlmacenLogos } from "../../visual/templates/admin/logos";
+
+  const containerActivo = document.getElementById("logo-activo-container");
+  const containerLista = document.getElementById("logos-lista");
+
+  let currentPage = 1;
+  let loadVersion = 0;
+
+  async function cargarDashboardLogos(pagina = 1) {
+    const version = ++loadVersion;
+    currentPage = pagina;
+    if (containerActivo) containerActivo.innerHTML = "<p>Cargando logo activo...</p>";
+    if (containerLista) containerLista.innerHTML = "<p>Cargando almacén...</p>";
+
+    // 1. Cargar el activo (GET /api/logos?activo=1)
+    try {
+      const resActivo = await apiFetch("/api/logos?activo=1");
+      if (!resActivo.ok) throw new Error(`HTTP ${resActivo.status}`);
+      const data = await resActivo.json();
+      if (version !== loadVersion) return;
+      const logosActivos = data.logos || [];
+      if (containerActivo) containerActivo.innerHTML = renderLogoActivo(logosActivos[0]);
+    } catch (e) {
+      if (version === loadVersion && containerActivo) containerActivo.innerHTML = "<p>Error al cargar el logo activo.</p>";
+    }
+
+    // 2. Cargar almacén paginado
+    try {
+      const limit = 10;
+      const offset = (pagina - 1) * limit;
+      const resLista = await apiFetch(`/api/logos?limit=${limit}&offset=${offset}`);
+      if (!resLista.ok) throw new Error(`HTTP ${resLista.status}`);
+        const data = await resLista.json();
+        if (version !== loadVersion) return;
+        const logos = data.logos || [];
+
+        if (containerLista) containerLista.innerHTML = renderAlmacenLogos(logos);
+        if (logos.length > 0) {
+
+          // Asignar eventos a los botones
+          document.querySelectorAll('.btn-activar').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              const id = (e.currentTarget as HTMLButtonElement).dataset.id;
+              if (id && confirm("¿Estás seguro de que deseas activar este logo en el sitio público?")) {
+                const button = e.currentTarget as HTMLButtonElement;
+                try {
+                  button.disabled = true;
+                  const response = await apiFetch(`/api/logos/${id}/activar`, { method: "PUT" });
+                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                  await cargarDashboardLogos(currentPage);
+                } catch (err) {
+                  alert("Error al activar el logo");
+                  button.disabled = false;
+                }
+              }
+            });
+          });
+
+          document.querySelectorAll('.btn-editar').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const id = (e.currentTarget as HTMLButtonElement).dataset.id;
+              if (id) {
+                window.location.href = `/admin/logos/editar?id=${id}`;
+              }
+            });
+          });
+
+          document.querySelectorAll('.btn-borrar').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              const id = (e.currentTarget as HTMLButtonElement).dataset.id;
+              if (id && confirm("¿Estás seguro de que deseas eliminar este logo? Esta acción no se puede deshacer.")) {
+                const button = e.currentTarget as HTMLButtonElement;
+                try {
+                  button.disabled = true;
+                  const response = await apiFetch(`/api/logos/${id}`, { method: "DELETE" });
+                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                  await cargarDashboardLogos(1);
+                } catch (err) {
+                  alert("Error al borrar el logo");
+                  button.disabled = false;
+                }
+              }
+            });
+          });
+        }
+
+        // 3. Emitir evento a la paginación
+        const totalPaginas = Math.ceil((data.total || 0) / limit) || 1;
+        window.dispatchEvent(new CustomEvent('admin:load-dashboard-logos:update-pagination', {
+          detail: { pagina, totalPaginas, totalItems: data.total || 0 }
+        }));
+    } catch (e) {
+      if (version === loadVersion && containerLista) containerLista.innerHTML = "<p>Error al cargar el almacén.</p>";
+    }
+  }
+
+  // Escuchar cuando el usuario entra a la vista
+  window.addEventListener('admin:load-dashboard-logos', () => cargarDashboardLogos(1));
+
+  // Escuchar cuando la paginación pide otra página
+  window.addEventListener('admin:load-dashboard-logos:request-page', (e: any) => {
+    cargarDashboardLogos(e.detail.pagina);
+  });
+  cargarDashboardLogos(1);
+</script>

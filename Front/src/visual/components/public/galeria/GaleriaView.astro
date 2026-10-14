@@ -1,0 +1,30 @@
+---
+import ObraCard from './ObraCard.astro';
+import VideoDialog from './VideoDialog.astro';
+import GaleriaRiel from './GaleriaRiel.astro';
+import '../../../styles/public/galeria/section.css';
+interface Props { textos: typeof import('../../../../i18n/es').default; categoriasObras: readonly { value: string; label: string }[] }
+const { textos, categoriasObras } = Astro.props;
+---
+
+
+<section id="galeria" class="galeria">
+  <div class="galeria__header">
+    <div>
+      <p class="galeria__eyebrow">{textos.galeria.eyebrow}</p>
+      <h2 class="galeria__titulo">{textos.galeria.titulo}</h2>
+    </div>
+    {textos.galeria.subtitulo && <p class="galeria__subtitulo">{textos.galeria.subtitulo}</p>}
+  </div>
+
+  <p id="galeria-estado" role="status">{textos.galeria.cargando}</p>
+  <div id="rieles-container">
+    {categoriasObras.map(cat => <GaleriaRiel categoria={cat.value} titulo={cat.label} reintentar={textos.galeria.reintentar} />)}
+  </div>
+
+  <!-- Template para tarjetas del riel -->
+  <ObraCard />
+
+  <!-- Reproductor de Video Emergente (Modal) -->
+  <VideoDialog />
+</section>

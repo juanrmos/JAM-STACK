@@ -1,0 +1,80 @@
+---
+import { categoriasObras } from "../../../../lib/categorias";
+
+interface Props {
+  modo?: "nueva" | "editar";
+}
+const { modo = "nueva" } = Astro.props;
+import "../../../styles/admin/obras/obra-formulario.css";
+import "../../../styles/admin/obras/obra-slots.css";
+---
+<div data-admin-view="formularioobra" class="formulario-box">
+  <div class="formulario-box__header">
+    <h2 class="formulario-box__titulo">{modo === "editar" ? "Editar Obra" : "Subir Nueva Obra"}</h2>
+    <a href="/admin/obras" class="formulario-box__btn-cancelar">Volver a la lista</a>
+  </div>
+  <p class="formulario-box__subtitle">Completa los datos para añadir o editar una pieza...</p>
+
+  <form id="form-obra" class="formulario-box__form">
+
+    <div class="campo">
+      <label for="f-archivo">Foto de la obra *</label>
+      <div id="f-dropzone" class="campo__dropzone">
+        <span class="campo__dropzone-label">Arrastra una imagen aquí o selecciónala desde tu dispositivo</span>
+        <input type="file" id="f-archivo" accept="image/jpeg, image/png, image/webp" />
+        <span id="f-file-name" class="campo__file-name" aria-live="polite">Ningún archivo seleccionado</span>
+      </div>
+      <small id="f-archivo-hint" class="campo__hint admin-hidden">(Opcional al editar. Si subes una nueva, reemplazará la anterior).</small>
+      <div id="f-imagen-preview-container" class="campo__preview admin-hidden">
+        <p class="campo__preview-label">Imagen actual:</p>
+        <img id="f-imagen-preview" class="campo__preview-image" src="" alt="Preview de la imagen actual" />
+      </div>
+    </div>
+
+    <div class="campo">
+      <label for="f-titulo">Título *</label>
+      <input type="text" id="f-titulo" required />
+    </div>
+
+    <div class="campo">
+      <label for="f-cat">Categoría *</label>
+      <select id="f-cat" required>
+        <option value="" disabled selected>Selecciona una categoría...</option>
+        {categoriasObras.map(cat => (
+          <option value={cat.value}>{cat.label}</option>
+        ))}
+      </select>
+    </div>
+
+    <!-- Slots de Posición -->
+    <div class="campo campo--slots" id="campo-slots">
+      <label>POSICIÓN EN LA GALERÍA (OPCIONAL)</label>
+      <span class="campo__help">
+        Selecciona uno de los 5 primeros lugares. Si lo dejas vacío, irá al historial cronológico.
+      </span>
+      <div id="f-slots" class="f-slots-container">
+        <p class="f-slot-status-message">Elige una categoría para ver sus posiciones.</p>
+      </div>
+      <p id="f-slot-status" class="f-slot-status"></p>
+    </div>
+
+    <div class="campo">
+      <label for="f-desc">Descripción técnica</label>
+      <textarea id="f-desc" rows="3"></textarea>
+    </div>
+
+    <div class="campo">
+      <label for="f-video">Video YouTube (opcional)</label>
+      <input type="url" id="f-video" placeholder="https://www.youtube.com/watch?v=..." />
+    </div>
+
+    <div class="formulario-box__actions">
+      <a href="/admin/obras" class="formulario-box__btn-cancelar">Cancelar</a>
+      <button type="submit" id="f-btn" class="formulario-box__btn-submit">Guardar Obra</button>
+    </div>
+    <div class="formulario-box__status-container">
+      <div id="f-spinner" class="spinner admin-hidden"></div>
+      <p id="f-error" class="formulario-box__error"></p>
+    </div>
+  </form>
+</div>

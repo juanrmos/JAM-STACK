@@ -1,0 +1,76 @@
+/* ---- Modal de Video ---- */
+  .modal-video {
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    max-width: 1000px;
+    width: 90%;
+    overflow: visible;
+  }
+
+  .modal-video::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+  }
+
+  .modal-video__contenido {
+    position: relative;
+    width: 100%;
+    background: #000;
+    border-radius: 8px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-video__iframe-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  .modal-video__iframe-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .modal-video__cerrar {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    opacity: 0.8;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .modal-video__cerrar:hover {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  /* ---- Soporte Vertical (TikTok) ---- */
+  .modal-video.is-vertical {
+    max-width: 450px;
+  }
+
+  .modal-video.is-vertical .modal-video__iframe-wrapper {
+    padding-bottom: 177.77%; /* Aspect ratio 9:16 */
+  }
+
+  @media (max-width: 768px) {
+    .modal-video__cerrar {
+      top: -36px;
+      font-size: 1.75rem;
+    }
+  }

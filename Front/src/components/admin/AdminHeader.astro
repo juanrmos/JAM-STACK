@@ -1,0 +1,16 @@
+---
+import AdminHeaderView from "../../visual/components/admin/header/AdminHeaderView.astro";
+interface Props {
+  seccionActiva?: "obras" | "logos";
+}
+const { seccionActiva = "obras" } = Astro.props;
+---
+<AdminHeaderView seccionActiva={seccionActiva} />
+<script>
+  import { removeToken } from "../../lib/auth";
+
+  document.getElementById("btn-logout-header")?.addEventListener("click", () => {
+    removeToken();
+    window.location.href = "/admin/login";
+  });
+</script>

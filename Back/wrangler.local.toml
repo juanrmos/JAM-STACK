@@ -1,0 +1,19 @@
+# Never use this file to deploy. Production remains in wrangler.toml.
+name = "portafolio-local"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+[vars]
+LOCAL_MEDIA = "true"
+LOCAL_UPLOAD = "true"
+R2_PUBLIC_URL = "http://127.0.0.1:8787/api/media"
+R2_BUCKET_NAME = "portafolio-local"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "portafolio-local"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "portafolio-local"

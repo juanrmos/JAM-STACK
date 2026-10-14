@@ -1,0 +1,18 @@
+---
+import DocumentLayout from './DocumentLayout.astro';
+import PublicHeader from '../visual/components/public/PublicHeader.astro';
+import PublicFooter from '../visual/components/public/PublicFooter.astro';
+import UpdateNotice from '../visual/components/shared/UpdateNotice.astro';
+import { siteConfig } from '../config/site';
+import textos from '../i18n/es';
+---
+<DocumentLayout>
+<PublicHeader {siteConfig} {textos} />
+<main><slot /></main>
+<PublicFooter {siteConfig} {textos} />
+<UpdateNotice />
+</DocumentLayout>
+<script>
+import { iniciarPwa } from '../features/pwa';
+iniciarPwa();
+</script>

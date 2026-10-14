@@ -53,7 +53,7 @@ Todo lo que pueda cambiar sin requerir lógica nueva debe vivir en un único arc
 // src/config/site.ts
 export const siteConfig = {
   artista: {
-    nombreEstudio: "J. Art Studio", // confirmar si es el nombre comercial definitivo
+    nombreEstudio: "Corporacion Antony Rodriguez", // nombre comercial confirmado
     estilo: ["Exclusividad", "Excelencia plástica", "Rigor profesional"],
   },
   contacto: {
@@ -102,7 +102,7 @@ Si en el futuro se requiere un segundo idioma, se agrega `src/i18n/en.ts` y las 
 ## 5. Pendientes a confirmar antes de iniciar implementación
 
 - [ ] Número de WhatsApp real del cliente (`siteConfig.contacto.whatsapp`).
-- [ ] Nombre comercial definitivo a mostrar (`siteConfig.artista.nombreEstudio`).
+- [x] Nombre comercial definitivo: «Corporacion Antony Rodriguez» (`siteConfig.artista.nombreEstudio`).
 - [ ] Decisión final: app nativa vs. PWA (ver `02`, sección 6).
 - [ ] Copy final del mensaje de WhatsApp prellenado (aprobar redacción con el cliente).
 - [ ] Confirmar si los testimonios requieren consentimiento explícito del cliente citado antes de publicarse.

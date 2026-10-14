@@ -9,7 +9,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "deploy:prod": "npm run build && npx wrangler pages deploy dist --branch production",
+    "build:local": "astro build --mode development",
+    "check": "astro check"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
