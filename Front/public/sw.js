@@ -1,4 +1,4 @@
-const CACHE_STATICOS = "estaticos-v1";
+const CACHE_STATICOS = "estaticos-v2";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

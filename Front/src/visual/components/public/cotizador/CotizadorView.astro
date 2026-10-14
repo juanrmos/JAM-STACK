@@ -1,0 +1,33 @@
+---
+const { textos, nombreEstudio } = Astro.props;
+import "../../../styles/public/cotizador/drawer.css";
+import "../../../styles/public/cotizador/form.css";
+---
+<div id="cotizador-overlay" class="cotizador-overlay"></div>
+<aside id="cotizador-drawer" class="cotizador">
+  <button id="cotizador-cerrar" class="cotizador__cerrar" aria-label="Cerrar cotizador">✕</button>
+  <div class="cotizador__encabezado">
+    <p class="cotizador__eyebrow">{nombreEstudio} / {textos.cotizador.eyebrow} <br/> {textos.cotizador.commissions}</p>
+    <h2 class="cotizador__titulo">{textos.cotizador.titulo}</h2>
+    <p class="cotizador__desc">{textos.cotizador.descripcion}</p>
+  </div>
+
+  <form id="cotizador-form" class="cotizador__form">
+    <input type="text" id="cot-obra" class="cotizador__input" placeholder={textos.cotizador.campos.obra} required />
+    <input type="text" id="cot-medidas" class="cotizador__input" placeholder={textos.cotizador.campos.medidas} required />
+
+    <select id="cot-ubicacion" class="cotizador__input" required>
+      <option value="" disabled selected>{textos.cotizador.campos.ubicacion}</option>
+      <option value="interior">Interior</option>
+      <option value="exterior">Exterior</option>
+    </select>
+
+    <input type="text" id="cot-altura" class="cotizador__input" placeholder={textos.cotizador.campos.altura} required />
+    <input type="text" id="cot-direccion" class="cotizador__input" placeholder={textos.cotizador.campos.direccion} required />
+    <input type="text" id="cot-referencia" class="cotizador__input" placeholder={textos.cotizador.campos.referencia} required />
+
+    <button type="submit" class="cotizador__enviar">
+      {textos.cotizador.enviar}
+    </button>
+  </form>
+</aside>

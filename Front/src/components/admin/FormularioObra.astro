@@ -1,68 +1,54 @@
 ---
+import ObraFormView from "../../visual/components/admin/obras/ObraFormView.astro";
+interface Props {
+  modo?: "nueva" | "editar";
+}
+const { modo = "nueva" } = Astro.props;
 ---
-<div class="formulario-box">
-  <div class="formulario-box__header">
-    <h2 class="formulario-box__titulo">Subir Nueva Obra</h2>
-    <button class="formulario-box__btn-cancelar" onclick="window.navegarAdmin('dashboard-obras')">Volver</button>
-  </div>
-
-  <form id="form-obra" class="formulario-box__form">
-    
-    <div class="campo">
-      <label for="f-archivo">Foto de la obra *</label>
-      <input type="file" id="f-archivo" accept="image/jpeg, image/png, image/webp" required />
-    </div>
-
-    <div class="campo">
-      <label for="f-titulo">Título *</label>
-      <input type="text" id="f-titulo" required />
-    </div>
-
-    <div class="campo">
-      <label for="f-cat">Categoría *</label>
-      <select id="f-cat" required>
-        <option value="" disabled selected>Selecciona una categoría...</option>
-        <option value="mural">Mural</option>
-        <option value="cuadro">Cuadro / Pintura</option>
-        <option value="escultura">Escultura</option>
-        <option value="restauracion">Restauración</option>
-        <option value="logo">Diseño de Logo / Marca</option>
-      </select>
-    </div>
-
-    <div class="campo">
-      <label for="f-desc">Descripción técnica</label>
-      <textarea id="f-desc" rows="3"></textarea>
-    </div>
-
-    <div class="campo">
-      <label for="f-video">Video YouTube (opcional)</label>
-      <input type="url" id="f-video" placeholder="https://www.youtube.com/watch?v=..." />
-    </div>
-
-    <div class="campo campo--inline">
-      <input type="checkbox" id="f-destacado" />
-      <label for="f-destacado">Marcar como Destacada (Ocupará el doble de espacio visual en el mosaico)</label>
-    </div>
-
-
-
-    <button type="submit" id="f-btn" class="formulario-box__btn-submit">Subir y Guardar</button>
-    <div class="formulario-box__status-container">
-      <div id="f-spinner" class="spinner" style="display: none;"></div>
-      <p id="f-error" class="formulario-box__error"></p>
-    </div>
-  </form>
-</div>
-
+<ObraFormView modo={modo} />
 <script>
   import { apiFetch } from "../../lib/auth";
+  import { renderSlotsFormulario } from "../../visual/templates/admin/obras";
+
+  // Determinar modo desde la URL
+  const params = new URLSearchParams(window.location.search);
+  const obraActualId: string | null = params.get("id");
+  let ordenElegido: number = 0;
+  let categoriaOriginal: string | null = null;
+  let ordenOriginal: number = 0;
+  let slotsVersion = 0;
 
   const form = document.getElementById("form-obra") as HTMLFormElement;
   const errorP = document.getElementById("f-error") as HTMLParagraphElement;
   const spinner = document.getElementById("f-spinner") as HTMLDivElement;
   const btn = document.getElementById("f-btn") as HTMLButtonElement;
+  const selectCat = document.getElementById("f-cat") as HTMLSelectElement;
+  const inputArchivo = document.getElementById("f-archivo") as HTMLInputElement;
+  const hintArchivo = document.getElementById("f-archivo-hint");
+  const dropzone = document.getElementById("f-dropzone");
+  const fileName = document.getElementById("f-file-name");
 
+  function mostrarArchivo() {
+    if (fileName) fileName.textContent = inputArchivo.files?.[0]?.name || "Ningún archivo seleccionado";
+  }
+  inputArchivo.addEventListener('change', mostrarArchivo);
+  dropzone?.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    dropzone.classList.add('campo__dropzone--dragging');
+  });
+  dropzone?.addEventListener('dragleave', () => dropzone.classList.remove('campo__dropzone--dragging'));
+  dropzone?.addEventListener('drop', (event) => {
+    event.preventDefault();
+    dropzone.classList.remove('campo__dropzone--dragging');
+    const files = (event as DragEvent).dataTransfer?.files;
+    if (!files?.length) return;
+    const transfer = new DataTransfer();
+    transfer.items.add(files[0]);
+    inputArchivo.files = transfer.files;
+    mostrarArchivo();
+  });
+
+  // Lógica de purificación de imagen
   const sanitizeImage = async (file: File): Promise<File> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -70,8 +56,6 @@
       img.onload = () => {
         URL.revokeObjectURL(url);
         const canvas = document.createElement("canvas");
-        
-        // Mantener proporciones pero limitar tamaño gigante para evitar colapsos
         const MAX_WIDTH = 2000;
         const MAX_HEIGHT = 2000;
         let width = img.width;
@@ -93,9 +77,9 @@
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("No se pudo procesar la imagen en tu navegador."));
-        
+
         ctx.drawImage(img, 0, 0, width, height);
-        
+
         canvas.toBlob((blob) => {
           if (blob) {
             const fileName = file.name.split('.')[0] + '.webp';
@@ -110,182 +94,191 @@
     });
   };
 
+  // Cargar slots dinámicamente
+  async function cargarSlotsFormulario(cat: string) {
+    const version = ++slotsVersion;
+    const slotsDiv = document.getElementById('f-slots');
+    const statusP = document.getElementById('f-slot-status');
+    if (!slotsDiv || !statusP) return;
+    if (!cat) {
+      slotsDiv.innerHTML = '<p class="f-slot-status-message">Elige una categoría para ver sus posiciones.</p>';
+      statusP.textContent = '';
+      return;
+    }
+
+    slotsDiv.innerHTML = '<p class="f-slot-status-message">Cargando posiciones...</p>';
+
+    try {
+      const res = await apiFetch(`/api/obras?categoria=${cat}&limit=5&orden=1-5`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (version !== slotsVersion) return;
+      const ocupadas = data.obras || [];
+
+      slotsDiv.innerHTML = renderSlotsFormulario(ocupadas, obraActualId, ordenElegido);
+
+      // Manejar Taps
+      document.querySelectorAll('.f-slot-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const s = parseInt(target.dataset.slot!);
+
+          if (ordenElegido === s) {
+            ordenElegido = 0;
+          } else {
+            ordenElegido = s;
+            if (navigator.vibrate) navigator.vibrate(50);
+          }
+
+          document.querySelectorAll('.f-slot-card').forEach(c => {
+            c.classList.remove('f-slot-card--selected');
+            c.setAttribute('aria-pressed', 'false');
+          });
+          if (ordenElegido > 0) {
+            target.classList.add('f-slot-card--selected');
+            target.setAttribute('aria-pressed', 'true');
+            statusP.textContent = `Posición ${ordenElegido} seleccionada.`;
+          } else {
+            statusP.textContent = '';
+          }
+        });
+      });
+
+      if (ordenElegido > 0) {
+        statusP.textContent = `Posición ${ordenElegido} seleccionada.`;
+      } else {
+        statusP.textContent = '';
+      }
+
+    } catch(e) {
+      if (version === slotsVersion) slotsDiv.innerHTML = '<p class="f-slot-status-message f-slot-status-message--error">Error al cargar posiciones</p>';
+    }
+  }
+
+  selectCat.addEventListener('change', (e) => {
+    const cat = (e.target as HTMLSelectElement).value;
+    if (cat === categoriaOriginal) {
+      ordenElegido = ordenOriginal;
+    } else {
+      ordenElegido = 0;
+    }
+    cargarSlotsFormulario(cat);
+  });
+
+  // AUTO-INIT: si hay ?id= en la URL, cargar los datos de la obra
+  async function inicializar() {
+    if (obraActualId) {
+      // Modo edición
+      inputArchivo.removeAttribute('required');
+      hintArchivo?.classList.remove('admin-hidden');
+
+      try {
+        const res = await apiFetch(`/api/obras/${obraActualId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const obra = await res.json();
+
+        if (obra && !obra.error) {
+          (document.getElementById('f-titulo') as HTMLInputElement).value = obra.titulo;
+          (document.getElementById('f-desc') as HTMLTextAreaElement).value = obra.descripcion || '';
+          (document.getElementById('f-video') as HTMLInputElement).value = obra.videoUrl || '';
+
+          // Registrar el slot actual antes de cargar las posiciones de la categoría.
+          categoriaOriginal = obra.categoria;
+          ordenOriginal = obra.orden;
+          ordenElegido = obra.orden;
+          selectCat.value = obra.categoria;
+          await cargarSlotsFormulario(obra.categoria);
+
+          // Preview de imagen actual
+          const previewContainer = document.getElementById('f-imagen-preview-container');
+          const previewImg = document.getElementById('f-imagen-preview') as HTMLImageElement;
+          if (previewContainer && previewImg && obra.imagenUrl) {
+            previewImg.src = obra.imagenUrl;
+            previewContainer.classList.remove('admin-hidden');
+          }
+        }
+      } catch (err) {
+        console.error("Error precargando obra", err);
+        errorP.textContent = "Error al cargar los datos de la obra.";
+        errorP.classList.add('formulario-box__error--danger');
+      }
+    } else {
+      // Modo nueva obra — input archivo es obligatorio
+      inputArchivo.setAttribute('required', 'true');
+      hintArchivo?.classList.add('admin-hidden');
+    }
+  }
+
+  inicializar();
+
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    spinner.style.display = "block";
-    errorP.textContent = "Paso 1: Pidiendo permiso de subida...";
-    errorP.style.color = "var(--color-texto)";
+    spinner.classList.remove('admin-hidden');
+    errorP.classList.remove('formulario-box__error--danger');
     btn.disabled = true;
 
     try {
       const fileInput = document.getElementById("f-archivo") as HTMLInputElement;
       const rawFile = fileInput.files?.[0];
-      if (!rawFile) throw new Error("Selecciona una foto.");
 
-      errorP.textContent = "Lavando imagen (eliminando metadatos)...";
-      const file = await sanitizeImage(rawFile);
+      let payload: any = {
+        titulo: (document.getElementById("f-titulo") as HTMLInputElement).value,
+        descripcion: (document.getElementById("f-desc") as HTMLTextAreaElement).value || (obraActualId ? null : undefined),
+        categoria: selectCat.value,
+        videoUrl: (document.getElementById("f-video") as HTMLInputElement).value || (obraActualId ? null : undefined),
+        orden: ordenElegido
+      };
 
-      // 1. Pedir URL firmada a nuestro Worker
-      const urlRes = await apiFetch("/api/obras/upload-url", {
-        method: "POST",
-        body: JSON.stringify({
-          nombreArchivo: file.name,
-          tipoMime: file.type
-        })
-      });
-      
-      if (!urlRes.ok) throw new Error("Error al obtener permisos de subida. Verifica tu sesión.");
-      const { uploadUrl, imagenKey } = await urlRes.json();
+      if (rawFile) {
+        errorP.textContent = "Preparando imagen...";
+        errorP.classList.remove('formulario-box__error--danger');
+        const file = await sanitizeImage(rawFile);
 
-      // 2. Subir directamente a R2
-      errorP.textContent = "Paso 2: Transfiriendo foto de alta calidad...";
-      const putRes = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file
-      });
-      
-      if (!putRes.ok) throw new Error("Error subiendo el archivo a los servidores.");
+        const urlRes = await apiFetch("/api/obras/upload-url", {
+          method: "POST",
+          body: JSON.stringify({ nombreArchivo: file.name, tipoMime: file.type })
+        });
 
-      // 3. Guardar metadatos en la base de datos D1
-      errorP.textContent = "Paso 3: Guardando información en la galería...";
-      const titulo = (document.getElementById("f-titulo") as HTMLInputElement).value;
-      const desc = (document.getElementById("f-desc") as HTMLTextAreaElement).value;
-      const cat = (document.getElementById("f-cat") as HTMLSelectElement).value;
-      const video = (document.getElementById("f-video") as HTMLInputElement).value;
-      const destacado = (document.getElementById("f-destacado") as HTMLInputElement).checked;
-      const orden = 0; // Ya no se usa para ordenar, pero se mantiene en 0 por la estructura de la BD
+        if (!urlRes.ok) throw new Error("Error al obtener permisos de subida.");
+        const { uploadUrl, imagenKey } = await urlRes.json();
 
-      const saveRes = await apiFetch("/api/obras", {
-        method: "POST",
-        body: JSON.stringify({
-          titulo,
-          descripcion: desc || undefined,
-          categoria: cat,
-          imagenKey,
-          videoUrl: video || undefined,
-          destacado,
-          orden
-        })
-      });
+        errorP.textContent = "Transfiriendo imagen...";
+        const putRes = await fetch(uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file
+        });
+        if (!putRes.ok) throw new Error("Error subiendo el archivo a R2.");
 
-      if (!saveRes.ok) throw new Error("Error al guardar la metadata en la base de datos.");
+        payload.imagenKey = imagenKey;
+      }
 
-      // Éxito total
-      form.reset();
-      errorP.textContent = "";
-      spinner.style.display = "none";
-      (window as any).navegarAdmin('dashboard-obras');
-      window.dispatchEvent(new Event('admin:load-dashboard'));
+      errorP.textContent = "Guardando datos...";
+
+      if (obraActualId) {
+        const saveRes = await apiFetch(`/api/obras/${obraActualId}`, {
+          method: "PUT",
+          body: JSON.stringify(payload)
+        });
+        if (!saveRes.ok) throw new Error("Error al actualizar la obra.");
+      } else {
+        if (!payload.imagenKey) throw new Error("Debes subir una foto para una nueva obra.");
+        const saveRes = await apiFetch("/api/obras", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        if (!saveRes.ok) throw new Error("Error al guardar la metadata.");
+      }
+
+      // Éxito — volver al dashboard
+      window.location.href = "/admin/obras";
 
     } catch (err: any) {
       errorP.textContent = "Error: " + err.message;
-      errorP.style.color = "red";
-      spinner.style.display = "none";
+      errorP.classList.add('formulario-box__error--danger');
+      spinner.classList.add('admin-hidden');
     } finally {
       btn.disabled = false;
     }
   });
 </script>
-
-<style>
-  .formulario-box {
-    background: #fff;
-    border-radius: var(--radio-base);
-    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.08);
-    padding: 2rem;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .formulario-box__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  .formulario-box__titulo {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
-    color: var(--color-texto);
-  }
-  .formulario-box__btn-cancelar {
-    background: transparent;
-    border: none;
-    color: var(--color-texto);
-    opacity: 0.7;
-    cursor: pointer;
-    text-decoration: underline;
-  }
-  .formulario-box__form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-  .campo {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .campo label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--color-texto);
-  }
-  .campo input[type="text"],
-  .campo input[type="number"],
-  .campo input[type="url"],
-  .campo select,
-  .campo textarea,
-  .campo input[type="file"] {
-    padding: 0.75rem;
-    border: 1px solid rgba(47, 79, 79, 0.2);
-    border-radius: 4px;
-    font-family: inherit;
-    width: 100%;
-  }
-  .campo--inline {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .campo--inline input {
-    width: auto;
-  }
-  .formulario-box__btn-submit {
-    background: var(--color-texto);
-    color: #fff;
-    border: none;
-    padding: 1rem;
-    border-radius: var(--radio-base);
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 1rem;
-  }
-  .formulario-box__btn-submit:disabled {
-    opacity: 0.5;
-  }
-  .formulario-box__status-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-  .formulario-box__error {
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-align: center;
-    margin: 0;
-  }
-  .spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid rgba(47, 79, 79, 0.2);
-    border-top-color: var(--color-texto);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-</style>

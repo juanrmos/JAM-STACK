@@ -1,0 +1,20 @@
+---
+import type { Servicio } from "../../../../config/servicios";
+import ServicioCard from './ServicioCard.astro';
+interface Props { textos: typeof import("../../../../i18n/es").default; servicios: readonly Servicio[] }
+const { textos, servicios } = Astro.props;
+import "../../../styles/public/servicios/section.css";
+---
+<section id="servicios" class="servicios">
+  <div class="servicios__header">
+    <div>
+      <p class="servicios__eyebrow">{textos.servicios.eyebrow}</p>
+      <h2 class="servicios__titulo">{textos.servicios.titulo}</h2>
+    </div>
+    <p class="servicios__subtitulo">{textos.servicios.subtitulo}</p>
+  </div>
+
+  <div class="servicios__grid">
+    {servicios.map((item) => <ServicioCard {item} />)}
+  </div>
+</section>

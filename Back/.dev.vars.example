@@ -1,10 +1,6 @@
-# Secretos para desarrollo local — copiar a .dev.vars con valores reales.
-# En producción, cargar con: wrangler secret put <NOMBRE>
-# Referencia: skill jam, principio 3.
+# Solo para desarrollo local. Crear Back/.dev.vars con `npm run secrets:init:local`.
+# Se necesitan JWT_SECRET y ADMIN_SECRET de prueba; la subida local usa el binding R2.
+# No copiar secretos productivos ni configurar CF_ACCESS_TEAM en pruebas locales.
 
-JWT_SECRET=
-ADMIN_SECRET=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET_ENDPOINT=
-CF_ACCESS_TEAM=
+JWT_SECRET=replace-with-random-local-value
+ADMIN_SECRET=replace-with-random-local-value

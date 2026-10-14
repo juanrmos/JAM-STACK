@@ -1,0 +1,102 @@
+.formulario-box[data-admin-view="formulariologo"] {
+    background: #fff;
+    border-radius: var(--radio-base);
+    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.08);
+    padding: 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__titulo {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--color-texto);
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__btn-cancelar {
+    background: transparent;
+    border: none;
+    color: var(--color-texto);
+    opacity: 0.7;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .campo label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-texto);
+  }
+  .formulario-box[data-admin-view="formulariologo"] .campo input[type="text"], .formulario-box[data-admin-view="formulariologo"] .campo input[type="file"] {
+    padding: 0.75rem;
+    border: 1px solid rgba(47, 79, 79, 0.2);
+    border-radius: 4px;
+    font-family: inherit;
+    width: 100%;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .campo--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .campo--inline input {
+    width: auto;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__btn-submit {
+    background: var(--color-texto);
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    border-radius: var(--radio-base);
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__btn-submit:disabled {
+    opacity: 0.5;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__error {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    margin: 0;
+    color: var(--color-texto);
+  }
+  .formulario-box[data-admin-view="formulariologo"] .formulario-box__error--danger {
+    color: #c53030;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .campo__hint {
+    color: var(--color-texto-sec);
+    margin-top: 0.25rem;
+  }
+  .formulario-box[data-admin-view="formulariologo"] .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(47, 79, 79, 0.2);
+    border-top-color: var(--color-texto);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }

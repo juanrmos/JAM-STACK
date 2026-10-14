@@ -13,16 +13,16 @@ CREATE TABLE IF NOT EXISTS obras (
   categoria       TEXT,
   imagen_key      TEXT    NOT NULL,
   video_url       TEXT,
-  orden           INTEGER NOT NULL,
+  orden           INTEGER NOT NULL DEFAULT 0,
   destacado       INTEGER NOT NULL DEFAULT 0,
   fecha_creacion  TEXT    NOT NULL
 );
 
--- Índice para consultas de galería ordenadas
+-- Índices para búsqueda, filtros y slots
 CREATE INDEX IF NOT EXISTS idx_obras_orden ON obras(orden);
-
--- Índice para filtros por categoría
 CREATE INDEX IF NOT EXISTS idx_obras_categoria ON obras(categoria);
+CREATE INDEX IF NOT EXISTS idx_obras_categoria_orden ON obras(categoria, orden);
+CREATE INDEX IF NOT EXISTS idx_obras_titulo ON obras(titulo);
 
 -- ============================================================
 -- Esquema D1 — Tabla logos (v1)

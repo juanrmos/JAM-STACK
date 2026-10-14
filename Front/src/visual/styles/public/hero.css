@@ -1,0 +1,121 @@
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--espaciado-seccion) 2rem;
+    min-height: 85vh;
+  }
+
+  .hero__contenido {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__eyebrow {
+    font-family: var(--font-cuerpo);
+    font-size: 0.625rem; /* 10px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--color-primario);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero__titulo {
+    font-size: var(--tam-h1);
+    font-family: var(--font-display);
+    color: var(--color-texto);
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+    font-weight: 400;
+  }
+
+  .hero__titulo-destaque {
+    color: var(--color-primario);
+    font-style: italic;
+  }
+
+  .hero__subtitulo {
+    font-size: 0.875rem; /* 14px mobile */
+    color: var(--color-texto-sec);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    max-width: 420px;
+  }
+  @media (min-width: 1024px) {
+    .hero__subtitulo {
+      font-size: 1rem; /* 16px desktop */
+    }
+  }
+
+  .hero__cta {
+    display: inline-block;
+    background-color: var(--color-primario);
+    color: #fff;
+    padding: 1rem 2.5rem;
+    border-radius: var(--radio-base);
+    font-weight: 600;
+    font-size: 0.875rem; /* 14px */
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-cuerpo);
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .hero__cta:hover {
+    opacity: 0.92;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(218, 165, 32, 0.3);
+  }
+
+  .hero__cta:active {
+    transform: translateY(0);
+  }
+
+  .hero__imagen-wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__imagen {
+    width: 100%;
+    max-width: 620px; /* Reference: max 620px */
+    aspect-ratio: 4 / 5; /* Reference: 4:5 ratio */
+    object-fit: cover;
+    border-radius: 2px;
+    box-shadow: 0 24px 48px rgba(47, 79, 79, 0.12);
+  }
+
+  /* El overlay de imagen fue eliminado, ya no se requiere CSS para overlay, label o titulo */
+
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+      text-align: center;
+      min-height: auto;
+      padding: 3rem 1.5rem;
+      gap: 2.5rem;
+    }
+
+    .hero__subtitulo {
+      max-width: none;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero__imagen {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+  }

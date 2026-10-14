@@ -1,0 +1,16 @@
+---
+import type { Servicio } from '../../../../config/servicios';
+import '../../../styles/public/servicios/card.css';
+interface Props { item: Servicio }
+const { item } = Astro.props;
+---
+<div class="servicios__card">
+  <div class="servicios__card-img-wrapper">
+    <img src={item.imagen} alt={item.titulo} class="servicios__card-img" loading="lazy" />
+  </div>
+  <div class="servicios__card-body">
+    <span class="servicios__card-num">{item.numero}</span>
+    <h3 class="servicios__card-titulo">{item.titulo}</h3>
+    <p class="servicios__card-sub">{item.subtitulo}</p>
+  </div>
+</div>

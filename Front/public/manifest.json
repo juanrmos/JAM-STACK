@@ -1,7 +1,7 @@
 {
-  "name": "Antony Art Studio - Admin",
-  "short_name": "Antony Art",
-  "description": "Panel de administración del portafolio Antony Art Studio",
+  "name": "Corporacion Antony Rodriguez - Admin",
+  "short_name": "Corporacion Antony Rodriguez",
+  "description": "Panel de administración del portafolio Corporacion Antony Rodriguez",
   "start_url": "/admin",
   "scope": "/admin",
   "display": "standalone",

@@ -1,0 +1,41 @@
+---
+import Paginacion from "../../../../components/admin/Paginacion.astro";
+import { categoriasObras } from "../../../../lib/categorias";
+import "../../../styles/admin/obras/obras-lista.css";
+import "../../../styles/admin/obras/obras-slots.css";
+import "../../../styles/admin/obras/obras-tarjetas.css";
+---
+<div data-admin-view="dashboard" class="dashboard">
+  <div class="dashboard__header">
+    <h1 class="dashboard__titulo">Tus Obras</h1>
+    <div class="dashboard__actions">
+      <button class="dashboard__btn-add" onclick="window.location.href='/admin/obras/nueva'">
+        + Nueva Obra
+      </button>
+    </div>
+  </div>
+
+  <div class="dashboard__filtros">
+    <select id="filtro-categoria" class="dashboard__select">
+      {categoriasObras.map(cat => (
+        <option value={cat.value} selected={cat.value === 'mural'}>{cat.label}</option>
+      ))}
+    </select>
+    <input type="text" id="filtro-buscar" class="dashboard__input" placeholder="Buscar por título..." />
+  </div>
+
+  <div class="dashboard__seccion">
+    <h3 class="dashboard__subtitulo">POSICIONES DESTACADAS</h3>
+    <div id="slots-riel" class="slots-riel">
+      <!-- Se llena por JS -->
+    </div>
+  </div>
+
+  <div class="dashboard__seccion">
+    <h3 class="dashboard__subtitulo">TODAS LAS OBRAS DE ESTA CATEGORÍA</h3>
+    <div id="obras-grilla" class="obras-grilla">
+      <!-- Se llena por JS -->
+    </div>
+    <Paginacion eventoRecarga="admin:load-dashboard-obras" idContenedor="paginacion-obras" />
+  </div>
+</div>

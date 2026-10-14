@@ -9,7 +9,7 @@ import {
   uploadUrlSchema,
 } from "../schemas";
 import { generarUrlSubida, generarUrlPublica } from "../lib/storage";
-import { jsonResponse } from "../index";
+import { jsonResponse } from "../routes/response";
 
 // ---- Utilidades ----
 
@@ -26,7 +26,7 @@ function sanitizarNombre(nombre: string): string {
     .replace(/^-|-$/g, "");
 }
 
-/** 
+/**
  * Desactiva todos los logos y activa únicamente el logo especificado.
  * Transacción unificada (Batch) para garantizar que solo un logo esté activo.
  */
@@ -41,58 +41,7 @@ async function activarLogoTransaccional(env: Env, logoId: string) {
 // ---- Handlers ----
 
 /** GET /api/logos — lista paginada de logos o logo activo (?activo=1) */
-export async function listarLogos(
-  request: Request,
-  env: Env,
-): Promise<Response> {
-  const url = new URL(request.url);
-  const activo = url.searchParams.get("activo");
-
-  const limitStr = url.searchParams.get("limit");
-  const offsetStr = url.searchParams.get("offset");
-
-  const limit = limitStr ? parseInt(limitStr, 10) : 10;
-  const offset = offsetStr ? parseInt(offsetStr, 10) : 0;
-
-  let queryCount = "SELECT COUNT(*) as total FROM logos";
-  let query = "SELECT * FROM logos";
-  const condiciones: string[] = [];
-  const params: unknown[] = [];
-
-  if (activo === "1") {
-    condiciones.push("activo = 1");
-  }
-
-  if (condiciones.length > 0) {
-    const where = " WHERE " + condiciones.join(" AND ");
-    query += where;
-    queryCount += where;
-  }
-  
-  query += " ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?";
-
-  const countResult = await env.DB.prepare(queryCount)
-    .bind(...params)
-    .first<{ total: number }>();
-  const total = countResult?.total || 0;
-
-  const { results } = await env.DB.prepare(query)
-    .bind(...params, limit, offset)
-    .all();
-
-  const logos = (results ?? []).map((logo: Record<string, unknown>) => ({
-    id: logo.id,
-    nombre: logo.nombre,
-    imagenUrl: generarUrlPublica(env, logo.imagen_key as string),
-    activo: Boolean(logo.activo),
-    fechaCreacion: logo.fecha_creacion,
-    fechaActualizacion: logo.fecha_actualizacion
-  }));
-
-  const hasMore = offset + logos.length < total;
-
-  return jsonResponse({ logos, hasMore, total });
-}
+export { listarLogos } from '../routes/logos-lectura';
 
 /** GET /api/logos/:id — obtiene un logo por ID */
 export async function obtenerLogo(
@@ -104,7 +53,7 @@ export async function obtenerLogo(
   if (!logo) {
     return jsonResponse({ error: { codigo: "NO_ENCONTRADO", mensaje: "Logo no encontrado." } }, 404);
   }
-  
+
   return jsonResponse({
     id: logo.id,
     nombre: logo.nombre,
@@ -139,7 +88,7 @@ export async function obtenerUrlSubidaLogo(
   const nombreSanitizado = sanitizarNombre(nombreArchivo.replace(/\.[^.]+$/, ""));
 
   const imagenKey = `logos/${id}/${timestamp}-${nombreSanitizado}.${extension}`;
-  const uploadUrl = await generarUrlSubida(env, imagenKey, tipoMime);
+  const uploadUrl = await generarUrlSubida(request, env, imagenKey, tipoMime);
 
   return jsonResponse({ uploadUrl, imagenKey, expiraEn: 300 });
 }
@@ -184,7 +133,8 @@ export async function actualizarLogo(
   env: Env,
   logoId: string,
 ): Promise<Response> {
-  const existente = await env.DB.prepare("SELECT id FROM logos WHERE id = ?").bind(logoId).first();
+  const existente = await env.DB.prepare("SELECT id, imagen_key FROM logos WHERE id = ?")
+    .bind(logoId).first<{ id: string; imagen_key: string }>();
 
   if (!existente) {
     return jsonResponse({ error: { codigo: "NO_ENCONTRADO", mensaje: "Logo no encontrado." } }, 404);
@@ -237,6 +187,14 @@ export async function actualizarLogo(
     ).bind(new Date().toISOString(), logoId).run();
   }
 
+  if (campos.imagenKey !== undefined && campos.imagenKey !== existente.imagen_key) {
+    try {
+      await env.BUCKET.delete(existente.imagen_key);
+    } catch (err) {
+      console.error(`Error eliminando objeto viejo R2 ${existente.imagen_key}:`, err);
+    }
+  }
+
   return jsonResponse({ actualizado: true });
 }
 
@@ -269,13 +227,14 @@ export async function eliminarLogo(
     return jsonResponse({ error: { codigo: "NO_ENCONTRADO", mensaje: "Logo no encontrado." } }, 404);
   }
 
+  await env.DB.prepare("DELETE FROM logos WHERE id = ?").bind(logoId).run();
+
+  // Mantener la imagen si D1 no confirma la eliminación del registro.
   try {
     await env.BUCKET.delete(logo.imagen_key);
   } catch (err) {
     console.error(`Error eliminando objeto R2 ${logo.imagen_key}:`, err);
   }
-
-  await env.DB.prepare("DELETE FROM logos WHERE id = ?").bind(logoId).run();
 
   return jsonResponse({ eliminado: true });
 }

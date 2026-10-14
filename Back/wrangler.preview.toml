@@ -1,0 +1,28 @@
+# Ensayo aislado de la rama de refactorización. No usar para producción.
+name = "portafolio-api-refactor-preview"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+[vars]
+R2_BUCKET_NAME = "portafolio-refactor-preview"
+R2_BUCKET_ENDPOINT = "4958e9a41e2a0e9ae326dc46e79c7a79.r2.cloudflarestorage.com"
+R2_PUBLIC_URL = "https://portafolio-api-refactor-public-preview.skyheart.workers.dev/api/media"
+CF_ACCESS_TEAM = "wild-pond-b1e4"
+CF_ACCESS_AUD = "ee56baf4a19cbd015c084428a530209a60d77a48b8aaef4d579fc13dea441ada"
+FRONTEND_ORIGIN = "https://codex-refactor-arquitectura.portafolio-front.pages.dev"
+ALLOW_PAGES_PREVIEW_ORIGINS = "true"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "portafolio-refactor-preview-db"
+database_id = "dcf8e24b-bfb0-447a-a5d9-8d3fc14a7098"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "portafolio-refactor-preview"
+
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "2"
+simple = { limit = 30, period = 60 }

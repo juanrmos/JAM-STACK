@@ -1,0 +1,37 @@
+---
+interface Props {
+  modo?: "nuevo" | "editar";
+}
+const { modo = "nuevo" } = Astro.props;
+import "../../../styles/admin/logos/logo-formulario.css";
+---
+<div data-admin-view="formulariologo" class="formulario-box">
+  <div class="formulario-box__header">
+    <h2 class="formulario-box__titulo" id="fl-titulo-ui">{modo === "editar" ? "Editar Logo" : "Subir Nuevo Logo"}</h2>
+    <a href="/admin/logos" class="formulario-box__btn-cancelar">Volver</a>
+  </div>
+
+  <form id="form-logo" class="formulario-box__form">
+    <div class="campo">
+      <label for="fl-archivo">Imagen del logo (PNG/JPG/WebP) *</label>
+      <input type="file" id="fl-archivo" accept="image/jpeg, image/png, image/webp" />
+      <small id="fl-archivo-help" class="campo__hint admin-hidden">Dejar vacío para conservar la imagen actual.</small>
+    </div>
+
+    <div class="campo">
+      <label for="fl-nombre">Nombre descriptivo del logo *</label>
+      <input type="text" id="fl-nombre" required placeholder="Ej: Logo Principal 2026" />
+    </div>
+
+    <div class="campo campo--inline">
+      <input type="checkbox" id="fl-activo" />
+      <label for="fl-activo">Activar este logo al guardar (reemplazará al actual en el sitio público)</label>
+    </div>
+
+    <button type="submit" id="fl-btn" class="formulario-box__btn-submit">Subir y Guardar</button>
+    <div class="formulario-box__status-container">
+      <div id="fl-spinner" class="spinner admin-hidden"></div>
+      <p id="fl-error" class="formulario-box__error"></p>
+    </div>
+  </form>
+</div>

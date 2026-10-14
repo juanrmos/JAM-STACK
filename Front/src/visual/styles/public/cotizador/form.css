@@ -1,0 +1,67 @@
+  .cotizador__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1;
+  }
+
+  .cotizador__input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-borde);
+    color: var(--color-texto);
+    font-family: var(--font-cuerpo);
+    font-size: 1.125rem; /* 18px */
+    padding: 1rem 0;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.2s ease;
+  }
+
+  .cotizador__input:focus {
+    border-color: var(--color-primario);
+  }
+
+  .cotizador__input::placeholder {
+    font-size: 0.6875rem; /* 11px */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-texto-sec);
+  }
+
+  .cotizador__textarea {
+    resize: none;
+    min-height: 80px;
+  }
+
+  select.cotizador__input {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+
+  select.cotizador__input option {
+    background: var(--color-fondo);
+    color: var(--color-texto);
+  }
+
+  .cotizador__enviar {
+    margin-top: auto;
+    background: var(--color-primario);
+    color: #fff;
+    font-family: var(--font-cuerpo);
+    font-size: 1.125rem; /* 18px */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1.25rem;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .cotizador__enviar:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }

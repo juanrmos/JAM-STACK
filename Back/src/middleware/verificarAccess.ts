@@ -1,8 +1,8 @@
 /**
  * Capa de borde — re-verifica el JWT de Cloudflare Access dentro del Worker.
- * Cloudflare Access ya bloquea en el borde si el Service Token es inválido,
- * pero re-verificamos aquí para no depender ciegamente de la configuración de Access.
- * Referencia: skill deep-security, principio 2 + implementación de referencia.
+ * Cloudflare Access controla el acceso interactivo en el borde. El Worker
+ * verifica firma, emisor y audiencia del JWT sin asumir que la regla de borde
+ * cubre correctamente todas las rutas privadas.
  */
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import type { Env } from "../types";
@@ -12,15 +12,17 @@ export async function verificarAccessJwt(
   env: Env,
 ): Promise<boolean> {
   const teamDomain = env.CF_ACCESS_TEAM;
-  
-  // Si no hay equipo configurado, asumimos que Access está apagado (bypass temporal)
-  if (!teamDomain) return true;
+  const hostname = new URL(request.url).hostname;
+  // La excepción solo existe en Wrangler local y con un host de loopback.
+  if (env.LOCAL_MEDIA === 'true' && ['localhost', '127.0.0.1', '[::1]'].includes(hostname)) {
+    return true;
+  }
+  if (!teamDomain || !env.CF_ACCESS_AUD) return false;
 
   const token = request.headers.get("Cf-Access-Jwt-Assertion");
   if (!token) return false;
 
   try {
-
     const JWKS = createRemoteJWKSet(
       new URL(
         `https://${teamDomain}.cloudflareaccess.com/cdn-cgi/access/certs`,
@@ -29,6 +31,7 @@ export async function verificarAccessJwt(
 
     await jwtVerify(token, JWKS, {
       issuer: `https://${teamDomain}.cloudflareaccess.com`,
+      audience: env.CF_ACCESS_AUD,
     });
     return true;
   } catch {

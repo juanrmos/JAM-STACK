@@ -1,119 +1,16 @@
 ---
+import AdminHeaderView from "../../visual/components/admin/header/AdminHeaderView.astro";
+interface Props {
+  seccionActiva?: "obras" | "logos";
+}
+const { seccionActiva = "obras" } = Astro.props;
 ---
-<header class="admin-header">
-  <div class="admin-header__top">
-    <div class="admin-header__brand">
-      <h1 class="admin-header__title">Antony Art Studio</h1>
-      <span class="admin-header__subtitle">PANEL DE ADMINISTRACIÓN</span>
-    </div>
-    <button class="admin-header__logout" id="btn-logout-header">Cerrar Sesión</button>
-  </div>
-  <nav class="admin-header__nav">
-    <button class="admin-header__tab admin-header__tab--active" id="tab-obras" onclick="window.navegarAdmin('dashboard-obras')">OBRAS</button>
-    <button class="admin-header__tab" id="tab-logos" onclick="window.navegarAdmin('dashboard-logos')">LOGOS</button>
-  </nav>
-</header>
-
+<AdminHeaderView seccionActiva={seccionActiva} />
 <script>
   import { removeToken } from "../../lib/auth";
-  
+
   document.getElementById("btn-logout-header")?.addEventListener("click", () => {
     removeToken();
-    if ((window as any).revisarSesion) {
-      (window as any).revisarSesion();
-    }
-  });
-
-  // Escuchar cambios de vista para actualizar la pestaña activa
-  window.addEventListener('admin:vista-cambiada', (e: any) => {
-    const vista = e.detail.vista;
-    const tabObras = document.getElementById("tab-obras");
-    const tabLogos = document.getElementById("tab-logos");
-    
-    if (tabObras && tabLogos) {
-      if (vista.includes('obras')) {
-        tabObras.classList.add('admin-header__tab--active');
-        tabLogos.classList.remove('admin-header__tab--active');
-      } else if (vista.includes('logos')) {
-        tabLogos.classList.add('admin-header__tab--active');
-        tabObras.classList.remove('admin-header__tab--active');
-      }
-    }
+    window.location.href = "/admin/login";
   });
 </script>
-
-<style>
-  .admin-header {
-    background-color: var(--color-fondo);
-    border-bottom: 1px solid var(--color-borde);
-    padding: 1.5rem 2rem 0;
-    margin-bottom: 2rem;
-  }
-  .admin-header__top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto 1.5rem;
-  }
-  .admin-header__brand {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .admin-header__title {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    color: var(--color-texto);
-    margin: 0;
-    font-weight: 500;
-  }
-  .admin-header__subtitle {
-    font-family: var(--font-cuerpo);
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    color: var(--color-texto-sec);
-  }
-  .admin-header__logout {
-    background: transparent;
-    color: var(--color-texto);
-    border: 1px solid var(--color-borde);
-    padding: 0.5rem 1rem;
-    border-radius: var(--radio-base);
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: var(--font-cuerpo);
-    transition: all 0.2s ease;
-  }
-  .admin-header__logout:hover {
-    border-color: var(--color-texto);
-  }
-  .admin-header__nav {
-    display: flex;
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .admin-header__tab {
-    background: none;
-    border: none;
-    font-family: var(--font-cuerpo);
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-texto-sec);
-    padding: 0.75rem 0;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s ease;
-    letter-spacing: 0.05em;
-  }
-  .admin-header__tab:hover {
-    color: var(--color-texto);
-  }
-  .admin-header__tab--active {
-    color: var(--color-primario);
-    border-bottom-color: var(--color-primario);
-  }
-</style>

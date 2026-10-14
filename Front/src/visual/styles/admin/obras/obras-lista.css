@@ -1,0 +1,81 @@
+.dashboard[data-admin-view="dashboard"] {
+    background: #fff;
+    border-radius: var(--radio-base);
+    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.08);
+    padding: 2rem;
+  }
+  .dashboard[data-admin-view="dashboard"] .dashboard__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(47, 79, 79, 0.1);
+  }
+  .dashboard[data-admin-view="dashboard"] .dashboard__actions {
+    display: flex;
+    gap: 1rem;
+  }
+  .dashboard[data-admin-view="dashboard"] .dashboard__titulo {
+    font-family: var(--font-display);
+    font-size: var(--tam-h2);
+    color: var(--color-texto);
+  }
+  .dashboard[data-admin-view="dashboard"] .dashboard__btn-add {
+    background: var(--color-primario);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radio-base);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .dashboard[data-admin-view="dashboard"] .dashboard__filtros {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .dashboard[data-admin-view="dashboard"] .dashboard__select, .dashboard[data-admin-view="dashboard"] .dashboard__input {
+    padding: 0.5rem;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-base);
+    font-family: var(--font-cuerpo);
+  }
+  .dashboard[data-admin-view="dashboard"] .dashboard__input {
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .dashboard[data-admin-view="dashboard"] .dashboard__seccion {
+    margin-bottom: 3rem;
+  }
+  .dashboard[data-admin-view="dashboard"] .dashboard__subtitulo {
+    font-family: var(--font-cuerpo);
+    font-size: 0.85rem;
+    color: var(--color-texto-sec);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+@media (max-width: 600px) {
+  .dashboard[data-admin-view="dashboard"] {
+    padding: 1.25rem;
+  }
+
+  .dashboard[data-admin-view="dashboard"] .dashboard__header,
+  .dashboard[data-admin-view="dashboard"] .dashboard__filtros {
+    flex-wrap: wrap;
+  }
+
+  .dashboard[data-admin-view="dashboard"] .dashboard__select,
+  .dashboard[data-admin-view="dashboard"] .dashboard__input {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+  /* Riel de slots */
+
+  /* Grilla */

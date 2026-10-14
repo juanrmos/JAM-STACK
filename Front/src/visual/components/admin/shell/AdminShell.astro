@@ -1,0 +1,15 @@
+---
+import AdminHeader from "../../../../components/admin/AdminHeader.astro";
+import "../../../styles/admin/shell/layout.css";
+import "../../../styles/admin/shared/state.css";
+
+interface Props {
+  seccionActiva: "obras" | "logos";
+}
+
+const { seccionActiva } = Astro.props;
+---
+<div class="admin-layout">
+  <AdminHeader {seccionActiva} />
+  <main class="admin-layout__contenido"><slot /></main>
+</div>

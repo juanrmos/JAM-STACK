@@ -4,7 +4,7 @@
  * Patrón de secciones activables: doc 05, sección 4.
  * Rediseño editorial: Hero + Servicios + Galería Netflix + Cotizador Drawer.
  */
-import LayoutBase from "../layouts/LayoutBase.astro";
+import PublicLayout from "../layouts/PublicLayout.astro";
 import Hero from "../components/Hero.astro";
 import Servicios from "../components/Servicios.astro";
 import Galeria from "../components/Galeria.astro";
@@ -13,10 +13,10 @@ import BotonWhatsapp from "../components/BotonWhatsapp.astro";
 import { siteConfig } from "../config/site";
 ---
 
-<LayoutBase>
+<PublicLayout>
   <Hero />
   <Servicios />
   {siteConfig.secciones.galeria && <Galeria />}
   <Cotizador />
   <BotonWhatsapp />
-</LayoutBase>
+</PublicLayout>

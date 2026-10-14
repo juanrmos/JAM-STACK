@@ -1,0 +1,21 @@
+---
+import { siteConfig } from "../../../../config/site";
+interface Props {
+  seccionActiva?: "obras" | "logos";
+}
+const { seccionActiva = "obras" } = Astro.props;
+import "../../../styles/admin/header/header.css";
+---
+<header data-admin-view="adminheader" class="admin-header">
+  <div class="admin-header__top">
+    <div class="admin-header__brand">
+      <h1 class="admin-header__title">{siteConfig.artista.nombreEstudio}</h1>
+      <span class="admin-header__subtitle">PANEL DE ADMINISTRACIÓN</span>
+    </div>
+    <button class="admin-header__logout" id="btn-logout-header">Cerrar Sesión</button>
+  </div>
+  <nav class="admin-header__nav">
+    <a href="/admin/obras" class={`admin-header__tab ${seccionActiva === 'obras' ? 'admin-header__tab--active' : ''}`}>OBRAS</a>
+    <a href="/admin/logos" class={`admin-header__tab ${seccionActiva === 'logos' ? 'admin-header__tab--active' : ''}`}>LOGOS</a>
+  </nav>
+</header>

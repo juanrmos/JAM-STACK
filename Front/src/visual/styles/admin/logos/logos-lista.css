@@ -1,0 +1,36 @@
+.dashboard[data-admin-view="dashboardlogos"] {
+    background: #fff;
+    border-radius: var(--radio-base);
+    box-shadow: 0 12px 32px rgba(47, 79, 79, 0.08);
+    padding: 2rem;
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .dashboard__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(47, 79, 79, 0.1);
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .dashboard__actions {
+    display: flex;
+    gap: 1rem;
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .dashboard__titulo {
+    font-family: var(--font-display);
+    font-size: var(--tam-h2);
+    color: var(--color-texto);
+  }
+  .dashboard[data-admin-view="dashboardlogos"] .dashboard__btn-add {
+    background: var(--color-primario);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radio-base);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Logo Activo */
+
+  /* Almacen */
