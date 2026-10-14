@@ -18,7 +18,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   // Nunca cachear llamadas a la API — siempre red, sin fallback silencioso a datos viejos
-  if (url.pathname.startsWith("/api/")) {
+  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/admin/api/")) {
     event.respondWith(fetch(event.request));
     return;
   }

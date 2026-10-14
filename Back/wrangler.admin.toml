@@ -10,7 +10,10 @@ R2_BUCKET_ENDPOINT = "4958e9a41e2a0e9ae326dc46e79c7a79.r2.cloudflarestorage.com"
 R2_PUBLIC_URL = "https://pub-8d2d800097a241338f88eaa4a77ad190.r2.dev"
 CF_ACCESS_TEAM = "wild-pond-b1e4"
 CF_ACCESS_AUD = "a9080380af99f117b1f015f2c91a0a5ab91d358ca93b88d5d879471bc6633e3c"
+CF_ACCESS_AUD_FRONTEND = "74a24d429ddb2b359fb6b061008bb5d6d70bf685894d4d2d9a89aa97c705a051"
 FRONTEND_ORIGIN = "https://portafolio-front.pages.dev"
+# Las URLs inmutables de Pages de este mismo proyecto usan el mismo Access.
+ALLOW_PAGES_PREVIEW_ORIGINS = "true"
 # ADMIN_SECRET, JWT_SECRET y las credenciales R2 se guardan como secretos del Worker.
 
 [[d1_databases]]
