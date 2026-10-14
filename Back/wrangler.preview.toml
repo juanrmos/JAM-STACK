@@ -10,6 +10,7 @@ R2_PUBLIC_URL = "https://portafolio-api-refactor-public-preview.skyheart.workers
 CF_ACCESS_TEAM = "wild-pond-b1e4"
 CF_ACCESS_AUD = "ee56baf4a19cbd015c084428a530209a60d77a48b8aaef4d579fc13dea441ada"
 FRONTEND_ORIGIN = "https://codex-refactor-arquitectura.portafolio-front.pages.dev"
+ALLOW_PAGES_PREVIEW_ORIGINS = "true"
 
 [[d1_databases]]
 binding = "DB"

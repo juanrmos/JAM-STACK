@@ -37,6 +37,7 @@ import {
 // ---- Utilidad de respuesta JSON (exportada para handlers) ----
 
 import { jsonResponse } from "./routes/response";
+import { crearRespuestaAccessInicio } from "./routes/accessBootstrap";
 import { servirMedia, recibirSubidaLocal } from "./storage/local";
 
 // ---- CORS ----
@@ -55,9 +56,11 @@ function corsHeaders(request: Request, env: Env): Record<string, string> {
   if (origin) {
     try {
       const url = new URL(origin);
+      const isPagesPreview = env.ALLOW_PAGES_PREVIEW_ORIGINS === "true" &&
+        url.protocol === "https:" && url.hostname.endsWith(".portafolio-front.pages.dev");
       permitido = local
         ? url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
-        : url.protocol === 'https:' && origin === env.FRONTEND_ORIGIN;
+        : url.protocol === 'https:' && (origin === env.FRONTEND_ORIGIN || isPagesPreview);
     } catch {
       permitido = false;
     }
@@ -142,6 +145,17 @@ export default {
               403,
             ),
           );
+        }
+
+        // Navegación de nivel superior para completar el login interactivo de Access.
+        // Access redirige aquí después de autenticar y el navegador conserva su cookie
+        // para que las llamadas fetch posteriores al Worker puedan incluirla.
+        if (method === "GET" && pathname === "/api/auth/access/start") {
+          return withCors(crearRespuestaAccessInicio(
+            request,
+            env.FRONTEND_ORIGIN,
+            env.LOCAL_MEDIA === "true",
+          ));
         }
 
         // El login también requiere Access; el rate limit y secreto se validan en el handler.

@@ -1,7 +1,8 @@
 ---
 import LoginView from "../../visual/components/admin/login/LoginView.astro";
+import { adminApiBaseUrl } from "../../config/env";
 ---
-<LoginView />
+<LoginView accessUrl={`${adminApiBaseUrl}/api/auth/access/start`} />
 <script>
   import { apiFetch, setToken } from "../../lib/auth";
 
@@ -9,10 +10,28 @@ import LoginView from "../../visual/components/admin/login/LoginView.astro";
   const input = document.getElementById("input-secreto") as HTMLInputElement;
   const btn = document.getElementById("btn-login") as HTMLButtonElement;
   const errorMsg = document.getElementById("login-error") as HTMLParagraphElement;
+  const accessLink = document.getElementById("access-start") as HTMLAnchorElement;
+  const accessStatus = document.getElementById("access-status") as HTMLParagraphElement;
+
+  const currentUrl = new URL(window.location.href);
+  const accessReady = currentUrl.searchParams.get("access") === "ready";
+  const accessTarget = new URL(accessLink.href);
+  accessTarget.searchParams.set("return_to", new URL("/admin/login/", window.location.origin).href);
+  accessLink.href = accessTarget.toString();
+
+  if (accessReady) {
+    form.hidden = false;
+    accessLink.hidden = true;
+    accessStatus.textContent = "Acceso seguro verificado. Ahora ingresa el secreto de administrador.";
+  }
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorMsg.textContent = "";
+    if (!accessReady) {
+      errorMsg.textContent = "Primero completa el acceso seguro de Cloudflare.";
+      return;
+    }
     btn.disabled = true;
     btn.textContent = "Verificando...";
 
@@ -23,7 +42,12 @@ import LoginView from "../../visual/components/admin/login/LoginView.astro";
       });
 
       if (!res.ok) {
-        throw new Error("Secreto incorrecto o error de red");
+        if (res.status === 403) {
+          throw new Error("La sesión de Cloudflare Access venció. Vuelve a completar el acceso seguro.");
+        }
+        if (res.status === 401) throw new Error("El secreto de administrador no es válido.");
+        if (res.status === 429) throw new Error("Demasiados intentos. Espera un momento antes de volver a probar.");
+        throw new Error(`El servicio de administración respondió con error (${res.status}).`);
       }
 
       const data = await res.json();
@@ -31,7 +55,14 @@ import LoginView from "../../visual/components/admin/login/LoginView.astro";
       input.value = "";
       window.location.href = "/admin/obras";
     } catch (err: any) {
-      errorMsg.textContent = err.message;
+      if (err instanceof TypeError) {
+        errorMsg.textContent = "No se pudo conectar con la API. Vuelve a completar el acceso seguro.";
+        accessStatus.textContent = "La sesión segura no está disponible. Autentícate de nuevo con Cloudflare.";
+        accessLink.hidden = false;
+      } else {
+        errorMsg.textContent = err.message;
+        if (err.message.includes("Cloudflare Access")) accessLink.hidden = false;
+      }
     } finally {
       btn.disabled = false;
       btn.textContent = "Ingresar";

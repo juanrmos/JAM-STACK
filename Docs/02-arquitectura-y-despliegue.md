@@ -1,6 +1,6 @@
 # 02 — Arquitectura y Despliegue
 
-> **Actualización de implementación (11-10-2026):** la propuesta original de Service Tokens en la PWA fue sustituida por una sesión interactiva de Cloudflare Access. Un secreto de Service Token no debe aparecer en el JavaScript público. El Worker valida el JWT de Access (firma, emisor y audiencia) antes del login y de toda operación privada; el JWT propio sigue siendo la segunda capa. Esta integración aún requiere ensayo aislado con la política real de Access y cookies/CORS. Véase `12-procedimiento-promocion-production.md`.
+> **Actualización de implementación (14-10-2026):** la propuesta original de Service Tokens en la PWA fue sustituida por una sesión interactiva de Cloudflare Access. Un secreto de Service Token no debe aparecer en el JavaScript público. Antes de introducir el secreto administrativo, el panel inicia Access mediante una navegación de nivel superior al Worker privado; después de autenticar, el Worker devuelve al administrador al formulario. Así el navegador guarda la cookie de Access antes de que el Front haga llamadas `fetch` con credenciales. El Worker valida el JWT de Access (firma, emisor y audiencia) antes del login y de toda operación privada; el JWT propio sigue siendo la segunda capa. La política de Access debe incluir a cada administrador.
 
 ## 1. Patrón general: Jamstack + API mínima
 
@@ -23,7 +23,7 @@ flowchart TD
 
 La autenticación ocurre en dos capas independientes, no una sola:
 
-1. **Cloudflare Access (sesión interactiva):** debe proteger `/admin/*` y las rutas privadas de la API con una identidad autorizada. El Worker verifica el JWT `Cf-Access-Jwt-Assertion` y su audiencia; si falta o es inválido responde 403. Una prueba anónima confirma la redirección de Pages a Access; falta validar la política real de la API y una sesión autorizada.
+1. **Cloudflare Access (sesión interactiva):** debe proteger `/admin/*` y las rutas privadas de la API con una identidad autorizada. Desde el formulario, una navegación de nivel superior al endpoint `/api/auth/access/start` permite completar el desafío de Access; el Worker valida el JWT `Cf-Access-Jwt-Assertion` y su audiencia y devuelve al usuario al formulario. El login posterior usa `fetch` con la cookie ya establecida. Si falta o es inválido el JWT, el Worker responde 403. La política de Access debe incluir a cada administrador.
 2. **JWT propio del Worker:** una vez que la petición pasa la capa de Access, el Worker hace su propia verificación de un JWT de vida corta, emitido tras el login del usuario administrador.
 
 **Por qué dos capas:** Access valida la identidad admitida por la política de Cloudflare y el JWT propio autoriza la sesión de edición. El código no presupone que la configuración de borde sea perfecta; verifica Access también en el Worker.

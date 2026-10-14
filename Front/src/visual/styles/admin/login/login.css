@@ -22,6 +22,27 @@
     font-size: 0.95rem;
   }
 
+  .login-box[data-admin-view="login"] .login-box__access-status {
+    color: var(--color-texto);
+    opacity: 0.8;
+    font-size: 0.9rem;
+    margin: 0 0 1rem;
+  }
+
+  .login-box[data-admin-view="login"] .login-box__access {
+    display: inline-block;
+    background: var(--color-texto);
+    color: #fff;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radio-base);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .login-box[data-admin-view="login"] .login-box__access:hover {
+    opacity: 0.9;
+  }
+
   .login-box[data-admin-view="login"] .login-box__form {
     display: flex;
     flex-direction: column;
@@ -67,4 +88,8 @@
     font-size: 0.875rem;
     margin-top: 0.5rem;
     min-height: 1.2rem;
+  }
+
+  .login-box[data-admin-view="login"] [hidden] {
+    display: none !important;
   }
