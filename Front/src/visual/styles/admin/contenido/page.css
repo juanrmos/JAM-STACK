@@ -147,6 +147,19 @@
 [data-admin-view="contenido"] .content-field__counter.is-near-limit { color: var(--content-gold); }
 [data-admin-view="contenido"] .content-field__counter.is-over-limit { color: #b45f62; }
 
+[data-admin-view="contenido"] .service-name-field { display: grid; gap: .35rem; margin: 1rem 0 1.35rem; }
+[data-admin-view="contenido"] .service-name-field > span:first-child { color: var(--content-ink); font-size: .84rem; font-weight: 600; }
+[data-admin-view="contenido"] .service-name-field > small { color: #98a29f; font: .7rem/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; }
+[data-admin-view="contenido"] .service-name-field input { width: 100%; min-height: 44px; padding: .68rem .78rem; border: 1px solid var(--content-border); border-radius: 4px; outline: none; background: #fff; color: var(--content-ink); font: .88rem/1.55 var(--font-cuerpo, "DM Sans", sans-serif); }
+[data-admin-view="contenido"] .service-name-field input:focus { border-color: var(--content-gold); box-shadow: 0 0 0 3px rgba(217, 165, 32, .13); }
+[data-admin-view="contenido"] .service-name-field input[aria-invalid="true"] { border-color: #c76d6d; }
+[data-admin-view="contenido"] .service-name-field__meta { display: flex; justify-content: space-between; gap: .75rem; min-height: 1.25rem; padding-top: .15rem; }
+[data-admin-view="contenido"] [data-service-name-error] { color: #b45f62; font-size: .73rem; line-height: 1.4; }
+[data-admin-view="contenido"] [data-service-name-counter] { margin-left: auto; color: #98a29f; font-size: .72rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+[data-admin-view="contenido"] [data-service-name-counter].is-near-limit { color: var(--content-gold); }
+[data-admin-view="contenido"] [data-service-name-counter].is-over-limit { color: #b45f62; }
+[data-admin-view="contenido"] .service-name-field.has-error input { border-color: #c76d6d; }
+
 [data-admin-view="contenido"] .service-tabs {
   display: flex;
   gap: .35rem;
@@ -195,6 +208,8 @@
 }
 [data-admin-view="contenido"] .about-photo__preview img { width: 100%; height: 100%; object-fit: cover; }
 [data-admin-view="contenido"] [data-photo-space="profile.photo"] .about-photo__preview { aspect-ratio: 1; }
+[data-admin-view="contenido"] .about-photo--home-cover .about-photo__preview { flex: 0 0 min(100%, 300px); width: min(100%, 300px); aspect-ratio: 16 / 9; }
+[data-admin-view="contenido"] .about-photo--home-cover .about-photo__preview img { object-fit: cover; }
 [data-admin-view="contenido"] .about-photo--service-cover .about-photo__preview { flex: 0 0 min(100%, 300px); width: min(100%, 300px); aspect-ratio: 16 / 9; }
 [data-admin-view="contenido"] .about-photo--service-cover .about-photo__preview img { object-fit: cover; }
 [data-admin-view="contenido"] .about-photo__form { display: grid; justify-items: start; gap: .55rem; min-width: 0; }

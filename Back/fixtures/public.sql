@@ -1,10 +1,10 @@
 -- Datos sintéticos exclusivos del ensayo local.
-INSERT OR IGNORE INTO servicios(id) VALUES ('mural');
-INSERT OR IGNORE INTO servicios(id) VALUES ('escultura');
-INSERT OR IGNORE INTO servicios(id) VALUES ('cuadro');
-INSERT OR IGNORE INTO servicios(id) VALUES ('restauracion');
-INSERT OR IGNORE INTO servicios(id) VALUES ('logo');
-INSERT OR IGNORE INTO servicios(id) VALUES ('fachada');
+INSERT OR IGNORE INTO servicios(id,nombre_publico) VALUES ('mural','Murales monumentales');
+INSERT OR IGNORE INTO servicios(id,nombre_publico) VALUES ('escultura','Esculturas');
+INSERT OR IGNORE INTO servicios(id,nombre_publico) VALUES ('cuadro','Cuadros personalizados');
+INSERT OR IGNORE INTO servicios(id,nombre_publico) VALUES ('restauracion','Restauración');
+INSERT OR IGNORE INTO servicios(id,nombre_publico) VALUES ('logo','Letras y logotipos');
+INSERT OR IGNORE INTO servicios(id,nombre_publico) VALUES ('fachada','Pintado de fachadas');
 INSERT OR IGNORE INTO textos(clave,grupo,valor) VALUES ('home.eyebrow','home','Artista plástico / Huánuco');
 INSERT OR IGNORE INTO textos(clave,grupo,valor) VALUES ('home.title','home','Capturando la esencia en cada trazo.');
 INSERT OR IGNORE INTO textos(clave,grupo,valor) VALUES ('home.titleAccent','home','esencia');

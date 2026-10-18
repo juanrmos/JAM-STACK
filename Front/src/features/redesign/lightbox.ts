@@ -1,5 +1,6 @@
 import type { Obra } from '../../services/api/types';
 import { servicios } from '../../config/servicios';
+import { nombreServicio } from './service-names';
 import { prepararVideoPermitido } from '../../../../Shared/contracts/video';
 
 type LightboxState = {
@@ -54,7 +55,7 @@ function render() {
   const img = get('lightbox-img') as HTMLImageElement;
   img.src = obra.imagenUrl;
   img.alt = obra.titulo;
-  get('lightbox-category')!.textContent = servicios.find((service) => service.id === obra.servicio_id)?.titulo || obra.servicio_id;
+  get('lightbox-category')!.textContent = nombreServicio(obra.servicio_id);
   get('lightbox-title')!.textContent = obra.titulo;
   get('lightbox-meta')!.textContent = [obra.ubicacion, obra.anio].filter(Boolean).join(' · ');
   const videoLink = get('lightbox-video') as HTMLAnchorElement | null;

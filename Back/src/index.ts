@@ -17,6 +17,7 @@ import { verificarAccessJwt } from "./middleware/verificarAccess";
 import { verificarToken } from "./middleware/verificarJwt";
 import { verificarLimite } from "./lib/rateLimiter";
 import { handleLogin } from "./handlers/auth";
+import { listarServicios, guardarNombresServicios } from "./handlers/servicios";
 import {
   listarObras,
   obtenerUrlSubida,
@@ -87,6 +88,10 @@ export default {
       // GET /api/logos — lectura pública, sin auth
       if (method === "GET" && pathname === "/api/logos") {
         return withCors(await listarLogos(request, env));
+      }
+
+      if (method === "GET" && pathname === "/api/servicios") {
+        return withCors(await listarServicios(request, env));
       }
 
       if (method === "GET" && pathname === "/api/contenido") {
@@ -166,6 +171,7 @@ export default {
 
         // --- Despacho de rutas protegidas ---
         if(method==='PUT' && pathname==='/api/textos')return withCors(await guardarTextos(request,env));
+        if(method==='PUT' && pathname==='/api/servicios/nombres')return withCors(await guardarNombresServicios(request,env));
         if(method==='POST' && pathname==='/api/imagenes-sitio/upload-url')return withCors(await subirFoto(request,env));
         const imagenSitioMatch=pathname.match(/^\/api\/imagenes-sitio\/(.+)$/);
         if(method==='PUT' && imagenSitioMatch && (clavesImagenesSitio as readonly string[]).includes(imagenSitioMatch[1]))return withCors(await guardarFoto(request,env,imagenSitioMatch[1] as ImagenSitioClave));

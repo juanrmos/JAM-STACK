@@ -1,5 +1,8 @@
 -- Esquema destino del rediseño. Inicialización local; sin migración de datos anteriores.
-CREATE TABLE IF NOT EXISTS servicios (id TEXT PRIMARY KEY NOT NULL);
+CREATE TABLE IF NOT EXISTS servicios (
+ id TEXT PRIMARY KEY NOT NULL,
+ nombre_publico TEXT NOT NULL CHECK(length(trim(nombre_publico)) BETWEEN 1 AND 40)
+);
 CREATE TABLE IF NOT EXISTS textos (
  clave TEXT PRIMARY KEY NOT NULL, grupo TEXT NOT NULL,
  valor TEXT NOT NULL CHECK(length(trim(valor)) > 0), fecha_actualizacion TEXT
@@ -18,6 +21,6 @@ CREATE TABLE IF NOT EXISTS logos (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uq_logos_activo ON logos(activo) WHERE activo=1;
 CREATE TABLE IF NOT EXISTS imagenes_sitio (
- clave TEXT PRIMARY KEY NOT NULL CHECK(clave IN ('about.photo','profile.photo','service.mural.cover','service.escultura.cover','service.cuadro.cover','service.restauracion.cover','service.logo.cover','service.fachada.cover')),
+ clave TEXT PRIMARY KEY NOT NULL CHECK(clave IN ('home.cover','about.photo','profile.photo','service.mural.cover','service.escultura.cover','service.cuadro.cover','service.restauracion.cover','service.logo.cover','service.fachada.cover')),
  imagen_key TEXT NOT NULL, fecha_actualizacion TEXT
 );
