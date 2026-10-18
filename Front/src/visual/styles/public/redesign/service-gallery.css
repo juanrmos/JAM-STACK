@@ -77,6 +77,24 @@
 }
 
 @media (max-width: 850px) {
-  .service-view__gallery { min-height: 270px; }
-  .service-active { height: min(340px, calc(100dvh - 70px - 94px - 9rem)); }
+  .service-view__gallery {
+    order: 7;
+    width: 100%;
+    min-height: 0;
+    flex: none;
+  }
+  .service-active {
+    height: clamp(220px, 40dvh, 340px);
+    min-height: 0;
+  }
+  .service-thumbs {
+    order: 9;
+    width: 100%;
+    flex: 0 0 72px;
+    min-height: 72px;
+    padding-bottom: .2rem;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gallery-arrow { width: 38px; height: 44px; }
 }
