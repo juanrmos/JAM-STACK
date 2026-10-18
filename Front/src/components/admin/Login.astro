@@ -4,11 +4,25 @@ import LoginView from "../../visual/components/admin/login/LoginView.astro";
 <LoginView />
 <script>
   import { apiFetch, setToken } from "../../lib/auth";
+  import { adminApiBaseUrl, adminApiUsesPagesProxy } from "../../config/env";
 
   const form = document.getElementById("form-login") as HTMLFormElement;
+  const accessStart = document.getElementById("access-start") as HTMLAnchorElement;
+  const accessStatus = document.getElementById("access-status") as HTMLParagraphElement;
   const input = document.getElementById("input-secreto") as HTMLInputElement;
   const btn = document.getElementById("btn-login") as HTMLButtonElement;
   const errorMsg = document.getElementById("login-error") as HTMLParagraphElement;
+
+  const accessReady = new URLSearchParams(window.location.search).get("access") === "ready";
+  const returnTo = new URL("/admin/login/", window.location.origin).toString();
+  const accessStartPath = `/api/auth/access/start?return_to=${encodeURIComponent(returnTo)}`;
+  accessStart.href = adminApiUsesPagesProxy
+    ? `/admin/api/auth/access/start?return_to=${encodeURIComponent(returnTo)}`
+    : `${adminApiBaseUrl}${accessStartPath}`;
+  accessStart.hidden = accessReady;
+  accessStatus.hidden = !accessReady;
+  form.hidden = !accessReady;
+
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorMsg.textContent = "";
