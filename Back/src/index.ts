@@ -1,3 +1,4 @@
+import { leerContenido,guardarTextos,subirFoto,guardarFoto } from './handlers/contenido';
 /**
  * Router principal del Worker API.
  * Orquesta las capas de seguridad (doc 02, §2.1) y despacha a los handlers.
@@ -40,6 +41,7 @@ import { jsonResponse } from "./routes/response";
 import { crearRespuestaAccessInicio } from "./routes/accessBootstrap";
 import { servirMedia, recibirSubidaLocal } from "./storage/local";
 import { corsHeaders } from "./http/cors";
+import { clavesImagenesSitio, type ImagenSitioClave } from "../../Shared/contracts/imagenes-sitio";
 
 // ---- CORS ----
 function withRequestCors(request: Request, env: Env, response: Response): Response {
@@ -85,6 +87,10 @@ export default {
       // GET /api/logos — lectura pública, sin auth
       if (method === "GET" && pathname === "/api/logos") {
         return withCors(await listarLogos(request, env));
+      }
+
+      if (method === "GET" && pathname === "/api/contenido") {
+        return withCors(await leerContenido(request, env));
       }
 
       // El Worker público solo entrega lecturas. El panel usa otro Worker,
@@ -159,6 +165,10 @@ export default {
         }
 
         // --- Despacho de rutas protegidas ---
+        if(method==='PUT' && pathname==='/api/textos')return withCors(await guardarTextos(request,env));
+        if(method==='POST' && pathname==='/api/imagenes-sitio/upload-url')return withCors(await subirFoto(request,env));
+        const imagenSitioMatch=pathname.match(/^\/api\/imagenes-sitio\/(.+)$/);
+        if(method==='PUT' && imagenSitioMatch && (clavesImagenesSitio as readonly string[]).includes(imagenSitioMatch[1]))return withCors(await guardarFoto(request,env,imagenSitioMatch[1] as ImagenSitioClave));
 
         // POST /api/obras/upload-url
         if (method === "POST" && pathname === "/api/obras/upload-url") {

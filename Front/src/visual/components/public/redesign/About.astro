@@ -1,0 +1,8 @@
+---
+import catalogo from '../../../../../../Shared/contracts/textos.json';
+const t=(key:string)=>catalogo[key as keyof typeof catalogo]?.valor||'';
+---
+<section class="app-view about-view" data-view-panel="about" aria-labelledby="about-heading" hidden>
+  <div class="about-view__photo"><img id="about-photo" src="/images/servicio-murales.jpg" alt="Imagen de referencia artística; fotografía oficial pendiente" /><span data-text-key="about.photoCaption">{t('about.photoCaption')}</span></div>
+  <div class="about-view__copy"><p class="eyebrow" data-text-key="about.eyebrow">{t('about.eyebrow')}</p><h1 id="about-heading" data-styled-title="about">Arte hecho con <em>identidad.</em></h1><p class="lead" data-text-key="about.description">{t('about.description')}</p><p class="pending-content">Trayectoria y cifras pendientes de confirmación.</p><a href="/?vista=contacto" data-view="contacto" class="text-link">Conversemos sobre tu proyecto ↗</a></div>
+</section>

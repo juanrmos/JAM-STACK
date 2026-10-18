@@ -20,7 +20,7 @@ import ObrasListView from "../../visual/components/admin/obras/ObrasListView.ast
     if (!slotsContainer) return;
     slotsContainer.innerHTML = "<p>Cargando slots...</p>";
     try {
-      const res = await apiFetch(`/api/obras?categoria=${categoria}&limit=5&orden=1-5`);
+      const res = await apiFetch(`/api/obras?servicio_id=${categoria}&limit=5&slots=true`);
       if (!res.ok) throw new Error("Error fetching slots");
       const data = await res.json();
       if (version !== slotsVersion) return;
@@ -54,7 +54,7 @@ import ObrasListView from "../../visual/components/admin/obras/ObrasListView.ast
     const offset = (pagina - 1) * limit;
 
     try {
-      let url = `/api/obras?categoria=${categoria}&limit=${limit}&offset=${offset}`;
+      let url = `/api/obras?servicio_id=${categoria}&limit=${limit}&offset=${offset}`;
       if (buscar.trim()) {
         url += `&buscar=${encodeURIComponent(buscar)}`;
       }

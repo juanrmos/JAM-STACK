@@ -23,27 +23,18 @@ export const uploadUrlSchema = z.object({
     .regex(/^image\/(jpeg|png|webp)$/, "Solo se aceptan imágenes JPEG, PNG o WEBP"),
 });
 
-/** POST /api/obras */
-export const crearObraSchema = z.object({
-  titulo: z.string().min(1, "El título es obligatorio").max(200),
-  descripcion: z.string().max(1000).optional().nullable(),
-  categoria: z.enum(categorias),
-  imagenKey: z.string().min(1, "La clave de imagen es obligatoria"),
-  videoUrl: videoUrlSchema.optional(),
-  orden: z.number().int("El orden debe ser un entero").min(0).max(5).optional().default(0),
-  destacado: z.boolean().optional().default(false),
+const obraCampos = z.object({
+  titulo: z.string().trim().min(1).max(200),
+  descripcion: z.string().max(1500).nullable().optional(),
+  servicio_id: z.enum(categorias),
+  imagenKey: z.string().regex(/^(obras|fixtures)\/[a-zA-Z0-9/_.-]+$/),
+  videoUrl: videoUrlSchema.nullable().optional(),
+  ubicacion: z.string().trim().max(200).nullable().optional(),
+  anio: z.number().int().min(1000).max(9999).nullable().optional(),
+  destacado_slot: z.number().int().min(1).max(5).nullable().optional(),
 });
-
-/** PUT /api/obras/:id */
-export const actualizarObraSchema = z.object({
-  titulo: z.string().min(1).max(200).optional(),
-  descripcion: z.string().max(1000).optional().nullable(),
-  categoria: z.enum(categorias).optional().nullable(),
-  videoUrl: videoUrlSchema.optional().nullable(),
-  imagenKey: z.string().min(1).optional(),
-  orden: z.number().int().min(0).max(5).optional(),
-  destacado: z.boolean().optional(),
-});
+export const crearObraSchema = obraCampos.strict();
+export const actualizarObraSchema = obraCampos.partial().strict();
 
 /** POST /api/logos */
 export const crearLogoSchema = z.object({
