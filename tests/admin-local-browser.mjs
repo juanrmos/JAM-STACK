@@ -66,7 +66,7 @@ try {
   const obraResponse = await obraPost;
   console.log('browser: obra response captured');
   assert.equal(obraResponse.status(),201);
-  const obraListing = await fetch('http://127.0.0.1:8787/api/obras?categoria=mural&buscar=Prueba%20navegador%20local&limit=100').then(r=>r.json());
+  const obraListing = await fetch('http://127.0.0.1:8787/api/obras?servicio_id=mural&buscar=Prueba%20navegador%20local&limit=100').then(r=>r.json());
   const obraId = obraListing.obras.find(obra => obra.titulo === 'Prueba navegador local')?.id;
   assert.ok(obraId);
   created.push(['obras',obraId]);
@@ -136,7 +136,7 @@ try {
   console.log('PASS: browser login, local image uploads, obras/logos create-edit-list, no production API/R2.');
 } finally {
   if (token) {
-    const staleObras = await fetch('http://127.0.0.1:8787/api/obras?categoria=mural&buscar=Prueba%20navegador&limit=100').then(r=>r.json()).catch(()=>({obras:[]}));
+    const staleObras = await fetch('http://127.0.0.1:8787/api/obras?servicio_id=mural&buscar=Prueba%20navegador&limit=100').then(r=>r.json()).catch(()=>({obras:[]}));
     for (const obra of staleObras.obras || []) if (obra.titulo?.startsWith('Prueba navegador')) created.push(['obras',obra.id]);
     const staleLogos = await fetch('http://127.0.0.1:8787/api/logos?limit=100').then(r=>r.json()).catch(()=>({logos:[]}));
     for (const logo of staleLogos.logos || []) if (logo.nombre?.startsWith('Logo navegador')) created.push(['logos',logo.id]);

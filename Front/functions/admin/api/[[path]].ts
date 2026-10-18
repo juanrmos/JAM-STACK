@@ -14,7 +14,7 @@ const PREFIX = "/admin/api";
 export async function onRequest({ request, env }: PagesContext): Promise<Response> {
   const incomingUrl = new URL(request.url);
   const suffix = incomingUrl.pathname.slice(PREFIX.length);
-  if (!/^\/(auth|obras|logos)(\/|$)/.test(suffix)) {
+  if (!/^\/(auth|obras|logos|contenido|textos|imagenes-sitio)(\/|$)/.test(suffix)) {
     return Response.json({ error: { codigo: "RUTA_NO_ENCONTRADA" } }, { status: 404 });
   }
 

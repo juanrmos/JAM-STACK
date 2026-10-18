@@ -6,7 +6,14 @@ import "../../../styles/admin/login/login.css";
   <h1 class="login-box__titulo">Acceso Privado</h1>
   <p class="login-box__desc">Ingresa el secreto de administrador para gestionar el portafolio.</p>
 
-  <form id="form-login" class="login-box__form">
+  <p id="access-status" class="login-box__access-status" hidden>
+    Acceso seguro verificado. Ahora ingresa el secreto de administrador.
+  </p>
+  <a id="access-start" class="login-box__access" href="#">
+    Continuar con acceso seguro
+  </a>
+
+  <form id="form-login" class="login-box__form" hidden>
     <input
       type="password"
       id="input-secreto"
