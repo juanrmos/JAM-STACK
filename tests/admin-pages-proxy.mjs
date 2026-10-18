@@ -54,10 +54,12 @@ test('el proxy inicia Access con navegación de nivel superior hacia el Worker',
   assert.equal(forwarded.headers.get('cf-access-jwt-assertion'), 'signed-access-jwt');
 });
 
-test('el proxy permite contenido, textos e imágenes del panel y los mapea al Worker', async () => {
+test('el proxy permite contenido, textos, servicios e imágenes del panel y los mapea al Worker', async () => {
   const paths = [
     ['/admin/api/contenido', '/api/contenido', 'GET'],
     ['/admin/api/textos', '/api/textos', 'PUT'],
+    ['/admin/api/servicios', '/api/servicios', 'GET'],
+    ['/admin/api/servicios/nombres', '/api/servicios/nombres', 'PUT'],
     ['/admin/api/imagenes-sitio/upload-url', '/api/imagenes-sitio/upload-url', 'POST'],
     ['/admin/api/imagenes-sitio/about.photo', '/api/imagenes-sitio/about.photo', 'PUT'],
   ];
