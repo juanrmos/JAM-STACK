@@ -3,7 +3,7 @@ import catalogo from '../../../../../../Shared/contracts/textos.json';
 const t=(key:string)=>catalogo[key as keyof typeof catalogo]?.valor||'';
 ---
 <section class="app-view home-view" data-view-panel="inicio" aria-labelledby="home-heading">
-  <div class="home-view__photo" role="img" aria-label="Imagen de referencia de una obra artística"></div>
+  <img class="home-view__photo" data-home-cover data-fallback-src="/images/hero-obra.jpg" src="/images/hero-obra.jpg" alt="" />
   <div class="home-view__shade"></div>
   <div class="home-view__content">
     <p class="eyebrow" data-text-key="home.eyebrow">{t('home.eyebrow')}</p>

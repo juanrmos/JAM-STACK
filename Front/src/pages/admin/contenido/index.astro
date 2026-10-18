@@ -2,6 +2,7 @@
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import ContentField from '../../../visual/components/admin/contenido/ContentField.astro';
 import defaults from '../../../../../Shared/contracts/textos.json';
+import { nombresPublicosIniciales } from '../../../../../Shared/contracts/servicios';
 import { servicios } from '../../../config/servicios';
 import { clavePortadaServicio } from '../../../../../Shared/contracts/imagenes-sitio';
 import '../../../visual/styles/admin/contenido/page.css';
@@ -16,7 +17,7 @@ const sections = [
   { id: 'about', title: 'Sobre nosotros', help: 'Presentación y fotografía del artista', keys: ['about.photoCaption', 'about.eyebrow', 'about.title', 'about.titleAccent', 'about.description'] },
   { id: 'contact', title: 'Contacto', help: 'Presentación de la sección de contacto', keys: ['contact.eyebrow', 'contact.title', 'contact.description'] },
 ];
-const serviceTabs = servicios.map((service) => ({ ...service, title: service.id === 'logo' ? 'Logos' : service.corto }));
+const serviceTabs = servicios.map((service) => ({ ...service, title: nombresPublicosIniciales[service.id] }));
 const labels: Record<string, string> = {
   eyebrow: 'Texto superior', title: 'Título principal', titleAccent: 'Palabra destacada',
   subtitle: 'Subtítulo', description: 'Descripción', tagline: 'Frase del artista',
@@ -49,7 +50,7 @@ const helpBySection: Record<string, string> = {
     <header class="content-admin__intro">
       <p class="content-admin__eyebrow">ADMINISTRACIÓN DEL SITIO</p>
       <h2>Contenido del sitio</h2>
-      <p>Edita los textos existentes. Ningún campo puede quedar vacío.</p>
+      <p>Edita los textos existentes y los nombres visibles de los servicios. Ningún campo puede quedar vacío.</p>
     </header>
 
     <nav class="content-jumps" aria-label="Saltar a una sección">
@@ -77,13 +78,19 @@ const helpBySection: Record<string, string> = {
                 <div class="service-tabs" role="tablist" aria-label="Categorías de servicios">
                   {serviceTabs.map((service, serviceIndex) => (
                     <button type="button" role="tab" aria-selected={serviceIndex === 0} aria-controls={`service-panel-${service.id}`} id={`service-tab-${service.id}`} data-service-tab={service.id}>
-                      {service.title}
+                      <span data-service-name-display={service.id}>{service.title}</span>
                     </button>
                   ))}
                 </div>
                 {serviceTabs.map((service, serviceIndex) => (
                   <section class="service-panel" role="tabpanel" id={`service-panel-${service.id}`} aria-labelledby={`service-tab-${service.id}`} data-service-panel={service.id} hidden={serviceIndex !== 0}>
-                    <h3>{service.title}</h3>
+                    <h3 data-service-name-display={service.id}>{service.title}</h3>
+                    <label class="service-name-field" data-service-name-field={service.id}>
+                      <span>Nombre visible del servicio</span>
+                      <small>ID interno fijo: <code>{service.id}</code></small>
+                      <input name={`servicio.${service.id}.nombre_publico`} data-service-name-input={service.id} type="text" maxlength="40" required value={service.title} aria-label={`Nombre visible de ${service.title}`} />
+                      <span class="service-name-field__meta"><span data-service-name-error aria-live="polite"></span><span data-service-name-counter>0/40</span></span>
+                    </label>
                     <ContentField {...fieldProps(`service.${service.id}.subtitle`, 'Lema del servicio')} />
                     <ContentField {...fieldProps(`service.${service.id}.description`, 'Descripción')} />
                     <section class="about-photo about-photo--service-cover" data-photo-space={clavePortadaServicio[service.id]} data-fallback-src={service.imagen}>
@@ -96,7 +103,7 @@ const helpBySection: Record<string, string> = {
                       <div class="about-photo__content">
                         <div class="about-photo__preview">
                           <span data-photo-fallback hidden>Portada no disponible</span>
-                          <img data-photo-preview src={service.imagen} alt={`Vista previa de portada: ${service.titulo}`} />
+                          <img data-photo-preview src={service.imagen} alt={`Vista previa de portada: ${service.title}`} />
                         </div>
                         <form class="about-photo__form" data-photo-form={clavePortadaServicio[service.id]}>
                           <label for={`service-cover-${service.id}`}>Selecciona una imagen para la portada</label>
@@ -112,6 +119,28 @@ const helpBySection: Record<string, string> = {
             ) : (
               <div class="content-fields">
                 {section.keys.map((key) => <ContentField {...fieldProps(key)} />)}
+                {section.id === 'home' && (
+                  <section class="about-photo about-photo--home-cover" data-photo-space="home.cover" data-fallback-src="/images/hero-obra.jpg">
+                    <div class="about-photo__heading">
+                      <div>
+                        <h3>Fotografía de portada</h3>
+                        <p>Imagen de fondo de Inicio. Si no se carga, se conserva la portada de referencia.</p>
+                      </div>
+                    </div>
+                    <div class="about-photo__content">
+                      <div class="about-photo__preview">
+                        <span data-photo-fallback hidden>Portada no disponible</span>
+                        <img data-photo-preview src="/images/hero-obra.jpg" alt="Vista previa de la portada de Inicio" />
+                      </div>
+                      <form class="about-photo__form" data-photo-form="home.cover">
+                        <label for="home-cover-file">Selecciona una imagen autorizada</label>
+                        <input id="home-cover-file" type="file" accept="image/jpeg,image/png,image/webp" required />
+                        <button type="submit" class="button-secondary">Reemplazar portada</button>
+                        <p class="photo-status" role="status" aria-live="polite"></p>
+                      </form>
+                    </div>
+                  </section>
+                )}
                 {section.id === 'profile' && (
                   <section class="about-photo" data-photo-space="profile.photo">
                     <div class="about-photo__heading">
@@ -167,7 +196,7 @@ const helpBySection: Record<string, string> = {
       <p id="content-status" class="content-savebar__state" role="status" aria-live="polite">Todo guardado</p>
       <div class="content-savebar__actions">
         <button type="button" id="content-discard" class="button-secondary" disabled>Descartar</button>
-        <button type="submit" form="content-form" id="content-save" class="button-primary" disabled>Guardar textos</button>
+        <button type="submit" form="content-form" id="content-save" class="button-primary" disabled>Guardar cambios</button>
       </div>
     </div>
   </section>
@@ -181,7 +210,9 @@ const helpBySection: Record<string, string> = {
   const saveButton = document.querySelector<HTMLButtonElement>('#content-save')!;
   const discardButton = document.querySelector<HTMLButtonElement>('#content-discard')!;
   const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-content-field] input, [data-content-field] textarea'));
+  const serviceNameFields = Array.from(document.querySelectorAll<HTMLInputElement>('[data-service-name-input]'));
   const baseline = new Map<string, string>();
+  const serviceNameBaseline = new Map<string, string>();
   let loaded = false;
   let submitting = false;
   let statusLocked = false;
@@ -205,7 +236,31 @@ const helpBySection: Record<string, string> = {
   }
 
   function hasChanges() {
-    return fields.some((field) => field.value !== baseline.get(field.name));
+    return fields.some((field) => field.value !== baseline.get(field.name)) || serviceNameFields.some((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || ''));
+  }
+
+  function serviceNameError(field: HTMLInputElement): string {
+    const value = field.value.trim();
+    if (!value) return 'Este campo es obligatorio.';
+    if (value.length > 40) return 'Supera el límite de 40 caracteres.';
+    return '';
+  }
+
+  function updateServiceNameField(field: HTMLInputElement, showError = false) {
+    const wrapper = field.closest<HTMLElement>('[data-service-name-field]')!;
+    const counter = wrapper.querySelector<HTMLElement>('[data-service-name-counter]')!;
+    const error = wrapper.querySelector<HTMLElement>('[data-service-name-error]')!;
+    const message = serviceNameError(field);
+    counter.textContent = `${field.value.length}/40`;
+    counter.classList.toggle('is-near-limit', field.value.length >= 36 && field.value.length <= 40);
+    counter.classList.toggle('is-over-limit', field.value.length > 40);
+    const visible = showError || field.dataset.touched === 'true';
+    error.textContent = visible ? message : '';
+    field.setAttribute('aria-invalid', visible && message ? 'true' : 'false');
+    wrapper.classList.toggle('has-error', visible && Boolean(message));
+    const id = field.dataset.serviceNameInput!;
+    field.setAttribute('aria-label', `Nombre visible de ${field.value.trim() || id}`);
+    document.querySelectorAll<HTMLElement>(`[data-service-name-display="${id}"]`).forEach((element) => { element.textContent = field.value.trim() || element.textContent; });
   }
 
   function updateField(field: HTMLInputElement | HTMLTextAreaElement, showError = false) {
@@ -225,14 +280,16 @@ const helpBySection: Record<string, string> = {
 
   function updateSaveState() {
     const dirty = hasChanges();
-    const errors = fields.some((field) => Boolean(errorFor(field)));
+    const errors = fields.some((field) => Boolean(errorFor(field))) || serviceNameFields.some((field) => Boolean(serviceNameError(field)));
     saveButton.disabled = !dirty || errors || submitting || !loaded;
     discardButton.disabled = !dirty || submitting || !loaded;
     if (!statusLocked) {
-      saveStatus.textContent = dirty ? `● ${fields.filter((field) => field.value !== baseline.get(field.name)).length} cambios sin guardar` : 'Todo guardado';
+      const dirtyCount = fields.filter((field) => field.value !== baseline.get(field.name)).length + serviceNameFields.filter((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || '')).length;
+      saveStatus.textContent = dirty ? `● ${dirtyCount} cambios sin guardar` : 'Todo guardado';
     }
     document.querySelectorAll<HTMLElement>('[data-content-section]').forEach((section) => {
-      const changed = fields.some((field) => field.value !== baseline.get(field.name) && section.contains(field.closest('[data-content-field]')));
+      const changed = fields.some((field) => field.value !== baseline.get(field.name) && section.contains(field.closest('[data-content-field]')))
+        || (section.dataset.contentSection === 'services' && serviceNameFields.some((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || '')));
       section.querySelector<HTMLElement>('[data-section-dirty]')!.hidden = !changed;
     });
   }
@@ -243,14 +300,22 @@ const helpBySection: Record<string, string> = {
   }
 
   try {
-    const response = await apiFetch('/api/contenido');
-    if (!response.ok) throw new Error();
+    const [response, servicesResponse] = await Promise.all([apiFetch('/api/contenido'), apiFetch('/api/servicios')]);
+    if (!response.ok || !servicesResponse.ok) throw new Error();
     const data = await response.json();
+    const servicesData = await servicesResponse.json();
     for (const [key, value] of Object.entries(data.textos || {})) {
       const input = form.elements.namedItem(key) as HTMLInputElement | HTMLTextAreaElement | null;
       if (input) input.value = String(value);
     }
     fields.forEach((field) => baseline.set(field.name, field.value));
+    const names = new Map<string, string>((servicesData.servicios || []).map((service: { id: string; nombre_publico: string }) => [service.id, service.nombre_publico]));
+    serviceNameFields.forEach((field) => {
+      const id = field.dataset.serviceNameInput!;
+      field.value = names.get(id) || field.value;
+      serviceNameBaseline.set(id, field.value);
+      updateServiceNameField(field);
+    });
 
     document.querySelectorAll<HTMLFormElement>('[data-photo-form]').forEach((photoForm) => {
       const imageKey = photoForm.dataset.photoForm!;
@@ -299,24 +364,58 @@ const helpBySection: Record<string, string> = {
     });
   });
 
+  serviceNameFields.forEach((field) => {
+    updateServiceNameField(field);
+    field.addEventListener('input', () => {
+      field.dataset.touched = 'true';
+      statusLocked = false;
+      updateServiceNameField(field);
+      updateSaveState();
+    });
+    field.addEventListener('blur', () => {
+      field.dataset.touched = 'true';
+      updateServiceNameField(field);
+      updateSaveState();
+    });
+  });
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     updateAll(true);
-    if (fields.some((field) => Boolean(errorFor(field)))) return;
+    serviceNameFields.forEach((field) => updateServiceNameField(field, true));
+    if (fields.some((field) => Boolean(errorFor(field))) || serviceNameFields.some((field) => Boolean(serviceNameError(field)))) return;
     submitting = true;
     statusLocked = true;
     saveStatus.textContent = 'Guardando…';
     updateSaveState();
-    const textos = Object.fromEntries(new FormData(form).entries());
+    const changedTexts = fields.filter((field) => field.value !== baseline.get(field.name));
+    const changedNames = serviceNameFields.filter((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || ''));
     try {
-      const response = await apiFetch('/api/textos', { method: 'PUT', body: JSON.stringify({ textos }) });
-      if (!response.ok) {
-        const data = await response.json();
-        throw Error(data.error?.mensaje || 'Error al guardar.');
+      if (changedTexts.length) {
+        const textos = Object.fromEntries(changedTexts.map((field) => [field.name, field.value]));
+        const response = await apiFetch('/api/textos', { method: 'PUT', body: JSON.stringify({ textos }) });
+        if (!response.ok) {
+          const data = await response.json();
+          throw Error(data.error?.mensaje || 'Error al guardar los textos.');
+        }
+        changedTexts.forEach((field) => baseline.set(field.name, field.value));
       }
-      fields.forEach((field) => baseline.set(field.name, field.value));
-      saveStatus.textContent = 'Textos guardados';
+      if (changedNames.length) {
+        const servicios = changedNames.map((field) => ({ id: field.dataset.serviceNameInput!, nombre_publico: field.value.trim() }));
+        const response = await apiFetch('/api/servicios/nombres', { method: 'PUT', body: JSON.stringify({ servicios }) });
+        if (!response.ok) {
+          const data = await response.json();
+          throw Error(data.error?.mensaje || 'Error al guardar los nombres de servicio.');
+        }
+        changedNames.forEach((field) => {
+          field.value = field.value.trim();
+          serviceNameBaseline.set(field.dataset.serviceNameInput!, field.value);
+          updateServiceNameField(field);
+        });
+      }
+      saveStatus.textContent = 'Cambios guardados';
       fields.forEach((field) => { field.dataset.touched = 'false'; });
+      serviceNameFields.forEach((field) => { field.dataset.touched = 'false'; });
     } catch (error) {
       saveStatus.textContent = (error as Error).message;
     } finally {
@@ -330,6 +429,11 @@ const helpBySection: Record<string, string> = {
     fields.forEach((field) => {
       field.value = baseline.get(field.name) ?? '';
       field.dataset.touched = 'false';
+    });
+    serviceNameFields.forEach((field) => {
+      field.value = serviceNameBaseline.get(field.dataset.serviceNameInput!) ?? '';
+      field.dataset.touched = 'false';
+      updateServiceNameField(field);
     });
     statusLocked = false;
     saveStatus.textContent = 'Todo guardado';

@@ -1,11 +1,12 @@
 ---
 import { servicios } from '../../../../config/servicios';
+import { nombresPublicosIniciales } from '../../../../../../Shared/contracts/servicios';
 import catalogo from '../../../../../../Shared/contracts/textos.json';
 const t=(key:string)=>catalogo[key as keyof typeof catalogo]?.valor||'';
 ---
 <section class="app-view archive-view" data-view-panel="obras" aria-labelledby="archive-heading" hidden>
   <div class="section-intro"><p class="eyebrow" data-text-key="archive.eyebrow">{t('archive.eyebrow')}</p><h1 id="archive-heading" data-styled-title="archive">Obras con <em>historia.</em></h1><p data-text-key="archive.subtitle">{t('archive.subtitle')}</p></div>
-  <div class="archive-filters" role="group" aria-label="Filtrar obras"><button type="button" data-filter="all" aria-pressed="true">Todas</button>{servicios.map(s=><button type="button" data-filter={s.id} aria-pressed="false">{s.corto}</button>)}</div>
+  <div class="archive-filters" role="group" aria-label="Filtrar obras"><button type="button" data-filter="all" aria-pressed="true">Todas</button>{servicios.map(s=><button type="button" data-filter={s.id} aria-pressed="false" data-service-name-display={s.id}>{nombresPublicosIniciales[s.id]}</button>)}</div>
   <p id="archive-status" class="collection-status" role="status"></p><div id="archive-grid" class="archive-grid"></div>
   <button type="button" class="text-button" id="archive-more" hidden>Ver más obras ↓</button>
 </section>

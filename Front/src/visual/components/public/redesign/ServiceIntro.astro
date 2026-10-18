@@ -1,5 +1,6 @@
 ---
 import type { Servicio } from '../../../../config/servicios';
+import { nombresPublicosIniciales } from '../../../../../../Shared/contracts/servicios';
 
 interface Props {
   service: Servicio;
@@ -8,11 +9,12 @@ interface Props {
 }
 
 const { service, subtitle, description } = Astro.props;
+const serviceName = nombresPublicosIniciales[service.id];
 ---
 <div class="service-view__intro">
   <a href="/?vista=inicio" data-view="inicio" class="back-link">← Volver al inicio</a>
-  <p class="eyebrow">{service.numero} / {service.titulo}</p>
-  <h1>{service.titulo}</h1>
+  <p class="eyebrow">{service.numero} / <span data-service-name-display={service.id}>{serviceName}</span></p>
+  <h1 data-service-name-display={service.id}>{serviceName}</h1>
   <p class="service-view__motto" data-text-key={`service.${service.id}.subtitle`}>{subtitle}</p>
   <p class="service-view__description" data-text-key={`service.${service.id}.description`}>{description}</p>
   <button type="button" class="gold-button" data-open-quote data-service-quote={service.id}>Cotizar este servicio ↗</button>

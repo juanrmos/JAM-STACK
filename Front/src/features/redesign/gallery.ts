@@ -2,6 +2,7 @@ import { servicios } from '../../config/servicios';
 import type { Obra, ObrasPage } from '../../services/api/types';
 import { apiJson } from '../../services/api/client';
 import { abrirLightbox } from './lightbox';
+import { nombreServicio } from './service-names';
 
 const obrasPorServicio = new Map<string, Obra[]>();
 const indiceActivo = new Map<string, number>();
@@ -66,7 +67,7 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
     imagenPrincipal.alt = obra?.titulo || 'Imagen de referencia del servicio';
     imagenPrincipal.style.opacity = '1';
   }, 130);
-  principal.querySelector('strong')!.textContent = obra?.titulo || servicio.titulo;
+  principal.querySelector('strong')!.textContent = obra?.titulo || nombreServicio(id);
   principal.querySelector('small')!.textContent = obra
     ? [obra.ubicacion, obra.anio].filter(Boolean).join(' · ') || 'Ampliar obra'
     : 'Sin obras cargadas todavía';
@@ -113,7 +114,7 @@ function renderizarArchivo() {
     imagen.loading = 'lazy';
     const datos = document.createElement('span');
     const categoria = document.createElement('small');
-    categoria.textContent = servicios.find((item) => item.id === obra.servicio_id)?.titulo || '';
+    categoria.textContent = nombreServicio(obra.servicio_id);
     const titulo = document.createElement('strong');
     titulo.textContent = obra.titulo;
     datos.append(categoria, titulo);
@@ -149,6 +150,10 @@ export async function iniciarGalerias() {
     servicios.forEach((service) => {
       if (!obrasPorServicio.get(service.id)?.length) renderizarServicio(service.id);
     });
+  });
+  document.addEventListener('app:service-names-updated', () => {
+    servicios.forEach((service) => renderizarServicio(service.id));
+    renderizarArchivo();
   });
 
   document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((boton) => {

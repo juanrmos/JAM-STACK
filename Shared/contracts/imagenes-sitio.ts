@@ -1,6 +1,7 @@
 import type { Categoria } from './categorias';
 
 export const clavesImagenesSitio = [
+  'home.cover',
   'about.photo',
   'profile.photo',
   'service.mural.cover',
