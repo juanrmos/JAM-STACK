@@ -78,11 +78,20 @@
   .service-view {
     --service-header-height: 70px;
     --service-dock-height: 94px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 1.4rem;
-    padding: 1.5rem 1.2rem 1.25rem;
+    gap: .8rem;
+    padding: 1.1rem 1.2rem 1rem;
   }
 
-  .service-view h1 { font-size: 3.7rem; }
+  .service-view__intro { display: contents; }
+  .service-view .back-link { order: 1; margin: 0 0 .25rem; }
+  .service-view .eyebrow { order: 2; margin: 0; }
+  .service-view h1 { order: 3; font-size: clamp(2.8rem, 12vw, 3.7rem); margin: 0; }
+  .service-view__motto { order: 4; font-size: 1.5rem; line-height: 1.1; }
+  .service-view__description { order: 5; margin: 0 0 .35rem; }
+  .service-view .gold-button { order: 6; }
+  .service-view .compact-profile { order: 8; margin: .3rem 0 0; }
+  .service-view .service-thumbs { order: 9; }
 }

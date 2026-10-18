@@ -63,16 +63,52 @@ try {
   assert.ok(desktop.viewBottom <= desktop.dockTop + 1, JSON.stringify(desktop));
   assert.equal(desktop.documentWidth, 1248);
 
-  await page.locator('[data-view="fachada"].dock-card').click();
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(250);
-  const mobile = await page.evaluate(() => {
-    const view = document.querySelector('[data-view-panel="fachada"]').getBoundingClientRect();
-    const dock = document.querySelector('.service-dock').getBoundingClientRect();
-    return { viewBottom: view.bottom, dockTop: dock.top, documentWidth: document.documentElement.scrollWidth };
-  });
-  assert.ok(mobile.viewBottom <= mobile.dockTop + 1, JSON.stringify(mobile));
-  assert.equal(mobile.documentWidth, 390);
+  for (const viewport of [{ width: 320, height: 740 }, { width: 360, height: 800 }, { width: 390, height: 844 }, { width: 430, height: 932 }, { width: 768, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const id of services) {
+      await page.locator(`[data-view="${id}"].dock-card`).evaluate((element) => element.click());
+      await page.waitForTimeout(450);
+      await page.locator(`[data-view-panel="${id}"]`).waitFor({ state: 'visible' });
+      const mobile = await page.evaluate((serviceId) => {
+        const view = document.querySelector(`[data-view-panel="${serviceId}"]`);
+        view.scrollTop = 0;
+        const dock = document.querySelector('.service-dock').getBoundingClientRect();
+        const hero = view.querySelector('.service-view__gallery').getBoundingClientRect();
+        const profile = view.querySelector('.compact-profile').getBoundingClientRect();
+        const thumbs = view.querySelector('.service-thumbs').getBoundingClientRect();
+        return { viewBottom: view.getBoundingClientRect().bottom, dockTop: dock.top, documentWidth: document.documentElement.scrollWidth, heroTop: hero.top, profileTop: profile.top, thumbsTop: thumbs.top };
+      }, id);
+      assert.ok(mobile.viewBottom <= mobile.dockTop + 1, `${id} ${viewport.width}px: ${JSON.stringify(mobile)}`);
+      assert.equal(mobile.documentWidth, viewport.width, `${id} ${viewport.width}px: horizontal overflow`);
+      if (viewport.width <= 850) {
+        assert.ok(mobile.heroTop < mobile.profileTop && mobile.heroTop < mobile.thumbsTop, `${id} ${viewport.width}px: hero order ${JSON.stringify(mobile)}`);
+        await page.locator(`[data-view-panel="${id}"] [data-active-image]`).scrollIntoViewIfNeeded();
+        const visibleHero = await page.locator(`[data-view-panel="${id}"] [data-active-image]`).evaluate((el) => {
+          const box = el.getBoundingClientRect();
+          const view = el.closest('.service-view').getBoundingClientRect();
+          return box.top >= view.top - 1 && box.bottom <= view.bottom + 2;
+        });
+        assert.ok(visibleHero, `${id} ${viewport.width}px: hero must be reachable without entering the fixed dock`);
+        await page.locator(`[data-thumbs="${id}"]`).scrollIntoViewIfNeeded();
+        const visibleThumbs = await page.locator(`[data-thumbs="${id}"]`).evaluate((el) => {
+          const box = el.getBoundingClientRect();
+          const view = el.closest('.service-view').getBoundingClientRect();
+          return { visible: box.height >= 70 && box.top >= view.top - 1 && box.bottom <= view.bottom + 2, height: box.height };
+        });
+        assert.ok(visibleThumbs.visible, `${id} ${viewport.width}px: thumbnail strip must be fully reachable above the dock ${JSON.stringify(visibleThumbs)}`);
+      }
+    }
+  }
+  for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }, { width: 430, height: 932 }, { width: 768, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    for (const id of ['inicio', 'obras', 'about', 'contacto']) {
+      await page.locator('#menu-toggle').evaluate((element) => element.click());
+      await page.locator(`#main-menu [data-view="${id}"]`).evaluate((element) => element.click());
+      await page.locator(`[data-view-panel="${id}"]`).waitFor({ state: 'visible' });
+      const width = await page.evaluate(() => document.documentElement.scrollWidth);
+      assert.equal(width, viewport.width, `${id} ${viewport.width}px: horizontal overflow`);
+    }
+  }
   assert.deepEqual(externalRequests, []);
   console.log(`PASS: seis servicios comparten miniaturas, Hero, flechas y lightbox; escritorio/móvil y tráfico solo local. Miniaturas visibles: ${JSON.stringify(thumbnailCounts)}. Títulos: ${JSON.stringify(visibleTitles)}.`);
 } finally {

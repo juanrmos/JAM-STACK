@@ -23,15 +23,10 @@ const labels: Record<string, string> = {
   subtitle: 'Subtítulo', description: 'Descripción', tagline: 'Frase del artista',
   specialties: 'Especialidades', photoCaption: 'Pie de foto',
 };
-const limits: Record<string, number> = {
-  eyebrow: 40, title: 60, titleAccent: 20, subtitle: 140, description: 180,
-  tagline: 50, specialties: 60, photoCaption: 80,
-  'home.subtitle': 140, 'about.description': 500, 'contact.description': 180,
-};
 const fieldProps = (key: string, contextualLabel?: string) => {
   const suffix = key.split('.').at(-1) ?? '';
   const multiline = key === 'home.subtitle' || key === 'archive.subtitle' || key.endsWith('.description');
-  const limit = limits[key] ?? (key.startsWith('service.') && suffix === 'subtitle' ? 40 : limits[suffix] ?? 180);
+  const limit = byKey[key]?.max ?? 200;
   return { fieldKey: key, label: contextualLabel ?? labels[suffix] ?? 'Texto', initialValue: byKey[key]?.valor ?? '', limit, multiline, rows: key === 'about.description' ? 5 : 3 };
 };
 
@@ -218,8 +213,22 @@ const helpBySection: Record<string, string> = {
   let statusLocked = false;
   let allowNavigation = false;
 
+  // Mientras carga la API, usa los valores renderizados como referencia y
+  // evita que una carga fallida convierta los valores iniciales en cambios.
+  fields.forEach((field) => baseline.set(field.name, field.value));
+  serviceNameFields.forEach((field) => serviceNameBaseline.set(field.dataset.serviceNameInput || '', field.value));
+
+  function setEditorEnabled(enabled: boolean) {
+    [...fields, ...serviceNameFields].forEach((field) => { field.disabled = !enabled; });
+  }
+
   const isAccent = (field: HTMLInputElement | HTMLTextAreaElement) => field.name.endsWith('.titleAccent');
   const titleForAccent = (field: HTMLInputElement | HTMLTextAreaElement) => field.name.replace(/\.titleAccent$/, '.title');
+  const fieldChanged = (field: HTMLInputElement | HTMLTextAreaElement) => loaded && baseline.has(field.name) && field.value !== baseline.get(field.name);
+  const serviceNameChanged = (field: HTMLInputElement) => {
+    const id = field.dataset.serviceNameInput || '';
+    return loaded && serviceNameBaseline.has(id) && field.value !== serviceNameBaseline.get(id);
+  };
 
   function errorFor(field: HTMLInputElement | HTMLTextAreaElement): string {
     const value = field.value.trim();
@@ -236,7 +245,8 @@ const helpBySection: Record<string, string> = {
   }
 
   function hasChanges() {
-    return fields.some((field) => field.value !== baseline.get(field.name)) || serviceNameFields.some((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || ''));
+    if (!loaded) return false;
+    return fields.some(fieldChanged) || serviceNameFields.some(serviceNameChanged);
   }
 
   function serviceNameError(field: HTMLInputElement): string {
@@ -284,12 +294,12 @@ const helpBySection: Record<string, string> = {
     saveButton.disabled = !dirty || errors || submitting || !loaded;
     discardButton.disabled = !dirty || submitting || !loaded;
     if (!statusLocked) {
-      const dirtyCount = fields.filter((field) => field.value !== baseline.get(field.name)).length + serviceNameFields.filter((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || '')).length;
+      const dirtyCount = fields.filter(fieldChanged).length + serviceNameFields.filter(serviceNameChanged).length;
       saveStatus.textContent = dirty ? `● ${dirtyCount} cambios sin guardar` : 'Todo guardado';
     }
     document.querySelectorAll<HTMLElement>('[data-content-section]').forEach((section) => {
-      const changed = fields.some((field) => field.value !== baseline.get(field.name) && section.contains(field.closest('[data-content-field]')))
-        || (section.dataset.contentSection === 'services' && serviceNameFields.some((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || '')));
+      const changed = fields.some((field) => fieldChanged(field) && section.contains(field.closest('[data-content-field]')))
+        || (section.dataset.contentSection === 'services' && serviceNameFields.some(serviceNameChanged));
       section.querySelector<HTMLElement>('[data-section-dirty]')!.hidden = !changed;
     });
   }
@@ -298,6 +308,9 @@ const helpBySection: Record<string, string> = {
     fields.forEach((field) => updateField(field, showErrors));
     updateSaveState();
   }
+
+  setEditorEnabled(false);
+  updateSaveState();
 
   try {
     const [response, servicesResponse] = await Promise.all([apiFetch('/api/contenido'), apiFetch('/api/servicios')]);
@@ -342,6 +355,7 @@ const helpBySection: Record<string, string> = {
       }
     });
     loaded = true;
+    setEditorEnabled(true);
     updateAll();
   } catch {
     saveStatus.textContent = 'No se pudo cargar el contenido guardado.';
@@ -459,7 +473,10 @@ const helpBySection: Record<string, string> = {
     const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[href]');
     if (!link || !hasChanges() || link.target || link.href.startsWith('javascript:')) return;
     const destination = new URL(link.href, window.location.href);
-    if (destination.href === window.location.href) return;
+    const staysOnCurrentDocument = destination.origin === window.location.origin
+      && destination.pathname === window.location.pathname
+      && destination.search === window.location.search;
+    if (staysOnCurrentDocument) return;
     if (!window.confirm('Tienes cambios sin guardar. ¿Quieres salir de esta página?')) event.preventDefault();
     else allowNavigation = true;
   });
