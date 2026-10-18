@@ -1,0 +1,8 @@
+---
+import catalogo from '../../../../../../Shared/contracts/textos.json';
+const t=(key:string)=>catalogo[key as keyof typeof catalogo]?.valor||'';
+---
+<section class="app-view contact-view" data-view-panel="contacto" aria-labelledby="contact-heading" hidden>
+  <div><p class="eyebrow" data-text-key="contact.eyebrow">{t('contact.eyebrow')}</p><h1 id="contact-heading" data-text-key="contact.title">{t('contact.title')}</h1><p class="lead" data-text-key="contact.description">{t('contact.description')}</p><button type="button" class="gold-button" data-open-quote>Iniciar cotización ↗</button></div>
+  <div class="contact-list"><h2>¿En qué podemos ayudarte?</h2><button type="button" data-open-quote>Solicitar información de teléfono o WhatsApp <span>↗</span></button><button type="button" data-open-quote>Contarnos tu idea <span>↗</span></button><p>Huánuco, Perú · Ubicación exacta por confirmar</p><p>Instagram y Behance: enlaces pendientes de confirmación</p></div>
+</section>

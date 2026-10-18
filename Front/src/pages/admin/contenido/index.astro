@@ -1,0 +1,407 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import ContentField from '../../../visual/components/admin/contenido/ContentField.astro';
+import defaults from '../../../../../Shared/contracts/textos.json';
+import { servicios } from '../../../config/servicios';
+import { clavePortadaServicio } from '../../../../../Shared/contracts/imagenes-sitio';
+import '../../../visual/styles/admin/contenido/page.css';
+
+const entries = Object.entries(defaults);
+const byKey = Object.fromEntries(entries);
+const sections = [
+  { id: 'home', title: 'Inicio', help: 'Portada del sitio', keys: ['home.eyebrow', 'home.title', 'home.titleAccent', 'home.subtitle'] },
+  { id: 'profile', title: 'Perfil', help: 'Tarjetas de perfil y vistas de servicio', keys: ['profile.tagline', 'profile.specialties'] },
+  { id: 'services', title: 'Servicios', help: 'Lemas y descripciones de las seis categorías', keys: [] },
+  { id: 'archive', title: 'Obras', help: 'Encabezado del archivo visual', keys: ['archive.eyebrow', 'archive.title', 'archive.titleAccent', 'archive.subtitle'] },
+  { id: 'about', title: 'Sobre nosotros', help: 'Presentación y fotografía del artista', keys: ['about.photoCaption', 'about.eyebrow', 'about.title', 'about.titleAccent', 'about.description'] },
+  { id: 'contact', title: 'Contacto', help: 'Presentación de la sección de contacto', keys: ['contact.eyebrow', 'contact.title', 'contact.description'] },
+];
+const serviceTabs = servicios.map((service) => ({ ...service, title: service.id === 'logo' ? 'Logos' : service.corto }));
+const labels: Record<string, string> = {
+  eyebrow: 'Texto superior', title: 'Título principal', titleAccent: 'Palabra destacada',
+  subtitle: 'Subtítulo', description: 'Descripción', tagline: 'Frase del artista',
+  specialties: 'Especialidades', photoCaption: 'Pie de foto',
+};
+const limits: Record<string, number> = {
+  eyebrow: 40, title: 60, titleAccent: 20, subtitle: 140, description: 180,
+  tagline: 50, specialties: 60, photoCaption: 80,
+  'home.subtitle': 140, 'about.description': 500, 'contact.description': 180,
+};
+const fieldProps = (key: string, contextualLabel?: string) => {
+  const suffix = key.split('.').at(-1) ?? '';
+  const multiline = key === 'home.subtitle' || key === 'archive.subtitle' || key.endsWith('.description');
+  const limit = limits[key] ?? (key.startsWith('service.') && suffix === 'subtitle' ? 40 : limits[suffix] ?? 180);
+  return { fieldKey: key, label: contextualLabel ?? labels[suffix] ?? 'Texto', initialValue: byKey[key]?.valor ?? '', limit, multiline, rows: key === 'about.description' ? 5 : 3 };
+};
+
+const helpBySection: Record<string, string> = {
+  home: 'Aparece en la portada, debajo del encabezado principal.',
+  profile: 'Aparece en las tarjetas de perfil del artista.',
+  services: 'Aparece en las vistas de cada servicio y en sus galerías.',
+  archive: 'Aparece al inicio de la sección Obras.',
+  about: 'Aparece en la presentación del artista y junto a su fotografía.',
+  contact: 'Aparece al inicio de la sección Contacto.',
+};
+---
+
+<AdminLayout titulo="Contenido — Admin" seccionActiva="contenido">
+  <section data-admin-view="contenido" class="content-admin">
+    <header class="content-admin__intro">
+      <p class="content-admin__eyebrow">ADMINISTRACIÓN DEL SITIO</p>
+      <h2>Contenido del sitio</h2>
+      <p>Edita los textos existentes. Ningún campo puede quedar vacío.</p>
+    </header>
+
+    <nav class="content-jumps" aria-label="Saltar a una sección">
+      {sections.map(({ id, title }) => <a href={`#section-${id}`} data-jump={id}>{title}</a>)}
+    </nav>
+
+    <form id="content-form" aria-hidden="true"></form>
+    <div class="content-sections">
+      {sections.map((section, index) => (
+        <details class="content-card" id={`section-${section.id}`} name="content-section" open={index === 0} data-content-section={section.id}>
+          <summary class="content-card__summary">
+            <span class="content-card__heading">
+              <span class="content-card__title">{section.title}</span>
+              <span class="content-card__help">{helpBySection[section.id]}</span>
+            </span>
+            <span class="content-card__actions">
+              <span class="content-card__dirty" data-section-dirty hidden aria-label="Cambios sin guardar"></span>
+              <svg class="content-card__chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5" /></svg>
+            </span>
+          </summary>
+
+          <div class="content-card__body">
+            {section.id === 'services' ? (
+              <>
+                <div class="service-tabs" role="tablist" aria-label="Categorías de servicios">
+                  {serviceTabs.map((service, serviceIndex) => (
+                    <button type="button" role="tab" aria-selected={serviceIndex === 0} aria-controls={`service-panel-${service.id}`} id={`service-tab-${service.id}`} data-service-tab={service.id}>
+                      {service.title}
+                    </button>
+                  ))}
+                </div>
+                {serviceTabs.map((service, serviceIndex) => (
+                  <section class="service-panel" role="tabpanel" id={`service-panel-${service.id}`} aria-labelledby={`service-tab-${service.id}`} data-service-panel={service.id} hidden={serviceIndex !== 0}>
+                    <h3>{service.title}</h3>
+                    <ContentField {...fieldProps(`service.${service.id}.subtitle`, 'Lema del servicio')} />
+                    <ContentField {...fieldProps(`service.${service.id}.description`, 'Descripción')} />
+                    <section class="about-photo about-photo--service-cover" data-photo-space={clavePortadaServicio[service.id]} data-fallback-src={service.imagen}>
+                      <div class="about-photo__heading">
+                        <div>
+                          <h3>Portada del servicio</h3>
+                          <p>Aparece en el dock inferior y como imagen de respaldo de esta categoría.</p>
+                        </div>
+                      </div>
+                      <div class="about-photo__content">
+                        <div class="about-photo__preview">
+                          <span data-photo-fallback hidden>Portada no disponible</span>
+                          <img data-photo-preview src={service.imagen} alt={`Vista previa de portada: ${service.titulo}`} />
+                        </div>
+                        <form class="about-photo__form" data-photo-form={clavePortadaServicio[service.id]}>
+                          <label for={`service-cover-${service.id}`}>Selecciona una imagen para la portada</label>
+                          <input id={`service-cover-${service.id}`} type="file" accept="image/jpeg,image/png,image/webp" required />
+                          <button type="submit" class="button-secondary">Reemplazar portada</button>
+                          <p class="photo-status" role="status" aria-live="polite"></p>
+                        </form>
+                      </div>
+                    </section>
+                  </section>
+                ))}
+              </>
+            ) : (
+              <div class="content-fields">
+                {section.keys.map((key) => <ContentField {...fieldProps(key)} />)}
+                {section.id === 'profile' && (
+                  <section class="about-photo" data-photo-space="profile.photo">
+                    <div class="about-photo__heading">
+                      <div>
+                        <h3>Fotografía de perfil</h3>
+                        <p>Imagen autorizada. Se muestra en Inicio y en las vistas de servicios.</p>
+                      </div>
+                    </div>
+                    <div class="about-photo__content">
+                      <div class="about-photo__preview">
+                        <span data-photo-fallback aria-hidden="true">AR</span>
+                        <img data-photo-preview alt="Vista previa de la fotografía de perfil" hidden />
+                      </div>
+                      <form class="about-photo__form" data-photo-form="profile.photo">
+                        <label for="profile-photo-file">Selecciona una imagen autorizada</label>
+                        <input id="profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp" required />
+                        <button type="submit" class="button-secondary">Reemplazar fotografía</button>
+                        <p class="photo-status" role="status" aria-live="polite"></p>
+                      </form>
+                    </div>
+                  </section>
+                )}
+                {section.id === 'about' && (
+                  <section class="about-photo" data-photo-space="about.photo">
+                    <div class="about-photo__heading">
+                      <div>
+                        <h3>Fotografía de Sobre nosotros</h3>
+                        <p>Vertical 4:5, mínimo 1200px de alto, imagen autorizada</p>
+                      </div>
+                    </div>
+                    <div class="about-photo__content">
+                      <div class="about-photo__preview" id="about-photo-preview-wrap">
+                        <span id="about-photo-fallback" data-photo-fallback aria-hidden="true">AR</span>
+                        <img id="about-photo-preview" data-photo-preview alt="Vista previa de la fotografía de Sobre nosotros" hidden />
+                      </div>
+                      <form id="about-photo-form" class="about-photo__form" data-photo-form="about.photo">
+                        <label for="about-photo-file">Selecciona una imagen autorizada</label>
+                        <input id="about-photo-file" type="file" accept="image/jpeg,image/png,image/webp" required />
+                        <button type="submit" class="button-secondary">Reemplazar fotografía</button>
+                        <p id="photo-status" class="photo-status" role="status" aria-live="polite"></p>
+                      </form>
+                    </div>
+                  </section>
+                )}
+              </div>
+            )}
+          </div>
+        </details>
+      ))}
+    </div>
+
+    <div class="content-savebar" role="region" aria-label="Guardar cambios">
+      <p id="content-status" class="content-savebar__state" role="status" aria-live="polite">Todo guardado</p>
+      <div class="content-savebar__actions">
+        <button type="button" id="content-discard" class="button-secondary" disabled>Descartar</button>
+        <button type="submit" form="content-form" id="content-save" class="button-primary" disabled>Guardar textos</button>
+      </div>
+    </div>
+  </section>
+</AdminLayout>
+
+<script>
+  import { apiFetch } from '../../../lib/auth';
+
+  const form = document.querySelector<HTMLFormElement>('#content-form')!;
+  const saveStatus = document.querySelector<HTMLElement>('#content-status')!;
+  const saveButton = document.querySelector<HTMLButtonElement>('#content-save')!;
+  const discardButton = document.querySelector<HTMLButtonElement>('#content-discard')!;
+  const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-content-field] input, [data-content-field] textarea'));
+  const baseline = new Map<string, string>();
+  let loaded = false;
+  let submitting = false;
+  let statusLocked = false;
+  let allowNavigation = false;
+
+  const isAccent = (field: HTMLInputElement | HTMLTextAreaElement) => field.name.endsWith('.titleAccent');
+  const titleForAccent = (field: HTMLInputElement | HTMLTextAreaElement) => field.name.replace(/\.titleAccent$/, '.title');
+
+  function errorFor(field: HTMLInputElement | HTMLTextAreaElement): string {
+    const value = field.value.trim();
+    const limit = Number(field.closest<HTMLElement>('[data-content-field]')?.dataset.limit ?? 0);
+    if (!value) return 'Este campo es obligatorio.';
+    if (value.length > limit) return `Supera el límite de ${limit} caracteres.`;
+    if (isAccent(field)) {
+      const title = form.elements.namedItem(titleForAccent(field)) as HTMLInputElement | null;
+      if (title && !title.value.toLocaleLowerCase().includes(value.toLocaleLowerCase())) {
+        return 'La palabra debe aparecer dentro del título.';
+      }
+    }
+    return '';
+  }
+
+  function hasChanges() {
+    return fields.some((field) => field.value !== baseline.get(field.name));
+  }
+
+  function updateField(field: HTMLInputElement | HTMLTextAreaElement, showError = false) {
+    const wrapper = field.closest<HTMLElement>('[data-content-field]')!;
+    const counter = wrapper.querySelector<HTMLElement>('[data-counter]')!;
+    const error = wrapper.querySelector<HTMLElement>('[data-field-error]')!;
+    const limit = Number(wrapper.dataset.limit);
+    counter.textContent = `${field.value.length}/${limit}`;
+    counter.classList.toggle('is-near-limit', field.value.length >= Math.ceil(limit * 0.9) && field.value.length <= limit);
+    counter.classList.toggle('is-over-limit', field.value.length > limit);
+    const message = errorFor(field);
+    const touched = field.dataset.touched === 'true';
+    error.textContent = (showError || touched) ? message : '';
+    field.setAttribute('aria-invalid', message && (showError || touched) ? 'true' : 'false');
+    wrapper.classList.toggle('has-error', Boolean(message && (showError || touched)));
+  }
+
+  function updateSaveState() {
+    const dirty = hasChanges();
+    const errors = fields.some((field) => Boolean(errorFor(field)));
+    saveButton.disabled = !dirty || errors || submitting || !loaded;
+    discardButton.disabled = !dirty || submitting || !loaded;
+    if (!statusLocked) {
+      saveStatus.textContent = dirty ? `● ${fields.filter((field) => field.value !== baseline.get(field.name)).length} cambios sin guardar` : 'Todo guardado';
+    }
+    document.querySelectorAll<HTMLElement>('[data-content-section]').forEach((section) => {
+      const changed = fields.some((field) => field.value !== baseline.get(field.name) && section.contains(field.closest('[data-content-field]')));
+      section.querySelector<HTMLElement>('[data-section-dirty]')!.hidden = !changed;
+    });
+  }
+
+  function updateAll(showErrors = false) {
+    fields.forEach((field) => updateField(field, showErrors));
+    updateSaveState();
+  }
+
+  try {
+    const response = await apiFetch('/api/contenido');
+    if (!response.ok) throw new Error();
+    const data = await response.json();
+    for (const [key, value] of Object.entries(data.textos || {})) {
+      const input = form.elements.namedItem(key) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (input) input.value = String(value);
+    }
+    fields.forEach((field) => baseline.set(field.name, field.value));
+
+    document.querySelectorAll<HTMLFormElement>('[data-photo-form]').forEach((photoForm) => {
+      const imageKey = photoForm.dataset.photoForm!;
+      const space = photoForm.closest<HTMLElement>('[data-photo-space]');
+      const photo = space?.querySelector<HTMLImageElement>('[data-photo-preview]');
+      const fallback = space?.querySelector<HTMLElement>('[data-photo-fallback]');
+      const imageUrl = data.imagenes?.[imageKey];
+      photo?.addEventListener('error', () => {
+        const fallbackUrl = space?.dataset.fallbackSrc;
+        if (fallbackUrl && photo.src !== new URL(fallbackUrl, window.location.href).href) {
+          photo.src = fallbackUrl;
+          return;
+        }
+        photo.hidden = true;
+        if (fallback) fallback.hidden = false;
+      });
+      if (photo && fallback) {
+        const fallbackUrl = space?.dataset.fallbackSrc;
+        if (typeof imageUrl === 'string') photo.src = imageUrl;
+        else if (fallbackUrl) photo.src = fallbackUrl;
+        else photo.hidden = true;
+        photo.hidden = false;
+        fallback.hidden = true;
+      }
+    });
+    loaded = true;
+    updateAll();
+  } catch {
+    saveStatus.textContent = 'No se pudo cargar el contenido guardado.';
+  }
+
+  fields.forEach((field) => {
+    field.addEventListener('input', () => {
+      field.dataset.touched = 'true';
+      statusLocked = false;
+      if (field.name.endsWith('.title')) {
+        const accent = form.elements.namedItem(field.name.replace(/\.title$/, '.titleAccent')) as HTMLInputElement | null;
+        if (accent) accent.dataset.touched = 'true';
+      }
+      updateAll();
+    });
+    field.addEventListener('blur', () => {
+      field.dataset.touched = 'true';
+      updateField(field);
+      updateSaveState();
+    });
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    updateAll(true);
+    if (fields.some((field) => Boolean(errorFor(field)))) return;
+    submitting = true;
+    statusLocked = true;
+    saveStatus.textContent = 'Guardando…';
+    updateSaveState();
+    const textos = Object.fromEntries(new FormData(form).entries());
+    try {
+      const response = await apiFetch('/api/textos', { method: 'PUT', body: JSON.stringify({ textos }) });
+      if (!response.ok) {
+        const data = await response.json();
+        throw Error(data.error?.mensaje || 'Error al guardar.');
+      }
+      fields.forEach((field) => baseline.set(field.name, field.value));
+      saveStatus.textContent = 'Textos guardados';
+      fields.forEach((field) => { field.dataset.touched = 'false'; });
+    } catch (error) {
+      saveStatus.textContent = (error as Error).message;
+    } finally {
+      submitting = false;
+      updateSaveState();
+      window.setTimeout(() => { statusLocked = false; updateSaveState(); }, 3500);
+    }
+  });
+
+  discardButton.addEventListener('click', () => {
+    fields.forEach((field) => {
+      field.value = baseline.get(field.name) ?? '';
+      field.dataset.touched = 'false';
+    });
+    statusLocked = false;
+    saveStatus.textContent = 'Todo guardado';
+    updateAll();
+  });
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-jump]').forEach((link) => link.addEventListener('click', () => {
+    const section = document.querySelector<HTMLDetailsElement>(`#section-${link.dataset.jump}`);
+    if (section) section.open = true;
+  }));
+
+  document.querySelectorAll<HTMLButtonElement>('[data-service-tab]').forEach((tab) => tab.addEventListener('click', () => {
+    document.querySelectorAll<HTMLButtonElement>('[data-service-tab]').forEach((button) => button.setAttribute('aria-selected', String(button === tab)));
+    document.querySelectorAll<HTMLElement>('[data-service-panel]').forEach((panel) => { panel.hidden = panel.dataset.servicePanel !== tab.dataset.serviceTab; });
+  }));
+
+  window.addEventListener('beforeunload', (event) => {
+    if (hasChanges() && !allowNavigation) {
+      event.preventDefault();
+    }
+  });
+  document.addEventListener('click', (event) => {
+    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[href]');
+    if (!link || !hasChanges() || link.target || link.href.startsWith('javascript:')) return;
+    const destination = new URL(link.href, window.location.href);
+    if (destination.href === window.location.href) return;
+    if (!window.confirm('Tienes cambios sin guardar. ¿Quieres salir de esta página?')) event.preventDefault();
+    else allowNavigation = true;
+  });
+
+  document.querySelectorAll<HTMLFormElement>('[data-photo-form]').forEach((photoForm) => {
+    const spaceKey = photoForm.dataset.photoForm!;
+    const space = photoForm.closest<HTMLElement>('[data-photo-space]')!;
+    const photoStatus = photoForm.querySelector<HTMLElement>('.photo-status')!;
+    const photoInput = photoForm.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const photoPreview = space.querySelector<HTMLImageElement>('[data-photo-preview]')!;
+    const photoFallback = space.querySelector<HTMLElement>('[data-photo-fallback]')!;
+    let previewUrl: string | undefined;
+    photoInput.addEventListener('change', () => {
+      const file = photoInput.files?.[0];
+      if (!file) return;
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(file);
+      photoPreview.src = previewUrl;
+      photoPreview.hidden = false;
+      photoFallback.hidden = true;
+      photoStatus.textContent = '';
+    });
+    photoForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const file = photoInput.files?.[0];
+      if (!file) return;
+      photoStatus.textContent = 'Subiendo imagen…';
+      try {
+        const permission = await apiFetch('/api/imagenes-sitio/upload-url', { method: 'POST', body: JSON.stringify({ nombreArchivo: file.name, tipoMime: file.type }) });
+        if (!permission.ok) throw Error('La imagen no cumple los requisitos.');
+        const { uploadUrl, imagenKey: objectKey } = await permission.json();
+        const upload = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+        if (!upload.ok) throw Error('Falló la subida de la imagen.');
+        const save = await apiFetch(`/api/imagenes-sitio/${spaceKey}`, { method: 'PUT', body: JSON.stringify({ imagenKey: objectKey }) });
+        if (!save.ok) throw Error('La imagen no se pudo asignar.');
+        const saved = await save.json();
+        photoPreview.src = saved.imagenUrl;
+        photoPreview.hidden = false;
+        photoFallback.hidden = true;
+        photoStatus.textContent = spaceKey.startsWith('service.') ? 'Portada actualizada.' : 'Fotografía actualizada.';
+        photoForm.reset();
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = undefined;
+      } catch (error) {
+        photoStatus.textContent = (error as Error).message;
+      }
+    });
+  });
+</script>

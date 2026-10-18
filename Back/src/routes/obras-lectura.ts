@@ -2,34 +2,12 @@ import type { Env } from '../types';
 import { generarUrlPublica } from '../lib/storage';
 import { jsonResponse } from './response';
 import { consultarObras } from '../repositories/obras';
-export async function listarObras(
-  request: Request,
-  env: Env,
-): Promise<Response> {
-  const url = new URL(request.url);
-  const categoria = url.searchParams.get("categoria");
-  const buscar = url.searchParams.get("buscar");
-  const ordenFiltro = url.searchParams.get("orden"); // ej: "1-5"
-
-  const limitStr = url.searchParams.get("limit");
-  const offsetStr = url.searchParams.get("offset");
-
-  const limit = limitStr ? parseInt(limitStr, 10) : 50;
-  const offset = offsetStr ? parseInt(offsetStr, 10) : 0;
-
-  const { results, total } = await consultarObras(env, categoria, buscar, ordenFiltro, limit, offset);
-  const obras = (results ?? []).map((obra: Record<string, unknown>) => ({
-    id: obra.id,
-    titulo: obra.titulo,
-    descripcion: obra.descripcion,
-    categoria: obra.categoria,
-    imagenUrl: generarUrlPublica(env, obra.imagen_key as string),
-    videoUrl: obra.video_url,
-    orden: obra.orden,
-    destacado: Boolean(obra.destacado),
-  }));
-
-  const hasMore = offset + obras.length < total;
-
-  return jsonResponse({ obras, hasMore, total });
+import { categorias } from '../../../Shared/contracts/categorias';
+export function obraPublica(env:Env,o:Record<string,unknown>){return {id:o.id,titulo:o.titulo,descripcion:o.descripcion,servicio_id:o.servicio_id,destacado_slot:o.destacado_slot,imagenUrl:generarUrlPublica(env,String(o.imagen_key)),videoUrl:o.video_url,ubicacion:o.ubicacion,anio:o.anio};}
+export async function listarObras(request:Request,env:Env){
+ const q=new URL(request.url).searchParams; const servicio=q.get('servicio_id');
+ const limit=Number(q.get('limit')??50),offset=Number(q.get('offset')??0);
+ if(q.has('categoria')||q.has('orden')||q.has('destacado')||!Number.isInteger(limit)||limit<1||limit>100||!Number.isInteger(offset)||offset<0||(servicio&&!categorias.includes(servicio as typeof categorias[number]))||(q.has('slots')&&q.get('slots')!=='true'))return jsonResponse({error:{mensaje:'Filtros inválidos.'}},400);
+ const {results,total}=await consultarObras(env,servicio,q.get('buscar'),q.get('slots')==='true',limit,offset);
+ const obras=results.map(o=>obraPublica(env,o as Record<string,unknown>));return jsonResponse({obras,total,hasMore:offset+obras.length<total});
 }

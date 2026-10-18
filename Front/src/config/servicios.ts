@@ -1,9 +1,46 @@
-export interface Servicio { numero: string; titulo: string; subtitulo: string; imagen: string }
+import type { Categoria } from '../../../Shared/contracts/categorias';
+export interface Servicio { id: Categoria; numero: string; titulo: string; corto: string; imagen: string }
 export const servicios: readonly Servicio[] = [
-      { numero: "01", titulo: "Murales", subtitulo: "ESTILO ÚNICO MONUMENTAL", imagen: "/images/servicio-murales.jpg" },
-      { numero: "02", titulo: "Esculturas", subtitulo: "ACABADOS DE LUJO A1", imagen: "/images/servicio-esculturas.jpg" },
-      { numero: "03", titulo: "Restauración", subtitulo: "ESPACIOS Y MONUMENTOS", imagen: "/images/servicio-restauracion.jpg" },
-      { numero: "04", titulo: "Diseños", subtitulo: "LETRAS, LOGOS Y SEÑALÉTICA", imagen: "/images/servicio-logos.jpg" },
-      { numero: "05", titulo: "Fachadas", subtitulo: "INTERIORES Y EXTERIORES", imagen: "/images/servicio-fachadas.jpg" },
-      { numero: "06", titulo: "Cuadros", subtitulo: "ÓLEO PERSONALIZADO", imagen: "/images/servicio-cuadros.jpg" },
-    ];
+  {
+    "id": "mural",
+    "numero": "01",
+    "titulo": "Murales monumentales",
+    "corto": "Murales",
+    "imagen": "/images/servicio-murales.jpg"
+  },
+  {
+    "id": "escultura",
+    "numero": "02",
+    "titulo": "Esculturas",
+    "corto": "Esculturas",
+    "imagen": "/images/servicio-esculturas.jpg"
+  },
+  {
+    "id": "cuadro",
+    "numero": "03",
+    "titulo": "Cuadros personalizados",
+    "corto": "Cuadros",
+    "imagen": "/images/servicio-cuadros.jpg"
+  },
+  {
+    "id": "restauracion",
+    "numero": "04",
+    "titulo": "Restauración",
+    "corto": "Restauración",
+    "imagen": "/images/servicio-restauracion.jpg"
+  },
+  {
+    "id": "logo",
+    "numero": "05",
+    "titulo": "Letras y logotipos",
+    "corto": "Letras",
+    "imagen": "/images/servicio-logos.jpg"
+  },
+  {
+    "id": "fachada",
+    "numero": "06",
+    "titulo": "Pintado de fachadas",
+    "corto": "Fachadas",
+    "imagen": "/images/servicio-fachadas.jpg"
+  }
+];

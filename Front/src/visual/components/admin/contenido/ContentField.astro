@@ -1,0 +1,24 @@
+---
+interface Props {
+  fieldKey: string;
+  label: string;
+  initialValue: string;
+  limit: number;
+  multiline: boolean;
+  rows: number;
+}
+
+const { fieldKey, label, initialValue, limit, multiline, rows } = Astro.props;
+---
+
+<label class="content-field" data-content-field={fieldKey} data-limit={limit}>
+  <span class="content-field__label">{label}</span>
+  <span class="content-field__key">{fieldKey}</span>
+  {multiline
+    ? <textarea name={fieldKey} form="content-form" required rows={rows}>{initialValue}</textarea>
+    : <input name={fieldKey} form="content-form" required type="text" value={initialValue} />}
+  <span class="content-field__meta">
+    <span class="content-field__error" data-field-error aria-live="polite"></span>
+    <span class="content-field__counter" data-counter>0/{limit}</span>
+  </span>
+</label>
