@@ -14,6 +14,7 @@ API_PUBLIC_ONLY = "true"
 binding = "DB"
 database_name = "portafolio-db-rediseno-2026-10-18"
 database_id = "fce3a0c7-46b8-4b7a-bc34-de4359c890c7"
+migrations_dir = "migrations-production"
 
 # --- R2 Bucket (fotos de obras) ---
 [[r2_buckets]]

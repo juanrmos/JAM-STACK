@@ -112,6 +112,22 @@
 [data-admin-view="contenido"] .content-card__body { padding: .25rem 1.05rem 1.2rem; border-top: 1px solid rgba(18, 38, 42, .08); }
 [data-admin-view="contenido"] .content-fields { display: grid; gap: .15rem; }
 
+[data-admin-view="contenido"] .home-typography { margin: 1.4rem 0 1.6rem; padding-top: 1.2rem; border-top: 1px solid rgba(18, 38, 42, .1); }
+[data-admin-view="contenido"] .home-typography h3 { margin: 0; color: var(--content-ink); font: 500 1.35rem/1.2 var(--font-display, "Cormorant Garamond", serif); }
+[data-admin-view="contenido"] .home-typography .about-photo__heading p { margin: .2rem 0 0; color: var(--content-muted); font-size: .76rem; line-height: 1.5; }
+[data-admin-view="contenido"] .home-typography__controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; margin: 1rem 0; }
+[data-admin-view="contenido"] .home-typography__controls label { display: grid; gap: .4rem; color: var(--content-ink); font-size: .8rem; font-weight: 600; }
+[data-admin-view="contenido"] .home-typography__controls select { min-height: 44px; padding: .65rem .75rem; border: 1px solid var(--content-border); border-radius: 4px; background: #fff; color: var(--content-ink); font: .88rem var(--font-cuerpo, "DM Sans", sans-serif); }
+[data-admin-view="contenido"] .home-typography__controls select:focus { outline: 2px solid color-mix(in srgb, var(--content-gold) 35%, transparent); outline-offset: 1px; }
+[data-admin-view="contenido"] .home-typography__controls input[type="range"] { width: 100%; accent-color: var(--content-gold); }
+[data-admin-view="contenido"] .home-typography__controls output { justify-self: end; color: var(--content-muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+[data-admin-view="contenido"] .home-title-preview { min-height: 90px; display: flex; align-items: center; padding: 1rem 1.2rem; border: 1px solid rgba(217, 165, 32, .55); background: #12262a; color: #faf8f2; font-size: 1.9rem; line-height: 1.05; overflow-wrap: anywhere; }
+[data-admin-view="contenido"] .home-title-preview[data-title-scale="75"] { font-size: 1.425rem; }
+[data-admin-view="contenido"] .home-title-preview[data-title-scale="80"] { font-size: 1.52rem; }
+[data-admin-view="contenido"] .home-title-preview[data-title-scale="85"] { font-size: 1.615rem; }
+[data-admin-view="contenido"] .home-title-preview[data-title-scale="90"] { font-size: 1.71rem; }
+[data-admin-view="contenido"] .home-title-preview[data-title-scale="95"] { font-size: 1.805rem; }
+
 [data-admin-view="contenido"] .content-field { display: block; min-width: 0; margin: 1rem 0; }
 [data-admin-view="contenido"] .content-field__label {
   display: block;
@@ -268,6 +284,7 @@
   [data-admin-view="contenido"] .content-card__help { max-width: 255px; }
   [data-admin-view="contenido"] .content-card__body { padding: .2rem .8rem 1rem; }
   [data-admin-view="contenido"] .about-photo__content { align-items: flex-start; flex-direction: column; }
+  [data-admin-view="contenido"] .home-typography__controls { grid-template-columns: 1fr; gap: .75rem; }
   [data-admin-view="contenido"] .content-savebar { min-height: 70px; gap: .5rem; padding-right: 1rem; padding-left: 1rem; }
   [data-admin-view="contenido"] .content-savebar__state { max-width: 45%; font-size: .74rem; }
   [data-admin-view="contenido"] .content-savebar__actions { gap: .35rem; }

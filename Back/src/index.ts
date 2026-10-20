@@ -1,4 +1,5 @@
 import { leerContenido,guardarTextos,subirFoto,guardarFoto } from './handlers/contenido';
+import { leerTipografiaPortada, guardarTipografiaPortada } from './handlers/tipografia';
 /**
  * Router principal del Worker API.
  * Orquesta las capas de seguridad (doc 02, §2.1) y despacha a los handlers.
@@ -98,6 +99,10 @@ export default {
         return withCors(await leerContenido(request, env));
       }
 
+      if (method === "GET" && pathname === "/api/tipografia-portada") {
+        return withCors(await leerTipografiaPortada(request, env));
+      }
+
       // El Worker público solo entrega lecturas. El panel usa otro Worker,
       // protegido por Access, que comparte los bindings D1/R2.
       if (env.API_PUBLIC_ONLY === 'true') {
@@ -171,6 +176,7 @@ export default {
 
         // --- Despacho de rutas protegidas ---
         if(method==='PUT' && pathname==='/api/textos')return withCors(await guardarTextos(request,env));
+        if(method==='PUT' && pathname==='/api/tipografia-portada')return withCors(await guardarTipografiaPortada(request,env));
         if(method==='PUT' && pathname==='/api/servicios/nombres')return withCors(await guardarNombresServicios(request,env));
         if(method==='POST' && pathname==='/api/imagenes-sitio/upload-url')return withCors(await subirFoto(request,env));
         const imagenSitioMatch=pathname.match(/^\/api\/imagenes-sitio\/(.+)$/);

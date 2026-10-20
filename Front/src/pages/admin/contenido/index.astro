@@ -5,6 +5,7 @@ import defaults from '../../../../../Shared/contracts/textos.json';
 import { nombresPublicosIniciales } from '../../../../../Shared/contracts/servicios';
 import { servicios } from '../../../config/servicios';
 import { clavePortadaServicio } from '../../../../../Shared/contracts/imagenes-sitio';
+import { fuentesPortada, tamanosPortada, tipografiaPortadaInicial } from '../../../../../Shared/contracts/typografia-portada';
 import '../../../visual/styles/admin/contenido/page.css';
 
 const entries = Object.entries(defaults);
@@ -115,6 +116,32 @@ const helpBySection: Record<string, string> = {
               <div class="content-fields">
                 {section.keys.map((key) => <ContentField {...fieldProps(key)} />)}
                 {section.id === 'home' && (
+                  <section class="home-typography" id="home-typography">
+                    <div class="about-photo__heading">
+                      <div>
+                        <h3>Estilo del título de portada</h3>
+                        <p>Solo cambia la fuente y el tamaño de “Título principal”. Los tamaños disponibles van de 75 % a 100 %.</p>
+                      </div>
+                    </div>
+                    <div class="home-typography__controls">
+                      <label>
+                        <span>Fuente</span>
+                        <select name="tipografia.fuente" form="content-form" data-typography-field data-home-typography-font>
+                          {fuentesPortada.map((font) => <option value={font.id} selected={font.id === tipografiaPortadaInicial.fuente}>{font.nombre}</option>)}
+                        </select>
+                      </label>
+                      <label>
+                        <span>Tamaño del título</span>
+                        <input name="tipografia.escala_porcentaje" form="content-form" data-typography-field data-home-typography-scale type="range" min={tamanosPortada[0]} max={tamanosPortada.at(-1)} step="5" value={tipografiaPortadaInicial.escala_porcentaje} />
+                        <output data-home-typography-output>{tipografiaPortadaInicial.escala_porcentaje}%</output>
+                      </label>
+                    </div>
+                    <div class="home-title-preview" data-home-title-preview-box data-title-font={tipografiaPortadaInicial.fuente} data-title-scale={tipografiaPortadaInicial.escala_porcentaje}>
+                      <span data-home-title-preview>Capturando la esencia en cada trazo.</span>
+                    </div>
+                  </section>
+                )}
+                {section.id === 'home' && (
                   <section class="about-photo about-photo--home-cover" data-photo-space="home.cover" data-fallback-src="/images/hero-obra.jpg">
                     <div class="about-photo__heading">
                       <div>
@@ -206,8 +233,15 @@ const helpBySection: Record<string, string> = {
   const discardButton = document.querySelector<HTMLButtonElement>('#content-discard')!;
   const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-content-field] input, [data-content-field] textarea'));
   const serviceNameFields = Array.from(document.querySelectorAll<HTMLInputElement>('[data-service-name-input]'));
+  const typographyFields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-typography-field]'));
+  const typographyFont = document.querySelector<HTMLSelectElement>('[data-home-typography-font]')!;
+  const typographyScale = document.querySelector<HTMLInputElement>('[data-home-typography-scale]')!;
+  const typographyOutput = document.querySelector<HTMLOutputElement>('[data-home-typography-output]')!;
+  const typographyPreview = document.querySelector<HTMLElement>('[data-home-title-preview-box]')!;
+  const typographyPreviewText = document.querySelector<HTMLElement>('[data-home-title-preview]')!;
   const baseline = new Map<string, string>();
   const serviceNameBaseline = new Map<string, string>();
+  const typographyBaseline = new Map<string, string>();
   let loaded = false;
   let submitting = false;
   let statusLocked = false;
@@ -217,9 +251,10 @@ const helpBySection: Record<string, string> = {
   // evita que una carga fallida convierta los valores iniciales en cambios.
   fields.forEach((field) => baseline.set(field.name, field.value));
   serviceNameFields.forEach((field) => serviceNameBaseline.set(field.dataset.serviceNameInput || '', field.value));
+  typographyFields.forEach((field) => typographyBaseline.set(field.name, field.value));
 
   function setEditorEnabled(enabled: boolean) {
-    [...fields, ...serviceNameFields].forEach((field) => { field.disabled = !enabled; });
+    [...fields, ...serviceNameFields, ...typographyFields].forEach((field) => { field.disabled = !enabled; });
   }
 
   const isAccent = (field: HTMLInputElement | HTMLTextAreaElement) => field.name.endsWith('.titleAccent');
@@ -229,6 +264,17 @@ const helpBySection: Record<string, string> = {
     const id = field.dataset.serviceNameInput || '';
     return loaded && serviceNameBaseline.has(id) && field.value !== serviceNameBaseline.get(id);
   };
+  const typographyChanged = (field: HTMLInputElement | HTMLSelectElement) =>
+    loaded && typographyBaseline.has(field.name) && field.value !== typographyBaseline.get(field.name);
+
+  function updateTypographyPreview() {
+    const scale = Number(typographyScale.value);
+    typographyOutput.value = `${scale}%`;
+    typographyOutput.textContent = `${scale}%`;
+    typographyPreview.dataset.titleFont = typographyFont.value;
+    typographyPreview.dataset.titleScale = String(scale);
+    typographyPreviewText.textContent = (form.elements.namedItem('home.title') as HTMLInputElement | null)?.value || '';
+  }
 
   function errorFor(field: HTMLInputElement | HTMLTextAreaElement): string {
     const value = field.value.trim();
@@ -246,7 +292,7 @@ const helpBySection: Record<string, string> = {
 
   function hasChanges() {
     if (!loaded) return false;
-    return fields.some(fieldChanged) || serviceNameFields.some(serviceNameChanged);
+    return fields.some(fieldChanged) || serviceNameFields.some(serviceNameChanged) || typographyFields.some(typographyChanged);
   }
 
   function serviceNameError(field: HTMLInputElement): string {
@@ -294,12 +340,13 @@ const helpBySection: Record<string, string> = {
     saveButton.disabled = !dirty || errors || submitting || !loaded;
     discardButton.disabled = !dirty || submitting || !loaded;
     if (!statusLocked) {
-      const dirtyCount = fields.filter(fieldChanged).length + serviceNameFields.filter(serviceNameChanged).length;
+      const dirtyCount = fields.filter(fieldChanged).length + serviceNameFields.filter(serviceNameChanged).length + typographyFields.filter(typographyChanged).length;
       saveStatus.textContent = dirty ? `● ${dirtyCount} cambios sin guardar` : 'Todo guardado';
     }
     document.querySelectorAll<HTMLElement>('[data-content-section]').forEach((section) => {
       const changed = fields.some((field) => fieldChanged(field) && section.contains(field.closest('[data-content-field]')))
-        || (section.dataset.contentSection === 'services' && serviceNameFields.some(serviceNameChanged));
+        || (section.dataset.contentSection === 'services' && serviceNameFields.some(serviceNameChanged))
+        || (section.dataset.contentSection === 'home' && typographyFields.some(typographyChanged));
       section.querySelector<HTMLElement>('[data-section-dirty]')!.hidden = !changed;
     });
   }
@@ -313,15 +360,24 @@ const helpBySection: Record<string, string> = {
   updateSaveState();
 
   try {
-    const [response, servicesResponse] = await Promise.all([apiFetch('/api/contenido'), apiFetch('/api/servicios')]);
-    if (!response.ok || !servicesResponse.ok) throw new Error();
+    const [response, servicesResponse, typographyResponse] = await Promise.all([
+      apiFetch('/api/contenido'),
+      apiFetch('/api/servicios'),
+      apiFetch('/api/tipografia-portada'),
+    ]);
+    if (!response.ok || !servicesResponse.ok || !typographyResponse.ok) throw new Error();
     const data = await response.json();
     const servicesData = await servicesResponse.json();
+    const typographyData = await typographyResponse.json();
     for (const [key, value] of Object.entries(data.textos || {})) {
       const input = form.elements.namedItem(key) as HTMLInputElement | HTMLTextAreaElement | null;
       if (input) input.value = String(value);
     }
     fields.forEach((field) => baseline.set(field.name, field.value));
+    typographyFont.value = typographyData.tipografia?.fuente || typographyFont.value;
+    typographyScale.value = String(typographyData.tipografia?.escala_porcentaje || typographyScale.value);
+    typographyFields.forEach((field) => typographyBaseline.set(field.name, field.value));
+    updateTypographyPreview();
     const names = new Map<string, string>((servicesData.servicios || []).map((service: { id: string; nombre_publico: string }) => [service.id, service.nombre_publico]));
     serviceNameFields.forEach((field) => {
       const id = field.dataset.serviceNameInput!;
@@ -369,6 +425,7 @@ const helpBySection: Record<string, string> = {
         const accent = form.elements.namedItem(field.name.replace(/\.title$/, '.titleAccent')) as HTMLInputElement | null;
         if (accent) accent.dataset.touched = 'true';
       }
+      if (field.name === 'home.title') updateTypographyPreview();
       updateAll();
     });
     field.addEventListener('blur', () => {
@@ -393,6 +450,12 @@ const helpBySection: Record<string, string> = {
     });
   });
 
+  typographyFields.forEach((field) => field.addEventListener('input', () => {
+    statusLocked = false;
+    updateTypographyPreview();
+    updateSaveState();
+  }));
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     updateAll(true);
@@ -404,6 +467,7 @@ const helpBySection: Record<string, string> = {
     updateSaveState();
     const changedTexts = fields.filter((field) => field.value !== baseline.get(field.name));
     const changedNames = serviceNameFields.filter((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || ''));
+    const changedTypography = typographyFields.some((field) => field.value !== typographyBaseline.get(field.name));
     try {
       if (changedTexts.length) {
         const textos = Object.fromEntries(changedTexts.map((field) => [field.name, field.value]));
@@ -427,9 +491,26 @@ const helpBySection: Record<string, string> = {
           updateServiceNameField(field);
         });
       }
+      if (changedTypography) {
+        const response = await apiFetch('/api/tipografia-portada', {
+          method: 'PUT',
+          body: JSON.stringify({
+            tipografia: {
+              fuente: typographyFont.value,
+              escala_porcentaje: Number(typographyScale.value),
+            },
+          }),
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          throw Error(data.error?.mensaje || 'Error al guardar la tipografía de portada.');
+        }
+        typographyFields.forEach((field) => typographyBaseline.set(field.name, field.value));
+      }
       saveStatus.textContent = 'Cambios guardados';
       fields.forEach((field) => { field.dataset.touched = 'false'; });
       serviceNameFields.forEach((field) => { field.dataset.touched = 'false'; });
+    typographyFields.forEach((field) => { typographyBaseline.set(field.name, field.value); });
     } catch (error) {
       saveStatus.textContent = (error as Error).message;
     } finally {
@@ -449,6 +530,10 @@ const helpBySection: Record<string, string> = {
       field.dataset.touched = 'false';
       updateServiceNameField(field);
     });
+    typographyFields.forEach((field) => {
+      field.value = typographyBaseline.get(field.name) ?? field.value;
+    });
+    updateTypographyPreview();
     statusLocked = false;
     saveStatus.textContent = 'Todo guardado';
     updateAll();

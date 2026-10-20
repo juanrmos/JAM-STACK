@@ -14,6 +14,7 @@ interface Props {
 const { tituloDocumento = siteConfig.artista.nombreEstudio } = Astro.props;
 
 import "../visual/styles/base.css";
+import "../visual/styles/shared/title-fonts.css";
 import { apiBaseUrl, adminApiBaseUrl } from '../config/env';
 // Validate configuration during the build, before generating any page.
 void apiBaseUrl;
@@ -24,7 +25,7 @@ void adminApiBaseUrl;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" data-site-favicon />
     <link rel="icon" href="/favicon.ico" />
     <meta name="generator" content={Astro.generator} />
     <meta name="app-version" content={__BUILD_VERSION__} />
@@ -43,6 +44,10 @@ void adminApiBaseUrl;
     <title>{tituloDocumento}</title>
 
     <FontLinks />
+    <script>
+      import { iniciarFavicon } from '../features/brand/iniciarFavicon';
+      iniciarFavicon();
+    </script>
 
   </head>
   <body>
