@@ -76,6 +76,7 @@ try {
   await page.locator('.cotizador__enviar').click();
   const opened = new URL(await page.evaluate(()=>window.__opened));
   assert.equal(opened.hostname,'wa.me');
+  assert.equal(opened.pathname,'/51949772875');
   for (const text of ['Árbol & flores','12 m²','interior','2 metros','Jr. Prueba 123','Parque']) assert.ok(opened.searchParams.get('text').includes(text));
   assert.equal(new URL(await page.locator('#boton-whatsapp').getAttribute('href')).pathname,opened.pathname);
   mkdirSync('.work/screenshots',{recursive:true});

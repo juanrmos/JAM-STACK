@@ -4,13 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --local --config wrangler.local.toml --port 8787",
+    "dev": "wrangler dev --local --config wrangler.local.toml --port 8787 --persist-to .wrangler/rediseno",
     "secrets:init:local": "node scripts/create-local-secrets.mjs",
     "deploy": "wrangler deploy",
-    "db:init:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=schema.sql",
+    "db:init:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=schema.sql --persist-to .wrangler/rediseno",
+    "db:migrate:profile-photo:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=migrations/002_ampliar_espacios_imagenes_sitio.sql --persist-to .wrangler/rediseno",
+    "db:migrate:service-covers:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=migrations/003_agregar_portadas_de_servicios.sql --persist-to .wrangler/rediseno",
+    "db:migrate:home-cover:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=migrations/004_agregar_portada_inicio.sql --persist-to .wrangler/rediseno",
+    "db:migrate:service-names:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=migrations/005_agregar_nombre_publico_servicios.sql --persist-to .wrangler/rediseno",
+    "db:migrate:typography:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=migrations/006_agregar_tipografia_portada.sql --persist-to .wrangler/rediseno",
     "typecheck": "tsc --noEmit",
-    "db:seed:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=fixtures/public.sql",
-    "media:seed:local": "wrangler r2 object put portafolio-local/fixtures/obra.jpg --local --config wrangler.local.toml --file=../Front/public/images/hero-obra.jpg --content-type=image/jpeg"
+    "db:seed:local": "wrangler d1 execute portafolio-local --local --config wrangler.local.toml --file=fixtures/public.sql --persist-to .wrangler/rediseno",
+    "media:seed:local": "wrangler r2 object put portafolio-local/fixtures/obra.jpg --local --config wrangler.local.toml --file=../Front/public/images/hero-obra.jpg --content-type=image/jpeg --persist-to .wrangler/rediseno"
   },
   "dependencies": {
     "jose": "^6.0.0",

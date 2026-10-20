@@ -3,15 +3,15 @@ import { escapeHtml, imageSrc } from './html';
 interface ObraResumen {
   id: string;
   titulo: string;
-  categoria: string;
-  orden: number;
+  servicio_id: string;
+  destacado_slot: number | null;
   imagenUrl: string;
 }
 
 export function renderSlotsObras(obras: ObraResumen[]): string {
   return Array.from({length: 5}, (_, index) => {
     const slot = index + 1;
-    const obra = obras.find(item => item.orden === slot);
+    const obra = obras.find(item => item.destacado_slot === slot);
     return obra ? `
       <div class="slot-card slot-card--ocupado" data-id="${escapeHtml(obra.id)}">
         <img src="${imageSrc(obra.imagenUrl)}" alt="${escapeHtml(obra.titulo)}" class="slot-card__img" />
@@ -34,7 +34,7 @@ export function renderTarjetasObras(obras: ObraResumen[]): string {
       <img src="${imageSrc(obra.imagenUrl)}" alt="${escapeHtml(obra.titulo)}" class="grilla-card__img" loading="lazy" />
       <div class="grilla-card__body">
         <strong>${escapeHtml(obra.titulo)}</strong>
-        <span>${escapeHtml(obra.categoria)} | Slot: ${obra.orden === 0 ? '-' : obra.orden}</span>
+        <span>${escapeHtml(obra.servicio_id)} | Slot: ${obra.destacado_slot === null ? '-' : obra.destacado_slot}</span>
         <div class="grilla-card__actions">
           <button class="btn-grilla-editar" data-id="${escapeHtml(obra.id)}">✏️ Editar</button>
           <button class="btn-grilla-borrar" data-id="${escapeHtml(obra.id)}">🗑️ Borrar</button>
@@ -47,7 +47,7 @@ export function renderTarjetasObras(obras: ObraResumen[]): string {
 export function renderSlotsFormulario(obras: ObraResumen[], idActual: string | null, ordenElegido: number): string {
   return Array.from({length: 5}, (_, index) => {
     const slot = index + 1;
-    const obra = obras.find(item => item.orden === slot);
+    const obra = obras.find(item => item.destacado_slot === slot);
     const isSelected = ordenElegido === slot;
     const selected = isSelected ? ' f-slot-card--selected' : '';
     if (obra?.id === idActual) return `

@@ -109,7 +109,7 @@ const { modo = "nueva" } = Astro.props;
     slotsDiv.innerHTML = '<p class="f-slot-status-message">Cargando posiciones...</p>';
 
     try {
-      const res = await apiFetch(`/api/obras?categoria=${cat}&limit=5&orden=1-5`);
+      const res = await apiFetch(`/api/obras?servicio_id=${cat}&limit=5&slots=true`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (version !== slotsVersion) return;
@@ -182,12 +182,16 @@ const { modo = "nueva" } = Astro.props;
           (document.getElementById('f-desc') as HTMLTextAreaElement).value = obra.descripcion || '';
           (document.getElementById('f-video') as HTMLInputElement).value = obra.videoUrl || '';
 
+          (document.getElementById('f-ubicacion') as HTMLInputElement).value = obra.ubicacion || '';
+          (document.getElementById('f-anio') as HTMLInputElement).value = obra.anio || '';
+          (document.getElementById('f-ubicacion') as HTMLInputElement).value = obra.ubicacion || '';
+          (document.getElementById('f-anio') as HTMLInputElement).value = obra.anio || '';
           // Registrar el slot actual antes de cargar las posiciones de la categoría.
-          categoriaOriginal = obra.categoria;
-          ordenOriginal = obra.orden;
-          ordenElegido = obra.orden;
-          selectCat.value = obra.categoria;
-          await cargarSlotsFormulario(obra.categoria);
+          categoriaOriginal = obra.servicio_id;
+          ordenOriginal = obra.destacado_slot ?? 0;
+          ordenElegido = obra.destacado_slot ?? 0;
+          selectCat.value = obra.servicio_id;
+          await cargarSlotsFormulario(obra.servicio_id);
 
           // Preview de imagen actual
           const previewContainer = document.getElementById('f-imagen-preview-container');
@@ -224,9 +228,11 @@ const { modo = "nueva" } = Astro.props;
       let payload: any = {
         titulo: (document.getElementById("f-titulo") as HTMLInputElement).value,
         descripcion: (document.getElementById("f-desc") as HTMLTextAreaElement).value || (obraActualId ? null : undefined),
-        categoria: selectCat.value,
+        servicio_id: selectCat.value,
         videoUrl: (document.getElementById("f-video") as HTMLInputElement).value || (obraActualId ? null : undefined),
-        orden: ordenElegido
+        ubicacion: (document.getElementById('f-ubicacion') as HTMLInputElement).value || null,
+        anio: Number((document.getElementById('f-anio') as HTMLInputElement).value) || null,
+        destacado_slot: ordenElegido || null
       };
 
       if (rawFile) {

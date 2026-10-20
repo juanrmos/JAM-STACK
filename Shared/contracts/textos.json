@@ -1,0 +1,152 @@
+{
+  "home.eyebrow": {
+    "valor": "Artista plástico / Huánuco",
+    "grupo": "home",
+    "max": 80
+  },
+  "home.title": {
+    "valor": "Capturando la esencia en cada trazo.",
+    "grupo": "home",
+    "max": 100
+  },
+  "home.titleAccent": {
+    "valor": "esencia",
+    "grupo": "home",
+    "max": 40
+  },
+  "home.subtitle": {
+    "valor": "Murales, esculturas y proyectos integrales que transforman espacios con la maestría del realismo.",
+    "grupo": "home",
+    "max": 500
+  },
+  "profile.tagline": {
+    "valor": "Talento que trasciende fronteras.",
+    "grupo": "profile",
+    "max": 100
+  },
+  "profile.specialties": {
+    "valor": "Murales · Escultura · Realismo",
+    "grupo": "profile",
+    "max": 120
+  },
+  "archive.eyebrow": {
+    "valor": "Archivo visual",
+    "grupo": "archive",
+    "max": 80
+  },
+  "archive.title": {
+    "valor": "Obras con historia.",
+    "grupo": "archive",
+    "max": 100
+  },
+  "archive.titleAccent": {
+    "valor": "historia",
+    "grupo": "archive",
+    "max": 40
+  },
+  "archive.subtitle": {
+    "valor": "Una selección de proyectos que encuentran su lugar en el mundo.",
+    "grupo": "archive",
+    "max": 500
+  },
+  "about.photoCaption": {
+    "valor": "El oficio, en cada detalle",
+    "grupo": "about",
+    "max": 120
+  },
+  "about.eyebrow": {
+    "valor": "Una práctica con propósito",
+    "grupo": "about",
+    "max": 80
+  },
+  "about.title": {
+    "valor": "Arte hecho con identidad.",
+    "grupo": "about",
+    "max": 100
+  },
+  "about.titleAccent": {
+    "valor": "identidad",
+    "grupo": "about",
+    "max": 40
+  },
+  "about.description": {
+    "valor": "Cada proyecto nace de una idea y de la conversación con quienes habitan el espacio. Conoce nuestra propuesta artística y conversemos sobre lo que te gustaría crear.",
+    "grupo": "about",
+    "max": 1000
+  },
+  "contact.eyebrow": {
+    "valor": "Hablemos de tu idea",
+    "grupo": "contact",
+    "max": 80
+  },
+  "contact.title": {
+    "valor": "Todo gran proyecto empieza con una conversación.",
+    "grupo": "contact",
+    "max": 120
+  },
+  "contact.description": {
+    "valor": "Cuéntanos qué tienes en mente. Te ayudaremos a encontrar la mejor forma de llevarlo a la realidad.",
+    "grupo": "contact",
+    "max": 500
+  },
+  "service.mural.subtitle": {
+    "valor": "Historias en grandes muros",
+    "grupo": "services",
+    "max": 80
+  },
+  "service.mural.description": {
+    "valor": "Arte que transforma muros en relatos vivos. Composiciones originales, pensadas para dialogar con su espacio y su gente.",
+    "grupo": "services",
+    "max": 800
+  },
+  "service.escultura.subtitle": {
+    "valor": "Forma que respira",
+    "grupo": "services",
+    "max": 80
+  },
+  "service.escultura.description": {
+    "valor": "Volumen, materia y carácter se encuentran en piezas únicas, creadas para habitar espacios con presencia y sensibilidad.",
+    "grupo": "services",
+    "max": 800
+  },
+  "service.cuadro.subtitle": {
+    "valor": "Tu historia, enmarcada",
+    "grupo": "services",
+    "max": 80
+  },
+  "service.cuadro.description": {
+    "valor": "Retratos y obras hechas a medida que conservan lo esencial: una historia, una emoción, una forma propia de mirar.",
+    "grupo": "services",
+    "max": 800
+  },
+  "service.restauracion.subtitle": {
+    "valor": "Memoria que perdura",
+    "grupo": "services",
+    "max": 80
+  },
+  "service.restauracion.description": {
+    "valor": "Cuidado experto para recuperar la fuerza y el detalle de obras, superficies y espacios con valor artístico y afectivo.",
+    "grupo": "services",
+    "max": 800
+  },
+  "service.logo.subtitle": {
+    "valor": "Tu marca, a gran escala",
+    "grupo": "services",
+    "max": 80
+  },
+  "service.logo.description": {
+    "valor": "Identidad visual pintada a mano para marcas que quieren hacerse ver. Diseño, precisión y oficio en cada trazo.",
+    "grupo": "services",
+    "max": 800
+  },
+  "service.fachada.subtitle": {
+    "valor": "Identidad en cada muro",
+    "grupo": "services",
+    "max": 80
+  },
+  "service.fachada.description": {
+    "valor": "Una nueva mirada para la fachada de tu negocio o vivienda, con color, intención y una ejecución hecha para durar.",
+    "grupo": "services",
+    "max": 800
+  }
+}

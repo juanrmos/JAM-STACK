@@ -1,7 +1,7 @@
 ---
 import { siteConfig } from "../../../../config/site";
 interface Props {
-  seccionActiva?: "obras" | "logos";
+  seccionActiva?: "obras" | "logos" | "contenido";
 }
 const { seccionActiva = "obras" } = Astro.props;
 import "../../../styles/admin/header/header.css";
@@ -17,5 +17,6 @@ import "../../../styles/admin/header/header.css";
   <nav class="admin-header__nav">
     <a href="/admin/obras" class={`admin-header__tab ${seccionActiva === 'obras' ? 'admin-header__tab--active' : ''}`}>OBRAS</a>
     <a href="/admin/logos" class={`admin-header__tab ${seccionActiva === 'logos' ? 'admin-header__tab--active' : ''}`}>LOGOS</a>
+    <a href="/admin/contenido" class={`admin-header__tab ${seccionActiva === 'contenido' ? 'admin-header__tab--active' : ''}`}>CONTENIDO</a>
   </nav>
 </header>

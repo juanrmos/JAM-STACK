@@ -1,0 +1,100 @@
+.service-view--gallery {
+  grid-template-columns: minmax(340px, 42%) minmax(0, 1fr);
+  align-items: center;
+}
+
+.service-thumbs {
+  display: flex;
+  gap: .65rem;
+  max-width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+
+.service-thumbs button {
+  width: 76px;
+  height: 72px;
+  flex: none;
+  border: 1px solid transparent;
+  background: #3d4645;
+  scroll-snap-align: start;
+}
+
+.service-thumbs button[aria-pressed=true] { border: 2px solid var(--gold); }
+.service-thumbs img { width: 100%; height: 100%; object-fit: cover; }
+
+.service-view__gallery {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-width: 0;
+}
+
+.service-active {
+  position: relative;
+  flex: 1;
+  height: min(66vh, 650px, calc(100dvh - 92px - 118px - 6rem));
+  min-height: 240px;
+  min-width: 0;
+  border: 1px solid var(--gold);
+  padding: 0;
+  background: #282e2b;
+  color: white;
+  overflow: hidden;
+}
+
+.service-active img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity .4s;
+}
+
+.service-active span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 1rem 1rem;
+  background: linear-gradient(transparent, #000c);
+}
+
+.service-active strong { font: 2rem 'Cormorant Garamond', serif; }
+.service-active small { font-size: .75rem; }
+
+.gallery-arrow {
+  flex: none;
+  width: 36px;
+  height: 45px;
+  border: 1px solid #ffffff55;
+  background: #1c2728;
+  color: white;
+}
+
+@media (max-width: 850px) {
+  .service-view__gallery {
+    order: 7;
+    width: 100%;
+    min-height: 0;
+    flex: none;
+  }
+  .service-active {
+    height: clamp(220px, 40dvh, 340px);
+    min-height: 0;
+  }
+  .service-thumbs {
+    order: 9;
+    width: 100%;
+    flex: 0 0 72px;
+    min-height: 72px;
+    padding-bottom: .2rem;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gallery-arrow { width: 38px; height: 44px; }
+}

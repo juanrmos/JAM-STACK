@@ -1,0 +1,45 @@
+---
+import { servicios } from '../../../../config/servicios';
+import { nombresPublicosIniciales } from '../../../../../../Shared/contracts/servicios';
+import catalogo from '../../../../../../Shared/contracts/textos.json';
+import ServiceIntro from './ServiceIntro.astro';
+
+const t = (key: string) => catalogo[key as keyof typeof catalogo]?.valor || '';
+---
+{servicios.map((s) => (
+  <section
+    class="app-view service-view service-view--gallery"
+    data-view-panel={s.id}
+    data-service={s.id}
+    aria-label={nombresPublicosIniciales[s.id]}
+    data-service-name-aria={s.id}
+    hidden
+  >
+    <ServiceIntro
+      service={s}
+      subtitle={t(`service.${s.id}.subtitle`)}
+      description={t(`service.${s.id}.description`)}
+    >
+      <div class="service-thumbs" data-thumbs={s.id} aria-label={`Miniaturas de ${nombresPublicosIniciales[s.id]}`} data-service-name-aria={s.id} data-service-name-aria-template="Miniaturas de {name}"></div>
+    </ServiceIntro>
+
+    <div class="service-view__gallery" aria-label={`Galería de ${nombresPublicosIniciales[s.id]}`} data-service-name-aria={s.id} data-service-name-aria-template="Galería de {name}">
+      <button type="button" class="gallery-arrow" data-slide="prev" aria-label="Obra anterior">←</button>
+      <button type="button" class="service-active" data-active-image={s.id} aria-label="Ampliar obra seleccionada">
+        <img src={s.imagen} alt="Imagen de referencia del servicio" data-service-cover-fallback={s.id} />
+        <span><strong data-service-name-display={s.id}>{nombresPublicosIniciales[s.id]}</strong><small>Selecciona una obra para ampliarla</small></span>
+      </button>
+      <button type="button" class="gallery-arrow" data-slide="next" aria-label="Obra siguiente">→</button>
+    </div>
+  </section>
+))}
+
+<nav class="service-dock" aria-label="Servicios artísticos">
+  {servicios.map((s) => (
+    <button type="button" data-view={s.id} class="dock-card" aria-label={nombresPublicosIniciales[s.id]} data-service-name-aria={s.id}>
+      <img src={s.imagen} alt="" loading="lazy" data-service-cover={s.id} />
+      <span class="dock-card__number">{s.numero}</span>
+      <span class="dock-card__name" data-service-name-display={s.id}>{nombresPublicosIniciales[s.id]}</span>
+    </button>
+  ))}
+</nav>

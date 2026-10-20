@@ -1,2 +1,2 @@
-export const categorias = ['mural', 'fachada', 'cuadro', 'escultura', 'restauracion', 'logo'] as const;
+export const categorias = ['mural', 'escultura', 'cuadro', 'restauracion', 'logo', 'fachada'] as const;
 export type Categoria = typeof categorias[number];

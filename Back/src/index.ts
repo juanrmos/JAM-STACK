@@ -1,3 +1,5 @@
+import { leerContenido,guardarTextos,subirFoto,guardarFoto } from './handlers/contenido';
+import { leerTipografiaPortada, guardarTipografiaPortada } from './handlers/tipografia';
 /**
  * Router principal del Worker API.
  * Orquesta las capas de seguridad (doc 02, §2.1) y despacha a los handlers.
@@ -16,6 +18,7 @@ import { verificarAccessJwt } from "./middleware/verificarAccess";
 import { verificarToken } from "./middleware/verificarJwt";
 import { verificarLimite } from "./lib/rateLimiter";
 import { handleLogin } from "./handlers/auth";
+import { listarServicios, guardarNombresServicios } from "./handlers/servicios";
 import {
   listarObras,
   obtenerUrlSubida,
@@ -39,45 +42,10 @@ import {
 import { jsonResponse } from "./routes/response";
 import { crearRespuestaAccessInicio } from "./routes/accessBootstrap";
 import { servirMedia, recibirSubidaLocal } from "./storage/local";
+import { corsHeaders } from "./http/cors";
+import { clavesImagenesSitio, type ImagenSitioClave } from "../../Shared/contracts/imagenes-sitio";
 
 // ---- CORS ----
-function corsHeaders(request: Request, env: Env): Record<string, string> {
-  if (env.API_PUBLIC_ONLY === 'true') {
-    return {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    };
-  }
-  const origin = request.headers.get('Origin');
-  const requestHost = new URL(request.url).hostname;
-  const local = env.LOCAL_MEDIA === 'true' && ['localhost', '127.0.0.1', '[::1]'].includes(requestHost);
-  let permitido = false;
-  if (origin) {
-    try {
-      const url = new URL(origin);
-      const isPagesPreview = env.ALLOW_PAGES_PREVIEW_ORIGINS === "true" &&
-        url.protocol === "https:" && url.hostname.endsWith(".portafolio-front.pages.dev");
-      permitido = local
-        ? url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
-        : url.protocol === 'https:' && (origin === env.FRONTEND_ORIGIN || isPagesPreview);
-    } catch {
-      permitido = false;
-    }
-  }
-  return {
-    'Vary': 'Origin',
-    ...(permitido ? {
-      'Access-Control-Allow-Origin': origin!,
-      'Access-Control-Allow-Credentials': 'true',
-    } : {}),
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers":
-      "Content-Type, Authorization",
-    "Access-Control-Max-Age": "86400",
-  };
-}
-
 function withRequestCors(request: Request, env: Env, response: Response): Response {
   const headers = new Headers(response.headers);
   for (const [key, value] of Object.entries(corsHeaders(request, env))) {
@@ -121,6 +89,18 @@ export default {
       // GET /api/logos — lectura pública, sin auth
       if (method === "GET" && pathname === "/api/logos") {
         return withCors(await listarLogos(request, env));
+      }
+
+      if (method === "GET" && pathname === "/api/servicios") {
+        return withCors(await listarServicios(request, env));
+      }
+
+      if (method === "GET" && pathname === "/api/contenido") {
+        return withCors(await leerContenido(request, env));
+      }
+
+      if (method === "GET" && pathname === "/api/tipografia-portada") {
+        return withCors(await leerTipografiaPortada(request, env));
       }
 
       // El Worker público solo entrega lecturas. El panel usa otro Worker,
@@ -195,6 +175,12 @@ export default {
         }
 
         // --- Despacho de rutas protegidas ---
+        if(method==='PUT' && pathname==='/api/textos')return withCors(await guardarTextos(request,env));
+        if(method==='PUT' && pathname==='/api/tipografia-portada')return withCors(await guardarTipografiaPortada(request,env));
+        if(method==='PUT' && pathname==='/api/servicios/nombres')return withCors(await guardarNombresServicios(request,env));
+        if(method==='POST' && pathname==='/api/imagenes-sitio/upload-url')return withCors(await subirFoto(request,env));
+        const imagenSitioMatch=pathname.match(/^\/api\/imagenes-sitio\/(.+)$/);
+        if(method==='PUT' && imagenSitioMatch && (clavesImagenesSitio as readonly string[]).includes(imagenSitioMatch[1]))return withCors(await guardarFoto(request,env,imagenSitioMatch[1] as ImagenSitioClave));
 
         // POST /api/obras/upload-url
         if (method === "POST" && pathname === "/api/obras/upload-url") {

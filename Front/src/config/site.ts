@@ -6,11 +6,11 @@
  */
 export const siteConfig = {
   artista: {
-    nombreEstudio: "Corporacion Antony Rodriguez",
+    nombreEstudio: "Corporación Artística Antony Rodríguez",
     estilo: ["Exclusividad", "Excelencia plástica", "Rigor profesional"],
   },
   contacto: {
-    whatsapp: "51949772875", // Número oficial del cliente para wa.me
+    whatsapp: "+51 949 772 875", // Se normaliza a dígitos al generar el enlace wa.me
     mensajeCotizacion:
       "Hola, quiero cotizar un mural de [obra] de [m² aprox], [interior o exterior], [piso/altura]. Te comparto mi direccion: [Direccion], [Referencia].",
   },

@@ -698,3 +698,118 @@ El formulario nuevo de obra muestra el bloque de posiciones debajo de Categoría
 Verificación: `tests/admin-delete-sync.mjs` comprueba borrado de obra destacada en mural y cuadro, rechazo HTTP sin quitar la obra, borrado de logo activo y selección de slots en creación/edición. `tests/admin-visual.mjs` y `tests/admin-local-browser.mjs` también pasaron; este último usa el Worker, D1 y R2 locales con subidas reales. No se desplegó a producción.
 
 La preparación para integrar estos cambios en `production`, con puertas de prueba, revisión de Cloudflare y recuperación, se documenta en `12-procedimiento-promocion-production.md`. Su estado inicial es no listo para merge por los defectos y configuraciones aún pendientes.
+
+## 18. Decisiones para el nuevo flujo público
+
+**Fecha:** 17 de octubre de 2026. Estas decisiones orientan el prototipo nuevo; no describen funcionalidades ya implementadas salvo donde se indica.
+
+### 18.1 Identidad, contacto y categorías
+
+- El número de WhatsApp confirmado es `+51 949 772 875` y se conserva como destinatario. `siteConfig.contacto.whatsapp` puede almacenarlo con formato legible; `features/cotizacion/whatsapp.ts` elimina los caracteres no numéricos antes de construir el enlace `wa.me`.
+- Los identificadores internos de categorías permanecen estables: `mural`, `escultura`, `cuadro`, `restauracion`, `logo` y `fachada`. Cambiar un nombre público no cambia estos IDs ni los contratos que clasifican obras; el Worker conserva los mismos valores internos y entrega por separado `nombre_publico`.
+- La configuración pública de servicios será la fuente estructural en `Front/src/config/servicios.ts`: ID, número, orden del dock, plantilla, recurso visual de respaldo y categoría que se precarga en el cotizador. Los seis servicios comparten la misma plantilla de galería. D1 `servicios` guarda el `nombre_publico` editable para cada ID fijo; el Worker entrega esos nombres y el Front los aplica de forma uniforme en dock, vistas, filtros, cotizador y etiquetas accesibles. No habrá mapas de nombres paralelos en `i18n/categorias.ts` o `i18n/es.ts`. Los lemas y descripciones editoriales se leen de D1 mediante claves fijas de `textos`, según `13-propuesta-reestructuracion-base-datos.md`.
+- El contrato compartido seguirá siendo dueño de los IDs y del tipo `Categoria`. Las etiquetas administrativas pueden permanecer neutrales y separadas para que el cambio de nombres de marketing no altere incidentalmente el panel. Los tipos de las respuestas de obras deben usar `Categoria` en lugar de `string` donde corresponda.
+- Orden comercial del dock: `mural`, `escultura`, `cuadro`, `restauracion`, `logo`, `fachada`, con los nombres «Murales monumentales», «Esculturas», «Cuadros personalizados», «Restauración», «Letras y logotipos» y «Pintado de fachadas».
+
+### 18.2 Navegación SPA y carga actual de galerías
+
+Se conserva la experiencia de una sola página sin recargas, con header, dock y WhatsApp persistentes, pero el código y los datos se dividen por vista y responsabilidad. SPA describe cómo se navega; no obliga a renderizar ni descargar todo el catálogo al entrar. La entrada Astro compone el shell y la vista activa, mientras controladores separados gestionan navegación, cotizador, archivo, galerías de servicio y lightbox.
+
+Se conserva el patrón de carga que ya usa el sitio público: al iniciar la página, la galería consulta en paralelo las seis categorías y solicita hasta cinco obras por categoría. El Hero también consulta el logo activo. No se cambia esta carga inicial por consultas diferidas al entrar a cada vista; la decisión se basa en que el comportamiento actual ha sido aceptable con el catálogo disponible. El navegador conserva la carga diferida de imágenes que ya declaran `loading="lazy"`. Los cambios de vista pueden iniciar su transición de 400 ms mientras se resuelven sus datos, mostrando un estado de carga local si hace falta.
+
+La lectura de los nuevos textos editables será una consulta adicional agrupada y reutilizada por las vistas; no modificará ni repetirá las seis consultas de obras ni la del logo activo. Mientras se resuelve, la interfaz tendrá contenido genérico de respaldo para evitar una vista vacía.
+
+La implementación mantendrá explícitamente ese contrato de carga: `Front/src/features/galeria/index.ts` inicializa los seis rieles mediante `Promise.all`, cada petición obtiene hasta cinco obras y el Hero consulta el logo activo. La separación en vistas no debe duplicar las solicitudes ni cambiar silenciosamente su momento de ejecución. Se mantendrán estados independientes de carga, vacío, error y reintento por vista/categoría.
+
+Las vistas y controladores se separarán por feature para que una falla de galería, cotización o lightbox no dependa de un módulo monolítico. La navegación deberá conservar el retorno con Atrás/Adelante del navegador y, al cerrar un lightbox, restaurar la vista, el filtro y la posición desde la que se abrió. En móvil, el gesto entre servicios no interceptará el desplazamiento vertical, las miniaturas, carruseles ni controles interactivos; toda acción tendrá alternativa accesible por botones y teclado. Las transiciones respetarán `prefers-reduced-motion`.
+
+### 18.3 Flujo funcional de navegación
+
+Este flujo especifica cómo se conectan las vistas propuestas. Es una experiencia de una sola página: las vistas principales cambian sin recargar el documento, y el header, el dock inferior y el botón flotante de WhatsApp permanecen disponibles según la composición responsive.
+
+1. **Entrada:** abrir `/` presenta Inicio. Desde allí se llega a Inicio, Obras, Sobre nosotros o Contacto mediante el header; se puede abrir el cotizador, seleccionar cualquiera de los seis servicios desde el dock o iniciar una conversación desde WhatsApp.
+2. **Header:** el monograma AR y el nombre de la corporación devuelven a Inicio. Inicio muestra la portada; Obras abre el archivo; Sobre nosotros abre la presentación del artista; Contacto abre las opciones de contacto. Cotizar proyecto abre el cotizador en el paso Obra sin categoría precargada. En móvil el menú se despliega y se cierra después de seleccionar un destino.
+3. **Inicio:** el CTA abre el cotizador en Obra; la tarjeta de perfil abre Sobre nosotros; una tarjeta del dock abre la categoría correspondiente; WhatsApp abre un mensaje inicial usando el número confirmado `+51 949 772 875`.
+4. **Dock de servicios:** seleccionar una tarjeta establece la categoría activa y presenta su vista con una transición aproximada de 400 ms. La tarjeta seleccionada se reconoce por número y estilo. En móvil, la tira horizontal admite desplazamiento y ajuste para centrar la tarjeta activa.
+5. **Los seis servicios usan una plantilla de galería común:** Murales monumentales, Esculturas, Cuadros personalizados, Restauración, Letras y logotipos y Pintado de fachadas muestran Volver al inicio, la información del servicio, Cotizar este servicio, miniaturas, perfil compacto y una obra activa grande. Elegir miniatura o usar las flechas cambia la imagen activa con fundido de 400 ms; pulsar la imagen abre el lightbox. La primera obra devuelta por la API —ordenada con posiciones destacadas primero— ocupa el Hero. El CTA abre el cotizador con esa categoría precargada. El perfil compacto abre Sobre nosotros y Volver al inicio abre Inicio. En móvil el contenido puede desplazarse verticalmente; un gesto horizontal fuera de miniaturas, controles y elementos interactivos cambia al servicio anterior o siguiente.
+6. **Obras:** Obras en el header abre el mosaico. Todas y los filtros de categoría limitan las tarjetas visibles. Seleccionar una obra abre el lightbox; cerrarlo vuelve al archivo conservando filtro y posición.
+7. **Sobre nosotros:** se abre desde el header o una tarjeta de perfil. Conversemos sobre tu proyecto dirige a Contacto. El header y el dock siguen permitiendo navegación a las demás vistas.
+8. **Contacto:** se abre desde el header. Cotizar y las acciones que solicitan información conducen al cotizador. El usuario puede seguir navegando por header y dock.
+9. **Cotizador:** el panel lateral tiene los pasos Obra, Medidas y Contacto. Obra recoge servicio/proyecto y detalles; Medidas recoge metros cuadrados aproximados, interior/exterior y piso/altura; Contacto recoge nombre, teléfono o WhatsApp y correo. Continuar avanza, Volver retrocede. Si se abre desde un servicio, este se precarga. Enviar por WhatsApp crea un resumen de las respuestas y abre WhatsApp para que el usuario lo envíe. Como aún no se configuró un destinatario comercial distinto, se utiliza el número confirmado del sitio. Cerrar, Escape o clic fuera descartan el panel.
+10. **Lightbox:** se abre desde una obra de galería o el mosaico. Muestra imagen y datos disponibles. Flechas recorren el conjunto de obras; cerrar, Escape o clic fuera cierra la vista y restaura la página, filtro y posición de origen.
+11. **Móvil:** el header usa menú desplegable; el dock se desplaza horizontalmente y el contenido largo admite desplazamiento vertical. Los gestos de cambio de servicio solo se reconocen fuera de galerías y controles, y cada gesto tiene una alternativa mediante botones accesibles.
+
+El historial del navegador debe reflejar los cambios de vista para que Atrás y Adelante funcionen sin recargar la página. El estado de servicio, filtro y obra seleccionada debe poder restaurarse. La apertura del cotizador es un panel superpuesto y no cambia la vista base.
+
+### 18.4 Especificación UI/UX del rediseño público
+
+Esta especificación recoge el resultado visual y la interacción acordados. Su implementación local en la rama `feature/rediseno-integral` se registra al final de esta sección; esa implementación sigue en validación y no se ha publicado.
+
+#### Sistema visual y estructura persistente
+
+- La paleta usa verde azulado profundo `#12262A`, superficies verde azulado, crema `#FAF8F2` y dorado `#D9A520`. Los títulos usan Cormorant Garamond y la interfaz DM Sans.
+- Header, dock inferior y botón flotante de WhatsApp son elementos persistentes durante la navegación. Las vistas cambian con transiciones de 400 ms, reducidas o eliminadas cuando el sistema solicita `prefers-reduced-motion`.
+- El header presenta monograma AR, nombre «Corporación Artística Antony Rodríguez», enlaces Inicio, Obras, Sobre nosotros y Contacto, y CTA Cotizar proyecto. En móvil los enlaces pasan a un menú desplegable.
+- El dock contiene las seis categorías con número, imagen y nombre público. Admin puede cambiar ese nombre visible en los seis registros existentes; no puede crear, eliminar, reordenar servicios ni cambiar sus IDs o comportamiento. El mismo nombre se refleja en filtros, vistas, cotizador y etiquetas accesibles. Cada imagen de portada se edita desde Admin > Contenido > Servicios en un espacio fijo `service.<id>.cover`; si todavía no se cargó una, se usa la ruta local configurada para esa categoría. En móvil el dock pasa a una tira horizontal desplazable. WhatsApp permanece en una posición flotante separada del dock, las imágenes y otros controles.
+- En móvil las vistas largas admiten desplazamiento vertical; las galerías horizontales conservan su propio desplazamiento y no deben confundirse con gestos de cambio de servicio.
+
+#### Vista 1 — Inicio
+
+La portada ocupa la pantalla disponible con una fotografía de fondo y un degradado oscuro hacia la izquierda para mantener el texto legible y dejar visible la obra al otro lado. La columna principal comienza 40 px debajo del header y presenta, en este orden: etiqueta «Artista plástico / Huánuco»; título «Capturando la esencia en cada trazo», con «esencia» en cursiva dorada; descripción breve de servicios; CTA dorado «Cotizar proyecto»; y tarjeta de perfil separada del CTA por 32 px.
+
+La tarjeta de perfil tiene hasta 400 px, fondo crema translúcido con blur, borde fino y barra dorada a la izquierda. Contiene avatar cuadrado, cargo, nombre, frase y especialidades. Al pasar el cursor se ilumina el borde y se desplaza la flecha; al activarla abre Sobre nosotros. Si no existe fotografía autorizada, usa monograma AR. El dock permite entrar directamente a cualquiera de las seis categorías.
+
+#### Vista 2 — Obras
+
+El archivo visual muestra título «Obras con historia», una introducción breve y filtros Todas, Murales, Esculturas, Cuadros, Restauración, Letras o Fachadas. Debajo aparece un mosaico fotográfico. Al pasar el cursor, la tarjeta presenta un degradado con categoría y título; al seleccionarla, abre el lightbox con la obra ampliada y los datos disponibles. El archivo tiene desplazamiento interno dentro del marco general de la aplicación y conserva filtro y posición al cerrar el lightbox.
+
+#### Vista 3 — Sobre nosotros
+
+La composición enfrenta una fotografía con la presentación del artista. El texto describe su práctica desde Huánuco y su relación con realismo, memoria y espacios cotidianos. Incluye tres indicadores destacados y un enlace para continuar a Contacto. El contenido se alcanza desde el header y desde las tarjetas de perfil. Las fotografías y cifras requieren verificación antes de publicación.
+
+#### Vista 4 — Contacto
+
+La vista presenta bienvenida, invitación a conversar sobre el proyecto y CTA para iniciar una cotización. A su lado agrupa opciones para solicitar información por teléfono o WhatsApp, conversar sobre una idea, consultar la ubicación en Huánuco y visitar Instagram y Behance. No se inventan números, correos, ubicaciones exactas ni perfiles. Las acciones de solicitud de información llevan al cotizador; WhatsApp usa el número confirmado `+51 949 772 875`.
+
+#### Vistas 5–10 — Plantilla de galería común
+
+Los seis servicios comparten fondo grafito `#141616`, columna de información izquierda y obra principal derecha. La columna incluye Volver al inicio, número y nombre público del servicio en dorado, descripción breve, CTA «Cotizar este servicio», miniaturas y perfil compacto. El nombre público procede de D1 y es el mismo que aparece en el dock, los filtros y el cotizador. La configuración del Front puede conservar los nombres iniciales como respaldo de carga, con una comprobación de paridad contra la semilla D1; después de recibir el catálogo prevalece el valor editado. La galería muestra la obra activa en gran tamaño, borde dorado y degradado inferior con título, ubicación y año únicamente cuando estén verificados. Cambiar miniatura aplica fundido de 400 ms; pulsar la obra abre el lightbox.
+
+El perfil compacto contiene avatar AR, cargo, nombre y flecha; no incluye frase ni especialidades y abre Sobre nosotros. El CTA precarga el ID estable de la categoría, aunque el campo visible presente su nombre editable. Los nombres iniciales son Murales monumentales, Esculturas, Cuadros personalizados, Restauración, Letras y logotipos y Pintado de fachadas; Admin puede cambiarlos sin alterar IDs ni relaciones. Los lemas y las descripciones editoriales autorizadas se leen de `textos` con respaldo genérico. La primera obra ordenada por destacados aparece en el Hero; si no existen obras, se muestra el recurso visual de referencia del servicio. Un título que repite el nombre público queda sincronizado con ese valor; un título editorial separado requeriría una decisión y campo propios.
+
+Letras y logotipos describe identidad visual pintada a mano. Pintado de fachadas presenta color e identidad aplicados a fachadas. Cada servicio conserva su contenido y sus obras, con la misma composición de galería e interacciones.
+
+#### Cotizador
+
+El cotizador aparece como panel lateral oscuro, sin cambiar de página. Incluye encabezado «Cotizador» y progreso de tres pasos: Obra, Medidas y Contacto. En Obra se indica servicio/proyecto y detalles; en Medidas, metros cuadrados aproximados, interior/exterior y piso/altura; en Contacto, nombre, teléfono o WhatsApp y correo. Un servicio de origen se precarga cuando corresponde. Continuar avanza y Volver regresa. «Enviar por WhatsApp» prepara el resumen y abre el destino para que el usuario lo envíe. El panel se cierra con su botón, Escape o clic fuera.
+
+#### Lightbox
+
+El lightbox ocupa la pantalla con fondo oscuro. Centra la imagen conservando proporciones y muestra debajo categoría, título, ubicación y año solo si están disponibles y verificados. Flechas laterales recorren las obras; el botón de cierre, Escape o clic fuera cierra la ampliación. Al cerrarse, devuelve al contexto exacto de origen.
+
+#### Contenido e imágenes
+
+Las imágenes y fichas del archivo incluidas como referencias visuales no se considerarán prueba de trabajos reales. Antes de publicar se sustituirán o validarán con el artista. Tampoco se inventarán fotografía de perfil, biografía, cifras, enlaces sociales, ubicación ni año. Cuando no haya retrato aprobado, se usa monograma AR. El catálogo actual de obras no incluye ubicación ni año; se decidirá si se amplían el modelo, API y formulario administrativo o si esos metadatos se omiten hasta verificarlos.
+
+### 18.5 Dependencias de contenido por resolver antes de publicar
+
+- Las fichas actuales de obra no incluyen ubicación ni año como campos públicos. No se mostrarán datos inventados; antes de incorporar esas leyendas se decidirá si se agregan campos al modelo, API y formulario administrativo o si se omiten cuando no estén verificados.
+- Para las cuatro miniaturas de galería se definirá una única regla de selección basada en los slots existentes o en `destacado`; no se crearán dos mecanismos de curación que puedan divergir.
+- La biografía, cifras de trayectoria, enlaces sociales y fotografías deben ser confirmados por el artista. Si no se entrega una foto, se conserva el monograma AR indicado en la especificación.
+
+### 18.6 Criterios para aceptar esta fase
+
+- Abrir Inicio conserva las seis consultas paralelas de categoría (hasta cinco obras cada una) y la consulta del logo activo; navegar entre vistas no duplica esas cargas sin necesidad.
+- Cambiar de vista no recarga el documento, y Atrás/Adelante y el cierre de lightbox recuperan el contexto de navegación.
+- Las categorías mantienen sus IDs actuales; una única configuración pública produce nombres y orden consistentes en dock, filtros, vistas y cotizador, sin cambiar etiquetas de Admin por accidente.
+- La interfaz muestra estados de carga, vacío y error por categoría; imágenes no visibles no retrasan la primera vista.
+- Se validan el menú móvil, los gestos, controles de teclado y movimiento reducido, además de los anchos responsive definidos en la auditoría visual.
+
+### 18.7 Estado de implementación local
+
+- La portada, Obras, Sobre nosotros, Contacto y las seis vistas de servicio están compuestas como una SPA con configuración de servicios centralizada, historial de navegación, transiciones y estilos públicos separados por responsabilidad.
+- El cotizador, filtros, galerías y lightbox están conectados al Worker local. Se mantienen las consultas iniciales de obras por categoría y la consulta del logo activo; la comprobación integrada registró 11 solicitudes iniciales, todas locales.
+- El modelo local incorpora `ubicacion` y `anio` opcionales. La interfaz solo muestra esos valores si están presentes; los fixtures no se presentan como trabajos verificados.
+- Las fuentes DM Sans y Cormorant Garamond se sirven desde paquetes instalados en Front para que la carga local no dependa de Google Fonts.
+- La vista de Sobre nosotros conserva contenido genérico y placeholders; no se agregaron estadísticas ni enlaces de contacto sin verificar.
+- La comprobación de Playwright valida API, CRUD y slots en D1/R2 local, edición de textos y foto, navegación SPA, filtro, lightbox, cotizador precargado, menú móvil, historial y ausencia de desbordamiento a 390 px. No certifica dispositivos móviles reales ni una futura publicación.

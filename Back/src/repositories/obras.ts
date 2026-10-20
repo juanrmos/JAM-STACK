@@ -1,41 +1,12 @@
 import type { Env } from '../types';
-export async function consultarObras(env: Env, categoria: string | null, buscar: string | null, ordenFiltro: string | null, limit: number, offset: number) {
-  let queryCount = "SELECT COUNT(*) as total FROM obras";
-  let query = "SELECT * FROM obras";
-  const condiciones: string[] = [];
-  const params: unknown[] = [];
-
-  if (categoria) {
-    condiciones.push("categoria = ?");
-    params.push(categoria);
-  }
-
-  if (buscar) {
-    condiciones.push("titulo LIKE ? COLLATE NOCASE");
-    params.push(`%${buscar}%`);
-  }
-
-  if (ordenFiltro === "1-5") {
-    condiciones.push("orden >= 1 AND orden <= 5");
-  }
-
-  if (condiciones.length > 0) {
-    const where = " WHERE " + condiciones.join(" AND ");
-    query += where;
-    queryCount += where;
-  }
-
-  // Ordenar de modo que orden=0 quede al final, y luego por orden ASC y fecha_creacion DESC
-  query += " ORDER BY CASE WHEN orden = 0 THEN 1 ELSE 0 END ASC, orden ASC, fecha_creacion DESC LIMIT ? OFFSET ?";
-
-  const countResult = await env.DB.prepare(queryCount)
-    .bind(...params)
-    .first<{ total: number }>();
-  const total = countResult?.total || 0;
-
-  const { results } = await env.DB.prepare(query)
-    .bind(...params, limit, offset)
-    .all();
-
-  return { results, total };
+export async function consultarObras(env:Env, servicio:string|null,buscar:string|null,slots:boolean,limit:number,offset:number){
+ const where:string[]=[]; const params:unknown[]=[];
+ if(servicio){where.push('servicio_id=?');params.push(servicio);}
+ if(buscar){where.push('titulo LIKE ? COLLATE NOCASE');params.push(`%${buscar}%`);}
+ if(slots)where.push('destacado_slot IS NOT NULL');
+ const filtro=where.length?' WHERE '+where.join(' AND '):'';
+ const result=await env.DB.batch<{total:number}|Record<string,unknown>>([
+ env.DB.prepare('SELECT COUNT(*) total FROM obras'+filtro).bind(...params),
+ env.DB.prepare('SELECT * FROM obras'+filtro+' ORDER BY destacado_slot IS NULL, destacado_slot, fecha_creacion DESC,id LIMIT ? OFFSET ?').bind(...params,limit,offset)]);
+ return {results:result[1].results,total:Number(result[0].results[0]?.total||0)};
 }

@@ -1,6 +1,7 @@
 import { siteConfig } from '../../config/site';
 export function enlaceWhatsapp(mensaje: string) {
-  return `https://wa.me/${siteConfig.contacto.whatsapp}?text=${encodeURIComponent(mensaje)}`;
+  const numero = siteConfig.contacto.whatsapp.replace(/\D/g, '');
+  return `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
 }
 export interface Cotizacion { obra: string; medidas: string; ubicacion: string; altura: string; direccion: string; referencia: string }
 export function mensajeCotizacion(datos: Cotizacion) {

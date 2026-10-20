@@ -15,6 +15,10 @@ import "../../../styles/admin/logos/logo-formulario.css";
     <div class="campo">
       <label for="fl-archivo">Imagen del logo (PNG/JPG/WebP) *</label>
       <input type="file" id="fl-archivo" accept="image/jpeg, image/png, image/webp" />
+      <div id="fl-preview-container" class="logo-upload-preview" hidden aria-live="polite">
+        <img id="fl-preview" alt="Vista previa del logo" />
+        <span>Vista previa</span>
+      </div>
       <small id="fl-archivo-help" class="campo__hint admin-hidden">Dejar vacío para conservar la imagen actual.</small>
     </div>
 

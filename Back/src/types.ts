@@ -42,6 +42,8 @@ export interface Env {
   CF_ACCESS_TEAM: string;
   /** AUD de la aplicación Access que protege el administrador y la API privada */
   CF_ACCESS_AUD: string;
+  /** AUD de la aplicación Access sobre /admin/* del Pages canónico */
+  CF_ACCESS_AUD_FRONTEND?: string;
   /** Origen HTTPS exacto del Front permitido por CORS en producción */
   FRONTEND_ORIGIN: string;
 }

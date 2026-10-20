@@ -20,9 +20,25 @@ const { modo = "nuevo" } = Astro.props;
   const btn = document.getElementById("fl-btn") as HTMLButtonElement;
 
   const inputArchivo = document.getElementById("fl-archivo") as HTMLInputElement;
+  const previewContainer = document.getElementById("fl-preview-container") as HTMLDivElement;
+  const previewImage = document.getElementById("fl-preview") as HTMLImageElement;
   const inputNombre = document.getElementById("fl-nombre") as HTMLInputElement;
   const checkActivo = document.getElementById("fl-activo") as HTMLInputElement;
   const labelArchivo = document.getElementById("fl-archivo-help") as HTMLElement;
+  let previewObjectUrl: string | null = null;
+
+  function mostrarVistaPrevia(src: string) {
+    previewImage.src = src;
+    previewContainer.hidden = false;
+  }
+
+  inputArchivo.addEventListener("change", () => {
+    const file = inputArchivo.files?.[0];
+    if (!file) return;
+    if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+    previewObjectUrl = URL.createObjectURL(file);
+    mostrarVistaPrevia(previewObjectUrl);
+  });
 
   // AUTO-INIT: si hay ?id= en la URL, cargar los datos del logo
   async function inicializar() {
@@ -36,6 +52,7 @@ const { modo = "nuevo" } = Astro.props;
           const logo = await res.json();
           inputNombre.value = logo.nombre;
           checkActivo.checked = logo.activo;
+          if (logo.imagenUrl) mostrarVistaPrevia(logo.imagenUrl);
         } else {
           throw new Error(`HTTP ${res.status}`);
         }

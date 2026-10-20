@@ -13,9 +13,8 @@ export const tokens = {
     bordeLinea: "rgba(47, 79, 79, 0.12)", // Líneas divisorias finas del diseño editorial
   },
   tipografia: {
-    display: "'Newsreader', serif",
-    // General Sans requiere licencia y self-hosting — DM Sans (Google Fonts) como fallback libre.
-    cuerpo: "'General Sans', 'DM Sans', sans-serif",
+    display: "'Cormorant Garamond', serif",
+    cuerpo: "'DM Sans', sans-serif",
     escala: {
       h1: "clamp(3rem, 6vw, 5.5rem)",
       h2: "clamp(2rem, 4vw, 3.5rem)",
