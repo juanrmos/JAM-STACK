@@ -1,0 +1,7 @@
+body:has(#app-main) .home-view h1[data-title-font="cormorant-garamond"], .home-title-preview[data-title-font="cormorant-garamond"] { font-family: "Cormorant Garamond", serif; }
+body:has(#app-main) .home-view h1[data-title-font="fraunces"], .home-title-preview[data-title-font="fraunces"] { font-family: "Fraunces", serif; }
+body:has(#app-main) .home-view h1[data-title-font="lora"], .home-title-preview[data-title-font="lora"] { font-family: "Lora", serif; }
+body:has(#app-main) .home-view h1[data-title-font="playfair"], .home-title-preview[data-title-font="playfair"] { font-family: "Playfair Display", serif; }
+body:has(#app-main) .home-view h1[data-title-font="dm-serif-display"], .home-title-preview[data-title-font="dm-serif-display"] { font-family: "DM Serif Display", serif; }
+body:has(#app-main) .home-view h1[data-title-font="young-serif"], .home-title-preview[data-title-font="young-serif"] { font-family: "Young Serif", serif; }
+body:has(#app-main) .home-view h1[data-title-font="libre-baskerville"], .home-title-preview[data-title-font="libre-baskerville"] { font-family: "Libre Baskerville", serif; }

@@ -60,6 +60,8 @@ test('el proxy permite contenido, textos, servicios e imágenes del panel y los 
     ['/admin/api/textos', '/api/textos', 'PUT'],
     ['/admin/api/servicios', '/api/servicios', 'GET'],
     ['/admin/api/servicios/nombres', '/api/servicios/nombres', 'PUT'],
+    ['/admin/api/tipografia-portada', '/api/tipografia-portada', 'GET'],
+    ['/admin/api/tipografia-portada', '/api/tipografia-portada', 'PUT'],
     ['/admin/api/imagenes-sitio/upload-url', '/api/imagenes-sitio/upload-url', 'POST'],
     ['/admin/api/imagenes-sitio/about.photo', '/api/imagenes-sitio/about.photo', 'PUT'],
   ];

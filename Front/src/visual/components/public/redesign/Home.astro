@@ -7,7 +7,7 @@ const t=(key:string)=>catalogo[key as keyof typeof catalogo]?.valor||'';
   <div class="home-view__shade"></div>
   <div class="home-view__content">
     <p class="eyebrow" data-text-key="home.eyebrow">{t('home.eyebrow')}</p>
-    <h1 id="home-heading" data-styled-title="home">Capturando la <em>esencia</em> en cada trazo.</h1>
+    <h1 id="home-heading" data-styled-title="home" data-title-font="cormorant-garamond" data-title-scale="100">Capturando la <em>esencia</em> en cada trazo.</h1>
     <p class="lead" data-text-key="home.subtitle">{t('home.subtitle')}</p>
     <button type="button" class="gold-button" data-open-quote>Cotizar proyecto <span aria-hidden="true">↗</span></button>
     <button type="button" class="profile-card" data-view="about"><span class="profile-card__avatar" data-profile-avatar><span data-profile-fallback>AR</span><img data-profile-photo alt="" hidden /></span><span><small>PRESIDENTE EJECUTIVO</small><strong>Antony Rodríguez</strong><span data-text-key="profile.tagline">{t('profile.tagline')}</span><small data-text-key="profile.specialties">{t('profile.specialties')}</small></span><span class="profile-card__arrow" aria-hidden="true">↗</span></button>
