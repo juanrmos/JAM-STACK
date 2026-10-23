@@ -1,0 +1,26 @@
+:root:has(#app-main),
+body:has(#app-main) {
+  color-scheme: dark;
+}
+
+body:has(#app-main) * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 165, 32, .55) transparent;
+}
+
+body:has(#app-main) *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body:has(#app-main) *::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background: rgba(217, 165, 32, .55);
+  background-clip: padding-box;
+}
+
+body:has(#app-main) *::-webkit-scrollbar-track { background: transparent; }
+
+body:has(#app-main) .service-ribbon__viewport { scrollbar-width: none; }
+body:has(#app-main) .service-ribbon__viewport::-webkit-scrollbar { display: none; }

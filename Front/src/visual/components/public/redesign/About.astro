@@ -2,7 +2,32 @@
 import catalogo from '../../../../../../Shared/contracts/textos.json';
 const t=(key:string)=>catalogo[key as keyof typeof catalogo]?.valor||'';
 ---
-<section class="app-view about-view" data-view-panel="about" aria-labelledby="about-heading" hidden>
-  <div class="about-view__photo"><img id="about-photo" src="/images/servicio-murales.jpg" alt="Imagen de referencia artística; fotografía oficial pendiente" /><span data-text-key="about.photoCaption">{t('about.photoCaption')}</span></div>
-  <div class="about-view__copy"><p class="eyebrow" data-text-key="about.eyebrow">{t('about.eyebrow')}</p><h1 id="about-heading" data-styled-title="about">Arte hecho con <em>identidad.</em></h1><p class="lead" data-text-key="about.description">{t('about.description')}</p><p class="pending-content">Trayectoria y cifras pendientes de confirmación.</p><a href="/?vista=contacto" data-view="contacto" class="text-link">Conversemos sobre tu proyecto ↗</a></div>
+<section class="app-view about-view about-collection" data-view-panel="sobre-nosotros" aria-labelledby="about-heading" hidden>
+  <div class="about-presentation">
+    <figure class="about-view__photo about-presentation__photo">
+      <span class="about-presentation__monogram" aria-hidden="true">AR</span>
+      <img data-profile-photo alt="Retrato de Antony Rodríguez" hidden />
+      <figcaption>Presidente ejecutivo</figcaption>
+    </figure>
+    <div class="about-view__copy">
+      <p class="eyebrow" data-text-key="about.eyebrow">{t('about.eyebrow')}</p>
+      <h1 id="about-heading" data-styled-title="about">{t('about.title')}</h1>
+      <p class="lead" data-text-key="about.description">{t('about.description')}</p>
+      <button type="button" class="profile-card about-profile-card" data-view="perfil">
+        <span class="profile-card__avatar" data-profile-avatar><span data-profile-fallback>AR</span><img data-profile-photo alt="" hidden /></span>
+        <span><small>PRESIDENTE EJECUTIVO</small><strong>Antony Rodríguez</strong></span>
+        <span class="profile-card__arrow" aria-hidden="true">↗</span>
+      </button>
+      <div class="about-presentation__actions">
+        <a href="/?vista=contacto" data-view="contacto" class="gold-button">Conversemos sobre tu proyecto <span aria-hidden="true">↗</span></a>
+        <a href="/?vista=obras" data-view="obras" class="text-link">Ver archivo de obras →</a>
+      </div>
+    </div>
+  </div>
+  <section class="about-gallery" aria-labelledby="about-gallery-heading">
+    <p class="eyebrow">Galería fotográfica</p>
+    <h2 id="about-gallery-heading" data-text-key="about.photoCaption">{t('about.photoCaption') || 'Detrás del oficio'}</h2>
+    <p id="about-photos-status" role="status">Cargando fotografías…</p>
+    <div id="about-photos-grid" class="about-gallery__grid"></div>
+  </section>
 </section>

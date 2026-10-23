@@ -5,44 +5,14 @@ import ObrasListView from "../../visual/components/admin/obras/ObrasListView.ast
 <ObrasListView />
 <script>
   import { apiFetch } from "../../lib/auth";
-  import { renderSlotsObras, renderTarjetasObras } from "../../visual/templates/admin/obras";
+  import { renderTarjetasObras } from "../../visual/templates/admin/obras";
 
-  const slotsContainer = document.getElementById("slots-riel");
   const grillaContainer = document.getElementById("obras-grilla");
   const filtroCat = document.getElementById("filtro-categoria") as HTMLSelectElement;
   const filtroBuscar = document.getElementById("filtro-buscar") as HTMLInputElement;
 
   let currentTimer: any = null;
-  let slotsVersion = 0;
   let gridVersion = 0;
-
-  async function cargarSlots(categoria: string, version: number) {
-    if (!slotsContainer) return;
-    slotsContainer.innerHTML = "<p>Cargando slots...</p>";
-    try {
-      const res = await apiFetch(`/api/obras?servicio_id=${categoria}&limit=5&slots=true`);
-      if (!res.ok) throw new Error("Error fetching slots");
-      const data = await res.json();
-      if (version !== slotsVersion) return;
-      const obras = data.obras || [];
-
-      slotsContainer.innerHTML = renderSlotsObras(obras);
-
-      // Eventos de slots
-      document.querySelectorAll('.slot-card--ocupado, .btn-slot-editar').forEach(el => {
-        el.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const target = e.currentTarget as HTMLElement;
-          const id = target.dataset.id;
-          if (id) {
-            window.location.href = `/admin/obras/editar?id=${id}`;
-          }
-        });
-      });
-    } catch (e) {
-      if (version === slotsVersion) slotsContainer.innerHTML = "<p>Error al cargar posiciones destacadas.</p>";
-    }
-  }
 
   async function cargarGrilla(pagina: number, version: number) {
     if (!grillaContainer) return;
@@ -54,7 +24,8 @@ import ObrasListView from "../../visual/components/admin/obras/ObrasListView.ast
     const offset = (pagina - 1) * limit;
 
     try {
-      let url = `/api/obras?servicio_id=${categoria}&limit=${limit}&offset=${offset}`;
+      let url = `/api/obras?limit=${limit}&offset=${offset}`;
+      if (categoria) url += `&servicio_id=${encodeURIComponent(categoria)}`;
       if (buscar.trim()) {
         url += `&buscar=${encodeURIComponent(buscar)}`;
       }
@@ -109,7 +80,7 @@ import ObrasListView from "../../visual/components/admin/obras/ObrasListView.ast
   }
 
   async function cargarDashboard(pagina = 1) {
-    await Promise.all([cargarSlots(filtroCat.value, ++slotsVersion), cargarGrilla(pagina, ++gridVersion)]);
+    await cargarGrilla(pagina, ++gridVersion);
   }
 
   // Escuchar filtros

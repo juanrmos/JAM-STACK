@@ -1,5 +1,7 @@
 import { leerContenido,guardarTextos,subirFoto,guardarFoto } from './handlers/contenido';
 import { leerTipografiaPortada, guardarTipografiaPortada } from './handlers/tipografia';
+import { listarFotosSobreNosotros, agregarFotoSobreNosotros, ordenarFotosSobreNosotros, eliminarFotoSobreNosotros } from './handlers/galeria-about';
+import { listarCamposCotizador, guardarCamposCotizador } from './handlers/cotizador';
 /**
  * Router principal del Worker API.
  * Orquesta las capas de seguridad (doc 02, §2.1) y despacha a los handlers.
@@ -102,6 +104,8 @@ export default {
       if (method === "GET" && pathname === "/api/tipografia-portada") {
         return withCors(await leerTipografiaPortada(request, env));
       }
+      if (method === "GET" && pathname === "/api/about/photos") return withCors(await listarFotosSobreNosotros(request, env));
+      if (method === "GET" && pathname === "/api/cotizador/campos") return withCors(await listarCamposCotizador(request, env));
 
       // El Worker público solo entrega lecturas. El panel usa otro Worker,
       // protegido por Access, que comparte los bindings D1/R2.
@@ -178,6 +182,11 @@ export default {
         if(method==='PUT' && pathname==='/api/textos')return withCors(await guardarTextos(request,env));
         if(method==='PUT' && pathname==='/api/tipografia-portada')return withCors(await guardarTipografiaPortada(request,env));
         if(method==='PUT' && pathname==='/api/servicios/nombres')return withCors(await guardarNombresServicios(request,env));
+        if(method==='PUT' && pathname==='/api/cotizador/campos')return withCors(await guardarCamposCotizador(request,env));
+        if(method==='POST' && pathname==='/api/about/photos')return withCors(await agregarFotoSobreNosotros(request,env));
+        if(method==='PUT' && pathname==='/api/about/photos/order')return withCors(await ordenarFotosSobreNosotros(request,env));
+        const aboutPhotoMatch=pathname.match(/^\/api\/about\/photos\/([a-f0-9-]+)$/);
+        if(method==='DELETE' && aboutPhotoMatch)return withCors(await eliminarFotoSobreNosotros(request,env,aboutPhotoMatch[1]));
         if(method==='POST' && pathname==='/api/imagenes-sitio/upload-url')return withCors(await subirFoto(request,env));
         const imagenSitioMatch=pathname.match(/^\/api\/imagenes-sitio\/(.+)$/);
         if(method==='PUT' && imagenSitioMatch && (clavesImagenesSitio as readonly string[]).includes(imagenSitioMatch[1]))return withCors(await guardarFoto(request,env,imagenSitioMatch[1] as ImagenSitioClave));

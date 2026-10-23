@@ -1,0 +1,23 @@
+:root:has(.admin-layout),
+body:has(.admin-layout) {
+  color-scheme: light;
+}
+
+body:has(.admin-layout) * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 63, 66, .45) transparent;
+}
+
+body:has(.admin-layout) *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body:has(.admin-layout) *::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background: rgba(31, 63, 66, .45);
+  background-clip: padding-box;
+}
+
+body:has(.admin-layout) *::-webkit-scrollbar-track { background: transparent; }

@@ -16,7 +16,7 @@ await context.route('**/*', (route) => {
 
 try {
   const page = await context.newPage();
-  await page.goto('http://127.0.0.1:4321/?vista=logo');
+  await page.goto('http://127.0.0.1:4322/?vista=logo');
 
   for (const id of services) {
     const panel = page.locator(`[data-view-panel="${id}"]`);
@@ -74,9 +74,9 @@ try {
         view.scrollTop = 0;
         const dock = document.querySelector('.service-dock').getBoundingClientRect();
         const hero = view.querySelector('.service-view__gallery').getBoundingClientRect();
-        const profile = view.querySelector('.compact-profile').getBoundingClientRect();
+        const profile = view.querySelector('.compact-profile');
         const thumbs = view.querySelector('.service-thumbs').getBoundingClientRect();
-        return { viewBottom: view.getBoundingClientRect().bottom, dockTop: dock.top, documentWidth: document.documentElement.scrollWidth, heroTop: hero.top, profileTop: profile.top, thumbsTop: thumbs.top };
+        return { viewBottom: view.getBoundingClientRect().bottom, dockTop: dock.top, documentWidth: document.documentElement.scrollWidth, heroTop: hero.top, profileTop: profile?.getBoundingClientRect().top ?? Number.POSITIVE_INFINITY, thumbsTop: thumbs.top };
       }, id);
       assert.ok(mobile.viewBottom <= mobile.dockTop + 1, `${id} ${viewport.width}px: ${JSON.stringify(mobile)}`);
       assert.equal(mobile.documentWidth, viewport.width, `${id} ${viewport.width}px: horizontal overflow`);
@@ -101,7 +101,7 @@ try {
   }
   for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }, { width: 430, height: 932 }, { width: 768, height: 900 }]) {
     await page.setViewportSize(viewport);
-    for (const id of ['inicio', 'obras', 'about', 'contacto']) {
+    for (const id of ['inicio', 'obras', 'perfil', 'sobre-nosotros', 'contacto']) {
       await page.locator('#menu-toggle').evaluate((element) => element.click());
       await page.locator(`#main-menu [data-view="${id}"]`).evaluate((element) => element.click());
       await page.locator(`[data-view-panel="${id}"]`).waitFor({ state: 'visible' });
@@ -109,6 +109,43 @@ try {
       assert.equal(width, viewport.width, `${id} ${viewport.width}px: horizontal overflow`);
     }
   }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('http://127.0.0.1:4321/?vista=mural');
+  const mural = page.locator('[data-view-panel="mural"]');
+  const muralThumbs = mural.locator('[data-thumbs="mural"]');
+  await muralThumbs.locator('button').first().waitFor({ state: 'visible' });
+  const spacing = await mural.evaluate((panel) => {
+    const button = panel.querySelector('.gold-button').getBoundingClientRect();
+    const thumbs = panel.querySelector('.service-thumbs').getBoundingClientRect();
+    return Math.round(thumbs.top - button.bottom);
+  });
+  assert.ok(spacing >= 8, `Móvil: las miniaturas deben separarse del botón de cotización (${spacing}px)`);
+  const muralTotal = await page.evaluate(async () => (await (await fetch('http://127.0.0.1:8787/api/obras?servicio_id=mural&limit=1')).json()).total);
+  if (muralTotal >= 50) {
+    for (let pass = 0; pass < 12; pass += 1) {
+      const count = await muralThumbs.locator('button').count();
+      if (count >= 50) break;
+      await muralThumbs.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+      await page.waitForFunction((previous) => document.querySelectorAll('[data-thumbs="mural"] button').length > previous, count, { timeout: 5000 }).catch(() => {});
+    }
+    const extended = await muralThumbs.evaluate((element) => ({ count: element.querySelectorAll('button').length, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }));
+    assert.equal(extended.count, 50, `La cinta debe cargar hasta 50 miniaturas: ${JSON.stringify(extended)}`);
+    assert.ok(extended.scrollWidth > extended.clientWidth, 'La cinta extendida debe poder desplazarse horizontalmente');
+    thumbnailCounts.muralExtended = extended.count;
+  }
+  await page.goto('http://127.0.0.1:4321/?vista=perfil');
+  await page.locator('[data-view-panel="perfil"]').waitFor({ state: 'visible' });
+  await page.waitForFunction(() => {
+    const image = document.querySelector('[data-profile-backdrop]');
+    return image && !image.hidden && image.complete && image.naturalWidth > 0;
+  });
+  const profileBackdrop = await page.evaluate(() => {
+    const backdrop = document.querySelector('[data-profile-backdrop]');
+    const portrait = document.querySelector('[data-view-panel="perfil"] [data-profile-photo]');
+    return { sameImage: backdrop.src === portrait.src, filter: getComputedStyle(backdrop).filter };
+  });
+  assert.equal(profileBackdrop.sameImage, true, 'Perfil: fondo y retrato deben usar la misma foto');
+  assert.match(profileBackdrop.filter, /blur\(/, 'Perfil: el fondo de la foto debe estar difuminado');
   assert.deepEqual(externalRequests, []);
   console.log(`PASS: seis servicios comparten miniaturas, Hero, flechas y lightbox; escritorio/móvil y tráfico solo local. Miniaturas visibles: ${JSON.stringify(thumbnailCounts)}. Títulos: ${JSON.stringify(visibleTitles)}.`);
 } finally {

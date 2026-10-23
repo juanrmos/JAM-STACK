@@ -22,7 +22,7 @@ export async function guardarTextos(r:Request,env:Env){
  for(const [k,v]of entries)if(!Object.hasOwn(spec,k)||typeof v!=='string'||!v.trim()||v.length>spec[k].max)return invalid('Clave no editable o texto vacío/demasiado largo.');
  const {results}=await env.DB.prepare('SELECT clave,valor FROM textos').all<{clave:string;valor:string}>();
  const values=Object.fromEntries(results.map(x=>[x.clave,x.valor]));Object.assign(values,body.textos);
- for(const key of ['home','archive','about'])if(!values[key+'.title']?.includes(values[key+'.titleAccent']))return invalid('La palabra destacada debe existir en su título. Guarda ambos campos juntos.');
+ for(const key of ['home','archive','profile','about'])if(!values[key+'.title']?.includes(values[key+'.titleAccent']))return invalid('La palabra destacada debe existir en su título. Guarda ambos campos juntos.');
  await env.DB.batch(entries.map(([k,v])=>env.DB.prepare('UPDATE textos SET valor=?,fecha_actualizacion=? WHERE clave=?').bind(String(v).trim(),new Date().toISOString(),k)));
  return jsonResponse({actualizado:true});
 }

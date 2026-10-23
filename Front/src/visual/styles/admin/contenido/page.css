@@ -277,6 +277,9 @@
 [data-admin-view="contenido"] .content-savebar__state { margin: 0; color: var(--content-muted); font-size: .82rem; }
 [data-admin-view="contenido"] .content-savebar__actions { display: flex; align-items: center; gap: .55rem; }
 
+[data-admin-view="contenido"] .complementary-editor { margin: .25rem 0 1.75rem; padding: 1.1rem 1.2rem .1rem; border: 1px solid var(--content-border); background: #faf9f6; }
+[data-admin-view="contenido"] .complementary-editor h3 { margin: 0 0 .9rem; color: var(--content-ink); font: 500 1.35rem/1.2 var(--font-serif, "Cormorant Garamond", serif); }
+
 @media (max-width: 600px) {
   [data-admin-view="contenido"] { padding-top: 0; }
   [data-admin-view="contenido"] .content-card__summary { min-height: 68px; padding: .75rem .8rem; }

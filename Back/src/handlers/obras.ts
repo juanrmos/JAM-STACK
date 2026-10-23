@@ -3,7 +3,6 @@ import { crearObraSchema,actualizarObraSchema,uploadUrlSchema } from '../schemas
 import { generarUrlSubida } from '../lib/storage';
 import { jsonResponse } from '../routes/response';
 import { obraPublica } from '../routes/obras-lectura';
-import { insertarSlot,cambiarSlot,cerrarHueco,comprobarOriginal,type ObraFila } from '../services/slots';
 import { limpiarImagen } from '../storage/cleanup';
 export { listarObras } from '../routes/obras-lectura';
 const generarId=()=>crypto.randomUUID();
@@ -43,30 +42,24 @@ export async function obtenerUrlSubida(
 
 export async function crearObra(r:Request,env:Env){
  const parsed=crearObraSchema.safeParse(await r.json().catch(()=>null));if(!parsed.success)return invalid();
- const o=parsed.data,id=generarId(),slot=o.destacado_slot??null;
+ const o=parsed.data,id=generarId();
  if(!await env.BUCKET.head(o.imagenKey))return invalid();
- const q=slot?insertarSlot(env,o.servicio_id,slot):[];
- q.push(env.DB.prepare('INSERT INTO obras(id,titulo,descripcion,servicio_id,imagen_key,video_url,ubicacion,anio,destacado_slot,fecha_creacion) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(id,o.titulo,o.descripcion??null,o.servicio_id,o.imagenKey,o.videoUrl??null,o.ubicacion??null,o.anio??null,slot,new Date().toISOString()));
- await env.DB.batch(q);return jsonResponse({id},201);
+ await env.DB.prepare('INSERT INTO obras(id,titulo,descripcion,servicio_id,imagen_key,video_url,ubicacion,anio,destacado_slot,fecha_creacion) VALUES(?,?,?,?,?,?,?,?,0,?)').bind(id,o.titulo,o.descripcion??null,o.servicio_id,o.imagenKey,o.videoUrl??null,o.ubicacion??null,o.anio??null,new Date().toISOString()).run();return jsonResponse({id},201);
 }
 export async function actualizarObra(r:Request,env:Env,id:string){
- const old=await env.DB.prepare('SELECT * FROM obras WHERE id=?').bind(id).first<ObraFila>();if(!old)return missing();
+ const old=await env.DB.prepare('SELECT * FROM obras WHERE id=?').bind(id).first<Record<string,any>>();if(!old)return missing();
  const parsed=actualizarObraSchema.safeParse(await r.json().catch(()=>null));if(!parsed.success)return invalid();
- const o=parsed.data,servicio=o.servicio_id??old.servicio_id;
+ const o=parsed.data;
  if(o.imagenKey&&!await env.BUCKET.head(o.imagenKey))return invalid();
- const slot=o.destacado_slot!==undefined?o.destacado_slot:servicio!==old.servicio_id?null:old.destacado_slot;
- const q=[comprobarOriginal(env,old),...cambiarSlot(env,old,servicio,slot)];
  const map:Record<string,string>={titulo:'titulo',descripcion:'descripcion',imagenKey:'imagen_key',videoUrl:'video_url',ubicacion:'ubicacion',anio:'anio'};
  const entries=Object.entries(o).filter(([k])=>map[k]);
- if(entries.length)q.push(env.DB.prepare('UPDATE obras SET '+entries.map(([k])=>map[k]+'=?').join(',')+' WHERE id=?').bind(...entries.map(([,v])=>v),id));
- try{await env.DB.batch(q);}catch{return jsonResponse({error:{mensaje:'La obra cambió. Recarga y vuelve a intentar.'}},409);}
+ if(entries.length)try{await env.DB.prepare('UPDATE obras SET '+entries.map(([k])=>map[k]+'=?').join(',')+' WHERE id=?').bind(...entries.map(([,v])=>v),id).run();}catch{return jsonResponse({error:{mensaje:'La obra cambió. Recarga y vuelve a intentar.'}},409);}
  if(o.imagenKey&&o.imagenKey!==old.imagen_key)await limpiarImagen(env,old.imagen_key);
  return jsonResponse({actualizado:true});
 }
 export async function eliminarObra(_r:Request,env:Env,id:string){
- const old=await env.DB.prepare('SELECT * FROM obras WHERE id=?').bind(id).first<ObraFila>();if(!old)return missing();
- const q=[comprobarOriginal(env,old),env.DB.prepare('DELETE FROM obras WHERE id=?').bind(id)];
- if(old.destacado_slot!==null)q.push(...cerrarHueco(env,old.servicio_id,old.destacado_slot,id));
+ const old=await env.DB.prepare('SELECT * FROM obras WHERE id=?').bind(id).first<Record<string,any>>();if(!old)return missing();
+ const q=[env.DB.prepare('DELETE FROM obras WHERE id=?').bind(id)];
  try{await env.DB.batch(q);}catch{return jsonResponse({error:{mensaje:'La obra cambió. Recarga y vuelve a intentar.'}},409);}
  await limpiarImagen(env,old.imagen_key);return jsonResponse({eliminado:true});
 }

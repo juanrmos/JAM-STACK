@@ -1,6 +1,7 @@
 ---
 import type { Servicio } from '../../../../config/servicios';
 import { nombresPublicosIniciales } from '../../../../../../Shared/contracts/servicios';
+import { enlaceWhatsapp } from '../../../../features/cotizacion/whatsapp';
 
 interface Props {
   service: Servicio;
@@ -17,11 +18,8 @@ const serviceName = nombresPublicosIniciales[service.id];
   <h1 data-service-name-display={service.id}>{serviceName}</h1>
   <p class="service-view__motto" data-text-key={`service.${service.id}.subtitle`}>{subtitle}</p>
   <p class="service-view__description" data-text-key={`service.${service.id}.description`}>{description}</p>
-  <button type="button" class="gold-button" data-open-quote data-service-quote={service.id}>Cotizar este servicio ↗</button>
-  <button type="button" class="compact-profile" data-view="about">
-    <span class="compact-profile__avatar" data-profile-avatar><span data-profile-fallback>AR</span><img data-profile-photo alt="" hidden /></span>
-    <span><small>PRESIDENTE EJECUTIVO</small><strong>Antony Rodríguez</strong></span>
-    <b aria-hidden="true">↗</b>
-  </button>
+  {service.cotizaPorWhatsApp
+    ? <a class="gold-button" href={enlaceWhatsapp('Hola, deseo consultar por la Venta de Materiales e Insumos.')} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp ↗</a>
+    : <button type="button" class="gold-button" data-open-quote data-service-quote={service.id}>Cotizar este servicio ↗</button>}
   <slot />
 </div>

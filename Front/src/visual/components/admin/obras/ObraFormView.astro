@@ -6,7 +6,6 @@ interface Props {
 }
 const { modo = "nueva" } = Astro.props;
 import "../../../styles/admin/obras/obra-formulario.css";
-import "../../../styles/admin/obras/obra-slots.css";
 ---
 <div data-admin-view="formularioobra" class="formulario-box">
   <div class="formulario-box__header">
@@ -44,18 +43,6 @@ import "../../../styles/admin/obras/obra-slots.css";
           <option value={cat.value}>{cat.label}</option>
         ))}
       </select>
-    </div>
-
-    <!-- Slots de Posición -->
-    <div class="campo campo--slots" id="campo-slots">
-      <label>POSICIÓN EN LA GALERÍA (OPCIONAL)</label>
-      <span class="campo__help">
-        Selecciona uno de los 5 primeros lugares. Si lo dejas vacío, irá al historial cronológico.
-      </span>
-      <div id="f-slots" class="f-slots-container">
-        <p class="f-slot-status-message">Elige una categoría para ver sus posiciones.</p>
-      </div>
-      <p id="f-slot-status" class="f-slot-status"></p>
     </div>
 
     <div class="campo">
