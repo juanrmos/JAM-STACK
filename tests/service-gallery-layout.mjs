@@ -4,6 +4,7 @@ import { chromium } from 'playwright';
 const services = ['mural', 'escultura', 'cuadro', 'restauracion', 'logo', 'fachada'];
 const thumbnailCounts = {};
 const visibleTitles = {};
+const galleryRequests = [];
 const browser = await chromium.launch({ headless: true, channel: 'msedge' });
 const context = await browser.newContext({ viewport: { width: 1248, height: 703 } });
 const externalRequests = [];
@@ -16,7 +17,23 @@ await context.route('**/*', (route) => {
 
 try {
   const page = await context.newPage();
-  await page.goto('http://127.0.0.1:4322/?vista=logo');
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      window.__bootSnapshot = {
+        state: document.documentElement.dataset.publicState,
+        mainVisibility: getComputedStyle(document.querySelector('#app-main')).visibility,
+      };
+    }, { once: true });
+  });
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (url.pathname === '/api/obras' && url.searchParams.has('servicio_id')) galleryRequests.push(url.searchParams.get('servicio_id'));
+  });
+  await page.goto('http://127.0.0.1:4321/?vista=logo');
+  await page.addStyleTag({ content: 'astro-dev-toolbar { display: none !important; }' });
+  await page.waitForFunction(() => document.documentElement.dataset.publicState === 'ready');
+  assert.equal(await page.evaluate(() => window.__bootSnapshot?.mainVisibility), 'hidden', 'No muestra contenido inicial antes de hidratarlo');
+  assert.deepEqual(galleryRequests, ['logo'], 'Solo pide la galería del servicio que se abrió');
 
   for (const id of services) {
     const panel = page.locator(`[data-view-panel="${id}"]`);

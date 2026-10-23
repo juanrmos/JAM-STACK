@@ -1,5 +1,7 @@
 # 12 — Procedimiento para promover la refactorización a `production`
 
+> **Estado actualizado al 23 de octubre de 2026:** esta guía describe la primera promoción del rediseño y sus instrucciones de despliegue ya son históricas. Tras corregir el contrato de servicios ampliados, los Workers productivos `portafolio-api` y `portafolio-api-admin` están desplegados con las versiones registradas en [17-migracion-produccion-contenido-ampliado.md](17-migracion-produccion-contenido-ampliado.md), ambos vinculados a `portafolio-db-contenido-candidato-2026-10-23`. No vuelvas a ejecutar los pasos siguientes que los vinculan a la D1 anterior. Pages aún no recibió la revisión actual del Front.
+
 **Estado al 18 de octubre de 2026:** el rediseño integral está en `feature/rediseno-integral` (HEAD `8d09597`), con D1 destino `portafolio-db-rediseno-2026-10-18` migrada y verificada. El PR [#5](https://github.com/juanrmos/JAM-STACK/pull/5) apunta a `production`; la D1 original y el tráfico de Workers/Pages siguen sin cambios. Pages Production ya tiene las variables y el binding requeridos. Falta revisión del PR y ejecutar el corte coordinado de los dos Workers y Pages; aún no se hizo merge ni despliegue del rediseño.
 
 ## 1. Condiciones previas: todavía no abrir la promoción final
@@ -35,7 +37,8 @@ cd ..
 node --test tests/public-contracts.mjs
 node --test tests/promotion-contracts.mjs
 node --test tests/access-contracts.mjs
-node tests/public-browser.mjs
+node tests/redesign-local.mjs
+node tests/service-gallery-layout.mjs
 node tests/admin-visual.mjs
 node tests/admin-delete-sync.mjs
 node tests/admin-local-api.mjs
@@ -44,7 +47,7 @@ cd Front
 npm.cmd run build
 ```
 
-Las pruebas que usan Worker necesitan `Back: npm.cmd run dev` con D1/R2 locales y `Back/.dev.vars`; `public-browser.mjs` y las pruebas de panel usan `Front/dist` generado por `build:local`. Ejecutar `npm.cmd run build` **al final**, pues reemplaza `dist` por el build de producción. La salida de producción debe incluir las nueve rutas y no contener `localhost:8787` ni `127.0.0.1:8787`. `build:local` jamás se usa como artefacto de despliegue.
+Las pruebas que usan Worker necesitan `Back: npm.cmd run dev` con D1/R2 locales y `Back/.dev.vars`; `redesign-local.mjs` usa `Front/dist` generado por `build:local`, y `service-gallery-layout.mjs` necesita el servidor Astro local. `public-browser.mjs` conserva selectores del sitio anterior y no valida el rediseño actual. Ejecutar `npm.cmd run build` **al final**, pues reemplaza `dist` por el build de producción. La salida de producción debe incluir las nueve rutas y no contener `localhost:8787` ni `127.0.0.1:8787`. `build:local` jamás se usa como artefacto de despliegue.
 
 En esta preparación se obtuvo la siguiente salida; el build no incluyó la URL local:
 

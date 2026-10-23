@@ -3,6 +3,7 @@ import type { Obra, ObrasPage } from '../../services/api/types';
 import { apiJson } from '../../services/api/client';
 import { abrirLightbox } from './lightbox';
 import { nombreServicio } from './service-names';
+import { actualizarFuenteImagen } from '../media/image-source';
 
 const obrasPorServicio = new Map<string, Obra[]>();
 const totalObrasPorServicio = new Map<string, number>();
@@ -10,6 +11,7 @@ const indiceActivo = new Map<string, number>();
 const erroresServicio = new Set<string>();
 const masObrasDisponibles = new Map<string, boolean>();
 const cargasPendientes = new Map<string, Promise<void>>();
+const cargasIniciales = new Map<string, Promise<void>>();
 let archivo: Obra[] | null = null;
 let filtro = 'all';
 let offsetArchivo = 0;
@@ -88,14 +90,16 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
   const principal = document.querySelector<HTMLButtonElement>(`[data-active-image="${id}"]`);
   if (!servicio || !miniaturas || !principal) return;
 
-  miniaturas.replaceChildren();
   if (erroresServicio.has(id)) {
+    miniaturas.replaceChildren();
     const estado = document.createElement('p');
     estado.className = 'collection-status';
     estado.setAttribute('role', 'status');
     estado.textContent = 'No se pudieron cargar los proyectos. Vuelve a esta vista para reintentar.';
     miniaturas.append(estado);
     principal.disabled = true;
+    principal.dataset.galleryState = 'error';
+    principal.removeAttribute('aria-busy');
     principal.querySelector('small')!.textContent = 'Error al cargar las obras';
     principal.closest<HTMLElement>('[data-gallery-panel], .service-view')?.querySelectorAll<HTMLButtonElement>('[data-slide]')
       .forEach((button) => { button.disabled = true; });
@@ -106,23 +110,34 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
   const seleccionado = Math.min(indiceActivo.get(id) || 0, obras.length - 1);
   indiceActivo.set(id, Math.max(0, seleccionado));
 
-  obras.forEach((obra, index) => {
+  const buttons = [...miniaturas.querySelectorAll<HTMLButtonElement>('button[data-obra-id]')];
+  const currentIds = buttons.map((button) => button.dataset.obraId);
+  const expectedIds = obras.map((obra) => obra.id);
+  if (currentIds.length > expectedIds.length || currentIds.some((id, index) => id !== expectedIds[index])) {
+    miniaturas.replaceChildren();
+    buttons.length = 0;
+  }
+  for (let index = buttons.length; index < obras.length; index += 1) {
+    const obra = obras[index];
     const boton = document.createElement('button');
     boton.type = 'button';
+    boton.dataset.obraId = obra.id;
     boton.setAttribute('aria-label', `Mostrar ${obra.titulo}`);
-    boton.setAttribute('aria-pressed', String(seleccionado === index));
     const imagen = document.createElement('img');
     imagen.src = obra.imagenUrl;
     imagen.alt = '';
     imagen.loading = 'lazy';
+    imagen.decoding = 'async';
     boton.append(imagen);
     boton.addEventListener('click', () => {
       indiceActivo.set(id, index);
       renderizarServicio(id);
-      if (index >= obras.length - 2) void cargarSiguienteTanda(id);
+      if (index >= (obrasPorServicio.get(id)?.length || 0) - 2) void cargarSiguienteTanda(id);
     });
     miniaturas.append(boton);
-  });
+    buttons.push(boton);
+  }
+  buttons.forEach((button, index) => button.setAttribute('aria-pressed', String(seleccionado === index)));
 
   const ribbon = miniaturas.closest<HTMLElement>('.service-ribbon');
   const ribbonViewport = ribbon?.querySelector<HTMLElement>(`[data-ribbon-viewport="${id}"]`);
@@ -143,16 +158,31 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
   const imagenPrincipal = principal.querySelector('img')!;
   const imagenPortada = document.querySelector<HTMLImageElement>(`[data-service-cover-fallback="${id}"]`);
   const srcRespaldo = imagenPortada?.dataset.coverUrl || imagenPortada?.src || servicio.imagen;
-  imagenPrincipal.style.opacity = '0';
-  window.setTimeout(() => {
-    imagenPrincipal.src = obra?.imagenUrl || srcRespaldo;
+  const titulo = principal.querySelector('strong')!;
+  const detalle = principal.querySelector('small')!;
+  const imageUrl = obra?.imagenUrl || srcRespaldo;
+  const imageChanged = imagenPrincipal.src !== new URL(imageUrl, location.href).href;
+  if (imageChanged && obra) {
+    principal.dataset.galleryState = 'loading';
+    principal.setAttribute('aria-busy', 'true');
+    detalle.textContent = 'Cargando obra…';
+  }
+  void actualizarFuenteImagen(imagenPrincipal, imageUrl).then((loaded) => {
+    if (seleccionado !== (indiceActivo.get(id) || 0)) return;
+    if (obra && !loaded) {
+      principal.dataset.galleryState = 'error';
+      detalle.textContent = 'No se pudo cargar esta obra';
+      principal.removeAttribute('aria-busy');
+      return;
+    }
     imagenPrincipal.alt = obra?.titulo || 'Imagen de referencia del servicio';
-    imagenPrincipal.style.opacity = '1';
-  }, 130);
-  principal.querySelector('strong')!.textContent = obra?.titulo || nombreServicio(id);
-  principal.querySelector('small')!.textContent = obra
-    ? [obra.ubicacion, obra.anio].filter(Boolean).join(' · ') || 'Ampliar obra'
-    : 'Sin obras cargadas todavía';
+    principal.dataset.galleryState = 'ready';
+    titulo.textContent = obra?.titulo || nombreServicio(id);
+    detalle.textContent = obra
+      ? [obra.ubicacion, obra.anio].filter(Boolean).join(' · ') || 'Ampliar obra'
+      : 'Sin obras cargadas todavía';
+    principal.removeAttribute('aria-busy');
+  });
   principal.disabled = !obra;
   principal.onclick = () => {
     if (obra) abrirLightbox(obras, seleccionado, principal);
@@ -179,7 +209,7 @@ function renderizarServicio(id: string) {
 }
 
 function obrasVisibles() {
-  return (archivo || [...obrasPorServicio.values()].flat())
+  return (archivo || [])
     .filter((obra) => filtro === 'all' || obra.servicio_id === filtro);
 }
 
@@ -232,15 +262,14 @@ async function ampliarArchivo() {
   }
 }
 
-export async function iniciarGalerias() {
+export function iniciarGalerias(): void {
   document.addEventListener('app:service-covers-updated', () => {
     servicios.forEach((service) => {
       if (!obrasPorServicio.get(service.id)?.length) renderizarServicio(service.id);
     });
   });
   document.addEventListener('app:service-names-updated', () => {
-    servicios.forEach((service) => renderizarServicio(service.id));
-    renderizarArchivo();
+    if (archivo) renderizarArchivo();
   });
 
   document.addEventListener('keydown', (event) => {
@@ -270,37 +299,37 @@ export async function iniciarGalerias() {
   });
   if (new URL(location.href).searchParams.get('vista') === 'obras') void ampliarArchivo();
 
-  const tasks = servicios.map(async (servicio) => {
-    try {
-      const page = await cargarServicio(servicio.id);
-      obrasPorServicio.set(servicio.id, page.obras);
-      totalObrasPorServicio.set(servicio.id, page.total);
-      masObrasDisponibles.set(servicio.id, page.hasMore && page.obras.length < 50);
-      erroresServicio.delete(servicio.id);
-    } catch {
-      obrasPorServicio.set(servicio.id, []);
-      totalObrasPorServicio.set(servicio.id, 0);
-      masObrasDisponibles.set(servicio.id, false);
-      erroresServicio.add(servicio.id);
-    }
-    renderizarServicio(servicio.id);
-    renderizarArchivo();
-  });
-  await Promise.all(tasks);
+  const cargarPrimeraTanda = (id: string): Promise<void> => {
+    if (obrasPorServicio.has(id)) return Promise.resolve();
+    const pending = cargasIniciales.get(id);
+    if (pending) return pending;
+    const principal = document.querySelector<HTMLButtonElement>(`[data-active-image="${id}"]`);
+    principal?.setAttribute('aria-busy', 'true');
+    if (principal) principal.dataset.galleryState = 'loading';
+    const request = (async () => {
+      try {
+        const page = await cargarServicio(id);
+        obrasPorServicio.set(id, page.obras);
+        totalObrasPorServicio.set(id, page.total);
+        masObrasDisponibles.set(id, page.hasMore && page.obras.length < 50);
+        erroresServicio.delete(id);
+      } catch {
+        totalObrasPorServicio.set(id, 0);
+        masObrasDisponibles.set(id, false);
+        erroresServicio.add(id);
+      } finally {
+        cargasIniciales.delete(id);
+      }
+      renderizarServicio(id);
+    })();
+    cargasIniciales.set(id, request);
+    return request;
+  };
 
-  document.addEventListener('app:view', async (event) => {
+  const cargarVistaVisible = (event: Event) => {
     const id = (event as CustomEvent).detail as string;
-    if (!servicios.some((servicio) => servicio.id === id) || obrasPorServicio.get(id)?.length) return;
-    try {
-      const page = await cargarServicio(id);
-      obrasPorServicio.set(id, page.obras);
-      totalObrasPorServicio.set(id, page.total);
-      masObrasDisponibles.set(id, page.hasMore && page.obras.length < 50);
-      erroresServicio.delete(id);
-      renderizarServicio(id);
-    } catch {
-      erroresServicio.add(id);
-      renderizarServicio(id);
-    }
-  });
+    if (servicios.some((servicio) => servicio.id === id)) void cargarPrimeraTanda(id);
+  };
+  document.addEventListener('app:view', cargarVistaVisible);
+  document.addEventListener('app:service-visible', cargarVistaVisible);
 }

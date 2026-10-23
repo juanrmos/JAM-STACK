@@ -18,8 +18,8 @@ ALLOW_PAGES_PREVIEW_ORIGINS = "true"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "portafolio-db-rediseno-2026-10-18"
-database_id = "fce3a0c7-46b8-4b7a-bc34-de4359c890c7"
+database_name = "portafolio-db-contenido-candidato-2026-10-23"
+database_id = "3eb95e22-5657-4841-9a11-047eaa5fe746"
 
 [[r2_buckets]]
 binding = "BUCKET"

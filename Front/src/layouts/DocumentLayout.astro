@@ -21,8 +21,60 @@ void apiBaseUrl;
 void adminApiBaseUrl;
 
 ---
-<html lang="es" style={cssVars}>
+<html lang="es" style={cssVars} data-public-state="loading">
   <head>
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      window.setTimeout(() => {
+        if (document.documentElement.dataset.publicState === 'loading') {
+          document.documentElement.dataset.publicState = 'fallback';
+        }
+      }, 5000);
+    </script>
+    <style is:inline>
+      #public-boot-state { display: none; }
+      html.js[data-public-state="loading"]:has(#app-main) #public-boot-state {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        gap: .75rem;
+        background: #12262a;
+        color: #faf8f2;
+        font: 500 1rem 'DM Sans', sans-serif;
+      }
+      html.js[data-public-state="loading"] #app-main { visibility: hidden; }
+      .public-boot-state__mark {
+        display: grid;
+        width: 52px;
+        height: 52px;
+        place-items: center;
+        border: 1px solid #d9a520;
+        color: #d9a520;
+        font: 500 2rem 'Cormorant Garamond', serif;
+      }
+      .public-boot-state__message { margin: 0; }
+      .public-boot-state__indicator {
+        width: 42px;
+        height: 2px;
+        overflow: hidden;
+        background: #faf8f233;
+      }
+      .public-boot-state__indicator::after {
+        display: block;
+        width: 45%;
+        height: 100%;
+        background: #d9a520;
+        content: '';
+        animation: public-boot-progress 1.2s ease-in-out infinite alternate;
+      }
+      @keyframes public-boot-progress { to { transform: translateX(125%); } }
+      @media (prefers-reduced-motion: reduce) {
+        .public-boot-state__indicator::after { animation: none; }
+      }
+    </style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" data-site-favicon />
@@ -44,13 +96,13 @@ void adminApiBaseUrl;
     <title>{tituloDocumento}</title>
 
     <FontLinks />
-    <script>
-      import { iniciarFavicon } from '../features/brand/iniciarFavicon';
-      iniciarFavicon();
-    </script>
-
   </head>
   <body>
+<div id="public-boot-state" role="status" aria-live="polite">
+  <span class="public-boot-state__mark" aria-hidden="true">AR</span>
+  <p class="public-boot-state__message">Preparando el portafolio…</p>
+  <span class="public-boot-state__indicator" aria-hidden="true"></span>
+</div>
 <slot />
 </body>
 </html>
