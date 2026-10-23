@@ -140,6 +140,20 @@
   transition: opacity .4s;
 }
 
+.service-active[data-gallery-state="loading"]::before {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: #12262acc;
+  color: #faf8f2a6;
+  content: 'Cargando obras…';
+  font: 500 .9rem 'DM Sans', sans-serif;
+}
+
+.service-active[data-gallery-state="loading"] span { visibility: hidden; }
+
 .service-view--gallery .service-active span {
   position: absolute;
   right: 0;

@@ -11,8 +11,8 @@ export function adminApiRequest(endpoint: string, options?: RequestInit): Promis
   return fetch(url, options);
 }
 
-export async function apiJson<T>(endpoint: string): Promise<T> {
-  const response = await apiRequest(endpoint);
+export async function apiJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const response = await apiRequest(endpoint, options);
   if (!response.ok) throw new Error(`API ${response.status}: ${endpoint}`);
   return response.json();
 }

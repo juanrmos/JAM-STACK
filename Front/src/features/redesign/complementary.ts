@@ -18,6 +18,7 @@ export function iniciarServiciosComplementarios() {
       const active = button.dataset.complementarySelect === id;
       button.setAttribute('aria-pressed', String(active));
     });
+    document.dispatchEvent(new CustomEvent('app:service-visible', { detail: id }));
   }
 
   buttons.forEach((button, index) => {
