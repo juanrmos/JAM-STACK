@@ -1,10 +1,11 @@
 ---
 import AdminHeader from "../../../../components/admin/AdminHeader.astro";
 import "../../../styles/admin/shell/layout.css";
+import "../../../styles/admin/shell/scrollbars.css";
 import "../../../styles/admin/shared/state.css";
 
 interface Props {
-  seccionActiva: "obras" | "logos" | "contenido";
+  seccionActiva: "obras" | "logos" | "contenido" | "sobre-nosotros" | "cotizador";
 }
 
 const { seccionActiva } = Astro.props;

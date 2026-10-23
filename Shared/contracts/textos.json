@@ -54,22 +54,22 @@
     "grupo": "about",
     "max": 120
   },
-  "about.eyebrow": {
+  "profile.eyebrow": {
     "valor": "Una práctica con propósito",
     "grupo": "about",
     "max": 80
   },
-  "about.title": {
+  "profile.title": {
     "valor": "Arte hecho con identidad.",
     "grupo": "about",
     "max": 100
   },
-  "about.titleAccent": {
+  "profile.titleAccent": {
     "valor": "identidad",
     "grupo": "about",
     "max": 40
   },
-  "about.description": {
+  "profile.description": {
     "valor": "Cada proyecto nace de una idea y de la conversación con quienes habitan el espacio. Conoce nuestra propuesta artística y conversemos sobre lo que te gustaría crear.",
     "grupo": "about",
     "max": 1000
@@ -148,5 +148,26 @@
     "valor": "Una nueva mirada para la fachada de tu negocio o vivienda, con color, intención y una ejecución hecha para durar.",
     "grupo": "services",
     "max": 800
-  }
+  },
+  "about.eyebrow": { "valor": "Sobre nosotros", "grupo": "about", "max": 80 },
+  "about.title": { "valor": "Arte que transforma espacios.", "grupo": "about", "max": 120 },
+  "about.titleAccent": { "valor": "transforma", "grupo": "about", "max": 40 },
+  "about.description": { "valor": "Somos una corporación artística que desarrolla proyectos a medida. Esta presentación podrá editarse con información confirmada.", "grupo": "about", "max": 1000 },
+  "service.materiales.subtitle": { "valor": "Materiales para crear y construir", "grupo": "services", "max": 80 },
+  "service.materiales.description": { "valor": "Consulta por WhatsApp la disponibilidad y orientación sobre materiales e insumos.", "grupo": "services", "max": 800 },
+  "service.electricos.subtitle": { "valor": "Soluciones eléctricas", "grupo": "services", "max": 80 },
+  "service.electricos.description": { "valor": "Conoce nuestros servicios eléctricos y solicita información sobre tu proyecto.", "grupo": "services", "max": 800 },
+  "service.drywall.subtitle": { "valor": "Espacios a tu medida", "grupo": "services", "max": 80 },
+  "service.drywall.description": { "valor": "Proyectos de drywall y carpintería con soluciones adaptadas a cada espacio.", "grupo": "services", "max": 800 },
+  "complementary.eyebrow": { "valor": "Soluciones para tus espacios", "grupo": "services", "max": 80 },
+  "complementary.description": { "valor": "Conoce nuestras soluciones eléctricas y de drywall y carpintería, con propuestas adaptadas a cada proyecto.", "grupo": "services", "max": 500 },
+  "quote.eyebrow": { "valor": "PROYECTO / CONSULTA", "grupo": "quote", "max": 60 },
+  "quote.title": { "valor": "Cotizador", "grupo": "quote", "max": 60 },
+  "quote.description": { "valor": "Cuéntanos lo que tienes en mente y prepararemos la información para conversar sobre tu proyecto.", "grupo": "quote", "max": 180 },
+  "quote.ideaTitle": { "valor": "Cuéntanos tu idea", "grupo": "quote", "max": 80 },
+  "quote.ideaDescription": { "valor": "Indica qué servicio o proyecto tienes en mente y agrega los detalles que nos ayuden a entenderlo.", "grupo": "quote", "max": 180 },
+  "quote.measurementsTitle": { "valor": "Medidas aproximadas", "grupo": "quote", "max": 80 },
+  "quote.measurementsDescription": { "valor": "Las medidas y el tipo de espacio nos ayudan a preparar una primera orientación.", "grupo": "quote", "max": 180 },
+  "quote.contactTitle": { "valor": "¿Cómo te contactamos?", "grupo": "quote", "max": 80 },
+  "quote.contactDescription": { "valor": "Déjanos tus datos para continuar la conversación por WhatsApp o correo.", "grupo": "quote", "max": 180 }
 }

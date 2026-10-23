@@ -3,6 +3,9 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync } from 'node:sqlite';
 
 const migration = readFileSync('Back/migrations-production/0001_redisenar_modelo.sql', 'utf8');
+const serviceNamesMigration = readFileSync('Back/migrations-production/0004_nombre_publico_servicios.sql', 'utf8');
+const contentMigration = readFileSync('Back/migrations-production/0005_catalogo_contenido_ampliado.sql', 'utf8');
+const quoteMigration = readFileSync('Back/migrations-production/0006_textos_cotizador.sql', 'utf8');
 const preflight = readFileSync('Back/migration-support/production-preflight.sql', 'utf8');
 const catalog = JSON.parse(readFileSync('Shared/contracts/textos.json', 'utf8'));
 
@@ -46,16 +49,18 @@ function legacyDatabase({ unknownCategory = false, highlighted = false, multiple
   return db;
 }
 
-function apply(db) {
+function applySql(db, sql) {
   db.exec('BEGIN;');
   try {
-    db.exec(migration);
+    db.exec(sql);
     db.exec('COMMIT;');
   } catch (error) {
     db.exec('ROLLBACK;');
     throw error;
   }
 }
+
+function apply(db) { applySql(db, migration); }
 
 const db = legacyDatabase();
 assert.doesNotThrow(() => db.exec(preflight), 'el preflight de solo lectura debe compilar contra el esquema legacy');
@@ -66,7 +71,7 @@ apply(db);
 assert.equal(db.prepare('SELECT count(*) AS total FROM obras').get().total, originalWorkCount);
 assert.equal(db.prepare('SELECT count(*) AS total FROM logos').get().total, originalLogoCount);
 assert.equal(db.prepare('SELECT count(*) AS total FROM servicios').get().total, 6);
-assert.equal(db.prepare('SELECT count(*) AS total FROM textos').get().total, Object.keys(catalog).length);
+assert.equal(db.prepare('SELECT count(*) AS total FROM textos').get().total, 30);
 assert.equal(db.prepare('SELECT count(*) AS total FROM imagenes_sitio').get().total, 0);
 assert.equal(db.prepare("SELECT count(*) AS total FROM obras WHERE servicio_id='mural' AND destacado_slot IS NOT NULL").get().total, 5);
 assert.equal(db.prepare("SELECT count(*) AS total FROM obras WHERE servicio_id='mural' AND destacado_slot IS NULL").get().total, 2);
@@ -77,6 +82,19 @@ assert.equal(db.prepare('SELECT count(*) AS total FROM logos WHERE activo=1').ge
 assert.equal(db.prepare('PRAGMA foreign_key_check').all().length, 0);
 assert.ok(db.prepare("SELECT sql FROM sqlite_master WHERE type='index' AND name='uq_obras_servicio_slot'").get());
 assert.ok(db.prepare("SELECT sql FROM sqlite_master WHERE type='index' AND name='uq_logos_activo'").get());
+
+// Reproduce the complete production chain after the original legacy conversion.
+applySql(db, serviceNamesMigration);
+applySql(db, contentMigration);
+applySql(db, quoteMigration);
+assert.equal(db.prepare('SELECT count(*) AS total FROM servicios').get().total, 9);
+assert.equal(db.prepare('SELECT count(*) AS total FROM textos').get().total, Object.keys(catalog).length);
+assert.equal(db.prepare("SELECT count(*) AS total FROM obras WHERE destacado_slot<>0").get().total, 0);
+assert.equal(db.prepare("SELECT count(*) AS total FROM obras WHERE servicio_id='mural'").get().total, 7);
+assert.equal(db.prepare('SELECT count(*) AS total FROM campos_cotizador').get().total, 8);
+assert.equal(db.prepare('SELECT count(*) AS total FROM fotos_sobre_nosotros').get().total, 0);
+assert.equal(db.prepare('PRAGMA foreign_key_check').all().length, 0);
+assert.equal(db.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
 db.close();
 
 for (const badSource of [

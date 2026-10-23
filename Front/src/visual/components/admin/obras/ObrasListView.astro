@@ -2,7 +2,6 @@
 import Paginacion from "../../../../components/admin/Paginacion.astro";
 import { categoriasObras } from "../../../../lib/categorias";
 import "../../../styles/admin/obras/obras-lista.css";
-import "../../../styles/admin/obras/obras-slots.css";
 import "../../../styles/admin/obras/obras-tarjetas.css";
 ---
 <div data-admin-view="dashboard" class="dashboard">
@@ -17,22 +16,16 @@ import "../../../styles/admin/obras/obras-tarjetas.css";
 
   <div class="dashboard__filtros">
     <select id="filtro-categoria" class="dashboard__select">
+      <option value="" selected>Todos los servicios</option>
       {categoriasObras.map(cat => (
-        <option value={cat.value} selected={cat.value === 'mural'}>{cat.label}</option>
+        <option value={cat.value}>{cat.label}</option>
       ))}
     </select>
     <input type="text" id="filtro-buscar" class="dashboard__input" placeholder="Buscar por título..." />
   </div>
 
   <div class="dashboard__seccion">
-    <h3 class="dashboard__subtitulo">POSICIONES DESTACADAS</h3>
-    <div id="slots-riel" class="slots-riel">
-      <!-- Se llena por JS -->
-    </div>
-  </div>
-
-  <div class="dashboard__seccion">
-    <h3 class="dashboard__subtitulo">TODAS LAS OBRAS DE ESTA CATEGORÍA</h3>
+    <h3 class="dashboard__subtitulo">OBRAS DEL PORTAFOLIO</h3>
     <div id="obras-grilla" class="obras-grilla">
       <!-- Se llena por JS -->
     </div>

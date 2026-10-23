@@ -8,15 +8,10 @@ const { modo = "nueva" } = Astro.props;
 <ObraFormView modo={modo} />
 <script>
   import { apiFetch } from "../../lib/auth";
-  import { renderSlotsFormulario } from "../../visual/templates/admin/obras";
 
   // Determinar modo desde la URL
   const params = new URLSearchParams(window.location.search);
   const obraActualId: string | null = params.get("id");
-  let ordenElegido: number = 0;
-  let categoriaOriginal: string | null = null;
-  let ordenOriginal: number = 0;
-  let slotsVersion = 0;
 
   const form = document.getElementById("form-obra") as HTMLFormElement;
   const errorP = document.getElementById("f-error") as HTMLParagraphElement;
@@ -94,76 +89,7 @@ const { modo = "nueva" } = Astro.props;
     });
   };
 
-  // Cargar slots dinámicamente
-  async function cargarSlotsFormulario(cat: string) {
-    const version = ++slotsVersion;
-    const slotsDiv = document.getElementById('f-slots');
-    const statusP = document.getElementById('f-slot-status');
-    if (!slotsDiv || !statusP) return;
-    if (!cat) {
-      slotsDiv.innerHTML = '<p class="f-slot-status-message">Elige una categoría para ver sus posiciones.</p>';
-      statusP.textContent = '';
-      return;
-    }
-
-    slotsDiv.innerHTML = '<p class="f-slot-status-message">Cargando posiciones...</p>';
-
-    try {
-      const res = await apiFetch(`/api/obras?servicio_id=${cat}&limit=5&slots=true`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (version !== slotsVersion) return;
-      const ocupadas = data.obras || [];
-
-      slotsDiv.innerHTML = renderSlotsFormulario(ocupadas, obraActualId, ordenElegido);
-
-      // Manejar Taps
-      document.querySelectorAll('.f-slot-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-          const target = e.currentTarget as HTMLElement;
-          const s = parseInt(target.dataset.slot!);
-
-          if (ordenElegido === s) {
-            ordenElegido = 0;
-          } else {
-            ordenElegido = s;
-            if (navigator.vibrate) navigator.vibrate(50);
-          }
-
-          document.querySelectorAll('.f-slot-card').forEach(c => {
-            c.classList.remove('f-slot-card--selected');
-            c.setAttribute('aria-pressed', 'false');
-          });
-          if (ordenElegido > 0) {
-            target.classList.add('f-slot-card--selected');
-            target.setAttribute('aria-pressed', 'true');
-            statusP.textContent = `Posición ${ordenElegido} seleccionada.`;
-          } else {
-            statusP.textContent = '';
-          }
-        });
-      });
-
-      if (ordenElegido > 0) {
-        statusP.textContent = `Posición ${ordenElegido} seleccionada.`;
-      } else {
-        statusP.textContent = '';
-      }
-
-    } catch(e) {
-      if (version === slotsVersion) slotsDiv.innerHTML = '<p class="f-slot-status-message f-slot-status-message--error">Error al cargar posiciones</p>';
-    }
-  }
-
-  selectCat.addEventListener('change', (e) => {
-    const cat = (e.target as HTMLSelectElement).value;
-    if (cat === categoriaOriginal) {
-      ordenElegido = ordenOriginal;
-    } else {
-      ordenElegido = 0;
-    }
-    cargarSlotsFormulario(cat);
-  });
+  // La galería se ordena cronológicamente; la posición destacada histórica ya no se edita.
 
   // AUTO-INIT: si hay ?id= en la URL, cargar los datos de la obra
   async function inicializar() {
@@ -186,12 +112,7 @@ const { modo = "nueva" } = Astro.props;
           (document.getElementById('f-anio') as HTMLInputElement).value = obra.anio || '';
           (document.getElementById('f-ubicacion') as HTMLInputElement).value = obra.ubicacion || '';
           (document.getElementById('f-anio') as HTMLInputElement).value = obra.anio || '';
-          // Registrar el slot actual antes de cargar las posiciones de la categoría.
-          categoriaOriginal = obra.servicio_id;
-          ordenOriginal = obra.destacado_slot ?? 0;
-          ordenElegido = obra.destacado_slot ?? 0;
           selectCat.value = obra.servicio_id;
-          await cargarSlotsFormulario(obra.servicio_id);
 
           // Preview de imagen actual
           const previewContainer = document.getElementById('f-imagen-preview-container');
@@ -232,7 +153,6 @@ const { modo = "nueva" } = Astro.props;
         videoUrl: (document.getElementById("f-video") as HTMLInputElement).value || (obraActualId ? null : undefined),
         ubicacion: (document.getElementById('f-ubicacion') as HTMLInputElement).value || null,
         anio: Number((document.getElementById('f-anio') as HTMLInputElement).value) || null,
-        destacado_slot: ordenElegido || null
       };
 
       if (rawFile) {
