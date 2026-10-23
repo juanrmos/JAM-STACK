@@ -6,7 +6,7 @@ import { siteConfig } from "../config/site";
 
 interface Props {
   titulo?: string;
-  seccionActiva?: "obras" | "logos" | "contenido";
+  seccionActiva?: "obras" | "logos" | "contenido" | "sobre-nosotros" | "cotizador";
 }
 
 const { titulo = `Admin — ${siteConfig.artista.nombreEstudio}`, seccionActiva = "obras" } = Astro.props;

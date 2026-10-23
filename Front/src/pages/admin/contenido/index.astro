@@ -12,10 +12,9 @@ const entries = Object.entries(defaults);
 const byKey = Object.fromEntries(entries);
 const sections = [
   { id: 'home', title: 'Inicio', help: 'Portada del sitio', keys: ['home.eyebrow', 'home.title', 'home.titleAccent', 'home.subtitle'] },
-  { id: 'profile', title: 'Perfil', help: 'Tarjetas de perfil y vistas de servicio', keys: ['profile.tagline', 'profile.specialties'] },
-  { id: 'services', title: 'Servicios', help: 'Lemas y descripciones de las seis categorías', keys: [] },
+  { id: 'profile', title: 'Perfil', help: 'Tarjeta de Inicio y presentación biográfica', keys: ['profile.eyebrow', 'profile.title', 'profile.titleAccent', 'profile.description', 'profile.tagline', 'profile.specialties'] },
+  { id: 'services', title: 'Servicios', help: 'Nombres visibles, lemas y descripciones', keys: [] },
   { id: 'archive', title: 'Obras', help: 'Encabezado del archivo visual', keys: ['archive.eyebrow', 'archive.title', 'archive.titleAccent', 'archive.subtitle'] },
-  { id: 'about', title: 'Sobre nosotros', help: 'Presentación y fotografía del artista', keys: ['about.photoCaption', 'about.eyebrow', 'about.title', 'about.titleAccent', 'about.description'] },
   { id: 'contact', title: 'Contacto', help: 'Presentación de la sección de contacto', keys: ['contact.eyebrow', 'contact.title', 'contact.description'] },
 ];
 const serviceTabs = servicios.map((service) => ({ ...service, title: nombresPublicosIniciales[service.id] }));
@@ -33,10 +32,9 @@ const fieldProps = (key: string, contextualLabel?: string) => {
 
 const helpBySection: Record<string, string> = {
   home: 'Aparece en la portada, debajo del encabezado principal.',
-  profile: 'Aparece en las tarjetas de perfil del artista.',
-  services: 'Aparece en las vistas de cada servicio y en sus galerías.',
+  profile: 'Aparece en la tarjeta de Inicio y en el perfil del artista.',
+  services: 'Aparece en los servicios artísticos y complementarios.',
   archive: 'Aparece al inicio de la sección Obras.',
-  about: 'Aparece en la presentación del artista y junto a su fotografía.',
   contact: 'Aparece al inicio de la sección Contacto.',
 };
 ---
@@ -71,6 +69,19 @@ const helpBySection: Record<string, string> = {
           <div class="content-card__body">
             {section.id === 'services' ? (
               <>
+                <section class="complementary-editor" aria-labelledby="complementary-editor-heading">
+                  <h3 id="complementary-editor-heading">Presentación de Servicios complementarios</h3>
+                  <label class="service-name-field" data-group-name-field="complementarios">
+                    <span>Nombre visible del grupo</span>
+                    <small>ID interno fijo: <code>complementarios</code></small>
+                    <input name="grupo.complementarios.nombre_publico" data-group-name-input="complementarios" type="text" maxlength="60" required value="Servicios Complementarios" aria-label="Nombre visible del grupo Servicios complementarios" />
+                    <span class="service-name-field__meta"><span data-group-name-error aria-live="polite"></span><span data-group-name-counter>0/60</span></span>
+                  </label>
+                  <div class="content-fields">
+                    <ContentField {...fieldProps('complementary.eyebrow', 'Texto superior')} />
+                    <ContentField {...fieldProps('complementary.description', 'Introducción')} />
+                  </div>
+                </section>
                 <div class="service-tabs" role="tablist" aria-label="Categorías de servicios">
                   {serviceTabs.map((service, serviceIndex) => (
                     <button type="button" role="tab" aria-selected={serviceIndex === 0} aria-controls={`service-panel-${service.id}`} id={`service-tab-${service.id}`} data-service-tab={service.id}>
@@ -168,7 +179,7 @@ const helpBySection: Record<string, string> = {
                     <div class="about-photo__heading">
                       <div>
                         <h3>Fotografía de perfil</h3>
-                        <p>Imagen autorizada. Se muestra en Inicio y en las vistas de servicios.</p>
+                        <p>Imagen autorizada. Se muestra en la tarjeta de Inicio y en Perfil.</p>
                       </div>
                     </div>
                     <div class="about-photo__content">
@@ -181,28 +192,6 @@ const helpBySection: Record<string, string> = {
                         <input id="profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp" required />
                         <button type="submit" class="button-secondary">Reemplazar fotografía</button>
                         <p class="photo-status" role="status" aria-live="polite"></p>
-                      </form>
-                    </div>
-                  </section>
-                )}
-                {section.id === 'about' && (
-                  <section class="about-photo" data-photo-space="about.photo">
-                    <div class="about-photo__heading">
-                      <div>
-                        <h3>Fotografía de Sobre nosotros</h3>
-                        <p>Vertical 4:5, mínimo 1200px de alto, imagen autorizada</p>
-                      </div>
-                    </div>
-                    <div class="about-photo__content">
-                      <div class="about-photo__preview" id="about-photo-preview-wrap">
-                        <span id="about-photo-fallback" data-photo-fallback aria-hidden="true">AR</span>
-                        <img id="about-photo-preview" data-photo-preview alt="Vista previa de la fotografía de Sobre nosotros" hidden />
-                      </div>
-                      <form id="about-photo-form" class="about-photo__form" data-photo-form="about.photo">
-                        <label for="about-photo-file">Selecciona una imagen autorizada</label>
-                        <input id="about-photo-file" type="file" accept="image/jpeg,image/png,image/webp" required />
-                        <button type="submit" class="button-secondary">Reemplazar fotografía</button>
-                        <p id="photo-status" class="photo-status" role="status" aria-live="polite"></p>
                       </form>
                     </div>
                   </section>
@@ -233,6 +222,7 @@ const helpBySection: Record<string, string> = {
   const discardButton = document.querySelector<HTMLButtonElement>('#content-discard')!;
   const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-content-field] input, [data-content-field] textarea'));
   const serviceNameFields = Array.from(document.querySelectorAll<HTMLInputElement>('[data-service-name-input]'));
+  const groupNameField = document.querySelector<HTMLInputElement>('[data-group-name-input="complementarios"]')!;
   const typographyFields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-typography-field]'));
   const typographyFont = document.querySelector<HTMLSelectElement>('[data-home-typography-font]')!;
   const typographyScale = document.querySelector<HTMLInputElement>('[data-home-typography-scale]')!;
@@ -241,6 +231,7 @@ const helpBySection: Record<string, string> = {
   const typographyPreviewText = document.querySelector<HTMLElement>('[data-home-title-preview]')!;
   const baseline = new Map<string, string>();
   const serviceNameBaseline = new Map<string, string>();
+  let groupNameBaseline = groupNameField.value;
   const typographyBaseline = new Map<string, string>();
   let loaded = false;
   let submitting = false;
@@ -254,7 +245,7 @@ const helpBySection: Record<string, string> = {
   typographyFields.forEach((field) => typographyBaseline.set(field.name, field.value));
 
   function setEditorEnabled(enabled: boolean) {
-    [...fields, ...serviceNameFields, ...typographyFields].forEach((field) => { field.disabled = !enabled; });
+    [...fields, ...serviceNameFields, groupNameField, ...typographyFields].forEach((field) => { field.disabled = !enabled; });
   }
 
   const isAccent = (field: HTMLInputElement | HTMLTextAreaElement) => field.name.endsWith('.titleAccent');
@@ -264,6 +255,7 @@ const helpBySection: Record<string, string> = {
     const id = field.dataset.serviceNameInput || '';
     return loaded && serviceNameBaseline.has(id) && field.value !== serviceNameBaseline.get(id);
   };
+  const groupNameChanged = () => loaded && groupNameField.value !== groupNameBaseline;
   const typographyChanged = (field: HTMLInputElement | HTMLSelectElement) =>
     loaded && typographyBaseline.has(field.name) && field.value !== typographyBaseline.get(field.name);
 
@@ -292,7 +284,7 @@ const helpBySection: Record<string, string> = {
 
   function hasChanges() {
     if (!loaded) return false;
-    return fields.some(fieldChanged) || serviceNameFields.some(serviceNameChanged) || typographyFields.some(typographyChanged);
+    return fields.some(fieldChanged) || serviceNameFields.some(serviceNameChanged) || groupNameChanged() || typographyFields.some(typographyChanged);
   }
 
   function serviceNameError(field: HTMLInputElement): string {
@@ -300,6 +292,28 @@ const helpBySection: Record<string, string> = {
     if (!value) return 'Este campo es obligatorio.';
     if (value.length > 40) return 'Supera el límite de 40 caracteres.';
     return '';
+  }
+
+  function groupNameError(): string {
+    const value = groupNameField.value.trim();
+    if (!value) return 'Este campo es obligatorio.';
+    if (value.length > 60) return 'Supera el límite de 60 caracteres.';
+    return '';
+  }
+
+  function updateGroupNameField(showError = false) {
+    const wrapper = groupNameField.closest<HTMLElement>('[data-group-name-field]')!;
+    const counter = wrapper.querySelector<HTMLElement>('[data-group-name-counter]')!;
+    const error = wrapper.querySelector<HTMLElement>('[data-group-name-error]')!;
+    const message = groupNameError();
+    const visible = showError || groupNameField.dataset.touched === 'true';
+    counter.textContent = `${groupNameField.value.length}/60`;
+    counter.classList.toggle('is-near-limit', groupNameField.value.length >= 54 && groupNameField.value.length <= 60);
+    counter.classList.toggle('is-over-limit', groupNameField.value.length > 60);
+    error.textContent = visible ? message : '';
+    groupNameField.setAttribute('aria-invalid', visible && message ? 'true' : 'false');
+    wrapper.classList.toggle('has-error', visible && Boolean(message));
+    document.querySelectorAll<HTMLElement>('[data-service-group-display="complementarios"]').forEach((element) => { element.textContent = groupNameField.value.trim() || groupNameBaseline; });
   }
 
   function updateServiceNameField(field: HTMLInputElement, showError = false) {
@@ -336,16 +350,17 @@ const helpBySection: Record<string, string> = {
 
   function updateSaveState() {
     const dirty = hasChanges();
-    const errors = fields.some((field) => Boolean(errorFor(field))) || serviceNameFields.some((field) => Boolean(serviceNameError(field)));
+    const errors = fields.some((field) => Boolean(errorFor(field))) || serviceNameFields.some((field) => Boolean(serviceNameError(field))) || Boolean(groupNameError());
     saveButton.disabled = !dirty || errors || submitting || !loaded;
     discardButton.disabled = !dirty || submitting || !loaded;
     if (!statusLocked) {
-      const dirtyCount = fields.filter(fieldChanged).length + serviceNameFields.filter(serviceNameChanged).length + typographyFields.filter(typographyChanged).length;
+      const dirtyCount = fields.filter(fieldChanged).length + serviceNameFields.filter(serviceNameChanged).length + Number(groupNameChanged()) + typographyFields.filter(typographyChanged).length;
       saveStatus.textContent = dirty ? `● ${dirtyCount} cambios sin guardar` : 'Todo guardado';
     }
     document.querySelectorAll<HTMLElement>('[data-content-section]').forEach((section) => {
       const changed = fields.some((field) => fieldChanged(field) && section.contains(field.closest('[data-content-field]')))
         || (section.dataset.contentSection === 'services' && serviceNameFields.some(serviceNameChanged))
+        || (section.dataset.contentSection === 'services' && groupNameChanged())
         || (section.dataset.contentSection === 'home' && typographyFields.some(typographyChanged));
       section.querySelector<HTMLElement>('[data-section-dirty]')!.hidden = !changed;
     });
@@ -385,6 +400,9 @@ const helpBySection: Record<string, string> = {
       serviceNameBaseline.set(id, field.value);
       updateServiceNameField(field);
     });
+    groupNameField.value = servicesData.grupo_complementario?.nombre_publico || groupNameField.value;
+    groupNameBaseline = groupNameField.value;
+    updateGroupNameField();
 
     document.querySelectorAll<HTMLFormElement>('[data-photo-form]').forEach((photoForm) => {
       const imageKey = photoForm.dataset.photoForm!;
@@ -450,6 +468,18 @@ const helpBySection: Record<string, string> = {
     });
   });
 
+  groupNameField.addEventListener('input', () => {
+    groupNameField.dataset.touched = 'true';
+    statusLocked = false;
+    updateGroupNameField();
+    updateSaveState();
+  });
+  groupNameField.addEventListener('blur', () => {
+    groupNameField.dataset.touched = 'true';
+    updateGroupNameField();
+    updateSaveState();
+  });
+
   typographyFields.forEach((field) => field.addEventListener('input', () => {
     statusLocked = false;
     updateTypographyPreview();
@@ -460,13 +490,15 @@ const helpBySection: Record<string, string> = {
     event.preventDefault();
     updateAll(true);
     serviceNameFields.forEach((field) => updateServiceNameField(field, true));
-    if (fields.some((field) => Boolean(errorFor(field))) || serviceNameFields.some((field) => Boolean(serviceNameError(field)))) return;
+    updateGroupNameField(true);
+    if (fields.some((field) => Boolean(errorFor(field))) || serviceNameFields.some((field) => Boolean(serviceNameError(field))) || Boolean(groupNameError())) return;
     submitting = true;
     statusLocked = true;
     saveStatus.textContent = 'Guardando…';
     updateSaveState();
     const changedTexts = fields.filter((field) => field.value !== baseline.get(field.name));
     const changedNames = serviceNameFields.filter((field) => field.value !== serviceNameBaseline.get(field.dataset.serviceNameInput || ''));
+    const changedGroupName = groupNameChanged();
     const changedTypography = typographyFields.some((field) => field.value !== typographyBaseline.get(field.name));
     try {
       if (changedTexts.length) {
@@ -478,9 +510,11 @@ const helpBySection: Record<string, string> = {
         }
         changedTexts.forEach((field) => baseline.set(field.name, field.value));
       }
-      if (changedNames.length) {
+      if (changedNames.length || changedGroupName) {
         const servicios = changedNames.map((field) => ({ id: field.dataset.serviceNameInput!, nombre_publico: field.value.trim() }));
-        const response = await apiFetch('/api/servicios/nombres', { method: 'PUT', body: JSON.stringify({ servicios }) });
+        const body: Record<string, unknown> = { servicios };
+        if (changedGroupName) body.grupo_complementario = { id: 'complementarios', nombre_publico: groupNameField.value.trim() };
+        const response = await apiFetch('/api/servicios/nombres', { method: 'PUT', body: JSON.stringify(body) });
         if (!response.ok) {
           const data = await response.json();
           throw Error(data.error?.mensaje || 'Error al guardar los nombres de servicio.');
@@ -490,6 +524,11 @@ const helpBySection: Record<string, string> = {
           serviceNameBaseline.set(field.dataset.serviceNameInput!, field.value);
           updateServiceNameField(field);
         });
+        if (changedGroupName) {
+          groupNameField.value = groupNameField.value.trim();
+          groupNameBaseline = groupNameField.value;
+          updateGroupNameField();
+        }
       }
       if (changedTypography) {
         const response = await apiFetch('/api/tipografia-portada', {
@@ -510,6 +549,7 @@ const helpBySection: Record<string, string> = {
       saveStatus.textContent = 'Cambios guardados';
       fields.forEach((field) => { field.dataset.touched = 'false'; });
       serviceNameFields.forEach((field) => { field.dataset.touched = 'false'; });
+      groupNameField.dataset.touched = 'false';
     typographyFields.forEach((field) => { typographyBaseline.set(field.name, field.value); });
     } catch (error) {
       saveStatus.textContent = (error as Error).message;
@@ -530,6 +570,9 @@ const helpBySection: Record<string, string> = {
       field.dataset.touched = 'false';
       updateServiceNameField(field);
     });
+    groupNameField.value = groupNameBaseline;
+    groupNameField.dataset.touched = 'false';
+    updateGroupNameField();
     typographyFields.forEach((field) => {
       field.value = typographyBaseline.get(field.name) ?? field.value;
     });

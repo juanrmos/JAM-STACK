@@ -4,12 +4,15 @@ import Shell from '../visual/components/public/redesign/Shell.astro';
 import Home from '../visual/components/public/redesign/Home.astro';
 import Archive from '../visual/components/public/redesign/Archive.astro';
 import About from '../visual/components/public/redesign/About.astro';
+import Profile from '../visual/components/public/redesign/Profile.astro';
+import Complementary from '../visual/components/public/redesign/Complementary.astro';
 import Contact from '../visual/components/public/redesign/Contact.astro';
 import Services from '../visual/components/public/redesign/Services.astro';
 import Quote from '../visual/components/public/redesign/Quote.astro';
 import Lightbox from '../visual/components/public/redesign/Lightbox.astro';
 import UpdateNotice from '../visual/components/shared/UpdateNotice.astro';
 import '../visual/styles/public/redesign/tokens.css';
+import '../visual/styles/public/redesign/scrollbars.css';
 import '../visual/styles/public/redesign/shell.css';
 import '../visual/styles/public/redesign/home.css';
 import '../visual/styles/public/redesign/archive.css';
@@ -22,7 +25,7 @@ import { enlaceWhatsapp } from '../features/cotizacion/whatsapp';
 ---
 <DocumentLayout tituloDocumento="Corporación Artística Antony Rodríguez">
   <Shell />
-  <main id="app-main"><Home/><Archive/><About/><Contact/><Services/></main>
+  <main id="app-main"><Home/><Archive/><Profile/><About/><Complementary/><Contact/><Services/></main>
   <Quote/><Lightbox/>
   <a id="boton-whatsapp" class="app-whatsapp" href={enlaceWhatsapp('Hola, quiero conversar sobre un proyecto artístico.')} target="_blank" rel="noopener noreferrer" aria-label="Escribir por WhatsApp">
     <svg viewBox="0 0 32 32" width="26" height="26" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">

@@ -1,5 +1,4 @@
 import type { Obra } from '../../services/api/types';
-import { servicios } from '../../config/servicios';
 import { nombreServicio } from './service-names';
 import { prepararVideoPermitido } from '../../../../Shared/contracts/video';
 
@@ -8,7 +7,10 @@ type LightboxState = {
   index: number;
 };
 
-let list: Obra[] = [];
+type LightboxItem = { imagenUrl: string; titulo: string; categoria: string; meta: string; videoUrl: string | null };
+type AboutPhoto = { imagenUrl: string; texto_alternativo: string };
+
+let list: LightboxItem[] = [];
 let index = 0;
 let returnFocus: HTMLElement | null = null;
 let closing = false;
@@ -50,16 +52,16 @@ function updateHistoryIndex() {
 }
 
 function render() {
-  const obra = list[index];
-  if (!obra) return;
+  const item = list[index];
+  if (!item) return;
   const img = get('lightbox-img') as HTMLImageElement;
-  img.src = obra.imagenUrl;
-  img.alt = obra.titulo;
-  get('lightbox-category')!.textContent = nombreServicio(obra.servicio_id);
-  get('lightbox-title')!.textContent = obra.titulo;
-  get('lightbox-meta')!.textContent = [obra.ubicacion, obra.anio].filter(Boolean).join(' · ');
+  img.src = item.imagenUrl;
+  img.alt = item.titulo;
+  get('lightbox-category')!.textContent = item.categoria;
+  get('lightbox-title')!.textContent = item.titulo;
+  get('lightbox-meta')!.textContent = item.meta;
   const videoLink = get('lightbox-video') as HTMLAnchorElement | null;
-  const video = obra.videoUrl ? prepararVideoPermitido(obra.videoUrl) : null;
+  const video = item.videoUrl ? prepararVideoPermitido(item.videoUrl) : null;
   if (videoLink) {
     videoLink.hidden = !video;
     if (video) videoLink.href = video.url;
@@ -71,7 +73,30 @@ function render() {
 export function abrirLightbox(obras: Obra[], position: number, opener: HTMLElement) {
   if (!obras.length) return;
   const alreadyOpen = lightboxVisible();
-  list = obras;
+  list = obras.map((obra) => ({
+    imagenUrl: obra.imagenUrl,
+    titulo: obra.titulo,
+    categoria: nombreServicio(obra.servicio_id),
+    meta: [obra.ubicacion, obra.anio].filter(Boolean).join(' · '),
+    videoUrl: obra.videoUrl,
+  }));
+  abrirElementoLightbox(position, opener, alreadyOpen);
+}
+
+export function abrirLightboxGaleria(fotos: AboutPhoto[], position: number, opener: HTMLElement) {
+  if (!fotos.length) return;
+  const alreadyOpen = lightboxVisible();
+  list = fotos.map((foto) => ({
+    imagenUrl: foto.imagenUrl,
+    titulo: foto.texto_alternativo,
+    categoria: 'Sobre nosotros',
+    meta: '',
+    videoUrl: null,
+  }));
+  abrirElementoLightbox(position, opener, alreadyOpen);
+}
+
+function abrirElementoLightbox(position: number, opener: HTMLElement, alreadyOpen: boolean) {
   index = ((position % list.length) + list.length) % list.length;
   returnFocus = opener;
   closing = false;

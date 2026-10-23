@@ -6,6 +6,8 @@
 
 **Estado:** fase pública y compartidos implementada localmente el 11 de octubre de 2026 (sección 14); separación visual administrativa implementada después (sección 15). Persisten tareas funcionales administrativas y de integración. Las secciones 2–13 conservan el diagnóstico y la propuesta que guiaron el trabajo.
 
+**Decisiones vigentes:** para la ampliación del catálogo, la galería, Perfil/Sobre nosotros, el cotizador y la retirada de destacados, prevalece la sección 19. Cualquier referencia contradictoria anterior conserva valor histórico y no describe el comportamiento aprobado para esta fase.
+
 ## 1. Alcance y orden
 
 Primero se preparará un entorno de prueba local y se refactorizará la **vista pública**. Una vez estabilizados sus flujos, se trabajará en la vista **administrativa**. El objetivo es separar presentación, interacciones, acceso a datos y reglas de negocio sin cambiar inadvertidamente lo que ve o hace el usuario.
@@ -813,3 +815,34 @@ Las imágenes y fichas del archivo incluidas como referencias visuales no se con
 - Las fuentes DM Sans y Cormorant Garamond se sirven desde paquetes instalados en Front para que la carga local no dependa de Google Fonts.
 - La vista de Sobre nosotros conserva contenido genérico y placeholders; no se agregaron estadísticas ni enlaces de contacto sin verificar.
 - La comprobación de Playwright valida API, CRUD y slots en D1/R2 local, edición de textos y foto, navegación SPA, filtro, lightbox, cotizador precargado, menú móvil, historial y ausencia de desbordamiento a 390 px. No certifica dispositivos móviles reales ni una futura publicación.
+
+## 19. Ampliación funcional aprobada para validación local
+
+Esta sección actualiza las decisiones funcionales acordadas después de la sección 18. La rama `feature/ampliacion-servicios-contenido` se basa en la última `origin/production`. El trabajo usa exclusivamente un almacén local nuevo, aislado en `Back/.wrangler/rediseno-20261022`; no cambia Cloudflare, Pages, D1 ni R2 productivos, y no se publica ni se crea PR.
+
+### Catálogo, navegación y galerías
+
+- Los seis servicios originales conservan IDs. Se agregan IDs fijos para `materiales`, `electricos` y `drywall`; Admin puede editar sus nombres visibles y textos, pero no crea, elimina, reordena ni cambia IDs. `Servicios Complementarios` es una sola vista numerada 07 en el dock, con dos pestañas internas para Eléctricos y Drywall / carpintería, que no llevan número ni abren vistas independientes. Venta de Materiales e Insumos se presenta después como servicio 08.
+- Materiales e Insumos presenta un enlace de consulta por WhatsApp, sin inventario, precios ni compra en línea. Las dos pestañas complementarias muestran sus propios textos, portadas y obras/fotos relacionadas por sus IDs; la introducción del grupo presenta ambas portadas como avance visual.
+- La introducción general y los textos de ambas pestañas se editan desde Admin > Contenido > Servicios. El nombre del grupo usa `grupos_servicios.nombre_publico`; su texto superior e introducción usan claves permitidas de `textos`; los nombres de las pestañas usan `servicios.nombre_publico`; sus lemas y descripciones usan `textos`. Las portadas existentes `service.electricos.cover` y `service.drywall.cover` se reutilizan en la introducción y en cada pestaña.
+- El perfil/biografía reutiliza los textos editoriales de Perfil y su fotografía única `profile.photo`. La tarjeta de Perfil solo aparece en Inicio y abre la vista Perfil. Se elimina de las vistas de servicio.
+- Sobre nosotros es una sección distinta, con textos propios en `textos` y una colección independiente de hasta 20 fotos, ordenable y administrable. El archivo binario se conserva en R2; D1 guarda claves, orden y texto alternativo.
+- La cinta pública acepta hasta 50 obras por servicio. Conserva 5 obras iniciales por vista y carga las siguientes en tandas de 5 al acercarse al final. El archivo general conserva paginación. El orden de lectura es fecha de creación descendente y luego ID descendente.
+- Se retira el uso funcional de destacados y sus controles del Admin. `obras.destacado_slot` se mantiene por compatibilidad con el esquema histórico, pero el nuevo esquema obliga el valor `0`, no hay índice ni filtro de slots y el API no lo usa para presentar ni ordenar obras.
+
+### Cotizador configurable con límites
+
+El cotizador mantiene sus tres pasos y el envío por WhatsApp. Admin puede cambiar los títulos e instrucciones editoriales de la presentación, además del texto visible de los ocho campos predefinidos, habilitarlos o deshabilitarlos y marcarlos obligatorios. No puede editar botones, crear claves o tipos arbitrarios, cambiar pasos ni quitar la última entrada obligatoria. Los IDs, tipos permitidos, límites de longitud, opciones fijas de entorno y validaciones permanecen en código y se duplican con restricciones en D1. Al abrir desde un servicio, se precarga el nombre visible; el mensaje de WhatsApp inicia con el texto solicitado para una obra de alto impacto.
+
+La administración de Sobre nosotros se presenta en una sola entrada del panel. En esa página se agrupan el formulario de textos editoriales y la galería fotográfica; ambos conservan sus endpoints y persistencia independientes.
+
+### Base de datos y preparación de producción
+
+`Back/schema.sql` define el esquema completo para una D1 local limpia. Los fixtures son sintéticos. La migración `Back/migrations/007_catalogo-y-contenido-ampliado.sql` conserva filas actuales al aplicar el nuevo catálogo, archiva la antigua foto fija de Sobre nosotros en la nueva colección, renombra las claves de texto reutilizadas por Perfil, agrega tablas para fotos y cotizador, y reconstruye obras con `destacado_slot=0`. En esta fase solo se prepara el archivo; no se ejecuta contra una base remota.
+
+### Validación requerida antes de integrar
+
+- Inicializar esquema, fixtures y medios con `--local` y el persist path nuevo; verificar que Worker y Front usan `127.0.0.1`.
+- Comprobar esquema, claves foráneas, slots cero, catálogo de 9 IDs, límites de 20 fotos y campos permitidos del cotizador.
+- Probar Admin de obras sin destacados, CRUD de obras y paginación, galerías por tandas hasta 50, filtros y orden descendente, navegación Perfil/Sobre nosotros, colección de fotos con orden y eliminación, nombres de servicios, cotizador y texto de WhatsApp.
+- Ejecutar typecheck, Astro check y build local. Un build por sí solo no certifica los recorridos funcionales.

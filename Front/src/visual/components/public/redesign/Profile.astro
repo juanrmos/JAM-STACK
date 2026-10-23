@@ -1,0 +1,12 @@
+---
+import catalogo from '../../../../../../Shared/contracts/textos.json';
+const t=(key:string)=>catalogo[key as keyof typeof catalogo]?.valor||'';
+---
+<section class="app-view about-view profile-view" data-view-panel="perfil" aria-labelledby="profile-heading" hidden>
+  <div class="about-view__photo profile-view__photo">
+    <img class="profile-view__backdrop" data-profile-backdrop alt="" aria-hidden="true" hidden />
+    <span class="profile-card__avatar" data-profile-avatar><span data-profile-fallback>AR</span><img data-profile-photo alt="" hidden /></span>
+    <span class="profile-view__photo-label">Presidente ejecutivo</span>
+  </div>
+  <div class="about-view__copy"><p class="eyebrow" data-text-key="profile.eyebrow">{t('profile.eyebrow')}</p><h1 id="profile-heading" data-styled-title="profile">{t('profile.title')}</h1><p class="lead" data-text-key="profile.description">{t('profile.description')}</p><p class="profile-view__tagline" data-text-key="profile.tagline">{t('profile.tagline')}</p><p data-text-key="profile.specialties">{t('profile.specialties')}</p><a href="/?vista=contacto" data-view="contacto" class="text-link">Conversemos sobre tu proyecto ↗</a></div>
+</section>

@@ -1,6 +1,8 @@
 # Propuesta de reestructuración de la base de datos
 
-**Estado:** propuesta para revisión. No representa una migración implementada ni cambios aplicados a D1.
+**Estado:** propuesta histórica; las enmiendas vigentes se registran en este documento y en Docs/10, sección 19.
+
+**Enmienda vigente (22 de octubre de 2026):** las decisiones actuales dejan sin efecto las referencias históricas a cinco slots y seis servicios. `Back/schema.sql` es el esquema canónico de validación local; `Back/migrations/007_catalogo-y-contenido-ampliado.sql` solo prepara una futura migración revisable y no se ejecutará contra producción en esta fase.
 
 **Contexto:** nuevo flujo público y rediseño UI/UX documentados en `10-plan-refactorizacion-arquitectura.md`, sección 18.
 
@@ -211,10 +213,10 @@ El flujo deberá subir y validar primero la imagen nueva, actualizar la clave en
 | Fichas de obra | `obras`; título, ubicación, año y servicio pertenecen al proyecto. Ubicación y año son opcionales y requieren verificación. |
 | Sobre nosotros | Títulos, subtítulos y descripción autorizados en `textos`; las estadísticas y el texto del enlace se mantienen fijos salvo aprobación explícita. La foto reemplazable usa `about.photo`; el retrato de las tarjetas de perfil usa `profile.photo`, ambos en `imagenes_sitio`. |
 | Contacto | Títulos, subtítulos y descripciones autorizados en `textos`; teléfono, correo, ubicación y URLs permanecen en configuración fija. Botones y nombres de secciones quedan fijos. |
-| Cotizador | Botones, pasos, opciones y nombres/etiquetas de campos quedan fijos; no forman parte de las claves editables. |
+| Cotizador | Los títulos e instrucciones editoriales usan claves fijas de `textos` con límites. Las etiquetas de los ocho campos se administran en `campos_cotizador`. Pasos, botones, opciones y validaciones permanecen fijos. |
 | WhatsApp, lightbox y accesibilidad | Solo los textos autorizados se editan en `textos`; botones, aria labels y comportamiento quedan fijos en esta fase. |
 
-Los valores de `navigation.items`, `archive.filters`, `quote.steps`, `environmentOptions`, `socialItems` y `message.fields` no se guardarán como una cadena separada por punto y coma. Los nombres de secciones/navegación, botones y campos del cotizador permanecen definidos por el contrato del producto. No se añade una tabla de colecciones porque Admin no podrá agregar, quitar ni reordenar esos elementos.
+Los valores de `navigation.items`, `archive.filters`, `quote.steps`, `environmentOptions`, `socialItems` y `message.fields` no se guardarán como una cadena separada por punto y coma. Los nombres de secciones/navegación, botones, pasos, opciones y reglas del cotizador permanecen definidos por el contrato del producto. Los textos editoriales de título e instrucciones del cotizador usan claves permitidas `quote.*` en `textos`; no se añade una tabla por cada paso o etiqueta. Admin no podrá agregar, quitar ni reordenar esos elementos.
 
 ## 7. Relación y reglas principales
 
@@ -307,3 +309,11 @@ Las restricciones SQL se probaron en la D1 local: claves foráneas a los seis se
 - `10-plan-refactorizacion-arquitectura.md`, sección 18: especificación del flujo público, categorías, contenido UI/UX, carga de galerías y datos por confirmar.
 - `03-modelo-de-datos-y-api.md`: describe el contrato histórico; debe actualizarse antes de considerar documentado el modelo nuevo para producción.
 - `arquitectura-slots.md` y `requisitos-slots.md`: describen el comportamiento existente de cinco posiciones por categoría, conservado mediante `destacado_slot` en el modelo destino.
+
+## Enmienda de implementación local — Servicios complementarios (22 de octubre de 2026)
+
+La agrupación `complementarios` es una sola entrada pública del dock, con número visual 07. Los IDs `electricos` y `drywall` se conservan para asociar textos, portadas, obras, filtros y cotizaciones, pero se presentan como pestañas dentro de esa vista y no como entradas numeradas del dock ni como páginas independientes. Venta de Materiales e Insumos pasa a número visual 08; estos números son configuración de presentación y no afectan claves de D1.
+
+La base ya tiene `grupos_servicios.nombre_publico`, por lo que no se agrega otra tabla. Ese campo guarda el título visible del grupo fijo `complementarios`. Se agregan las claves allowlisted `complementary.eyebrow` y `complementary.description` en `textos` para el texto superior y la introducción general. Los nombres visibles de las pestañas usan los registros existentes de `servicios.nombre_publico`; sus lemas y descripciones usan `service.electricos.*` y `service.drywall.*` en `textos`. Las portadas existentes `service.electricos.cover` y `service.drywall.cover` se reutilizan como imágenes de la introducción y dentro de cada pestaña; la galería de obras conserva los mismos IDs.
+
+Admin centraliza la edición del grupo, la introducción y sus dos servicios en Contenido > Servicios. El Worker expone el nombre del grupo junto al catálogo de servicios y permite actualizarlo en lote con los nombres visibles, manteniendo fijos el ID del grupo, los IDs de servicios y las relaciones de obras. La escritura agrupada usa D1 `batch`; los textos editoriales se guardan mediante la allowlist existente. No se cambió ni ejecutó una base remota.

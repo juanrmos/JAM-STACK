@@ -1,0 +1,58 @@
+---
+import { nombresPublicosIniciales } from '../../../../../../Shared/contracts/servicios';
+import catalogo from '../../../../../../Shared/contracts/textos.json';
+
+const t = (key: string) => catalogo[key as keyof typeof catalogo]?.valor || '';
+const childServices = [
+  { id: 'electricos', image: '/images/servicio-fachadas.jpg' },
+  { id: 'drywall', image: '/images/servicio-restauracion.jpg' },
+] as const;
+---
+<section class="app-view complementary-view" data-view-panel="complementarios" aria-labelledby="complementary-heading" hidden>
+  <header class="complementary-view__header">
+    <div class="complementary-view__intro-copy">
+      <p class="eyebrow" data-text-key="complementary.eyebrow">{t('complementary.eyebrow')}</p>
+      <h1 id="complementary-heading" data-service-group-display="complementarios">Servicios Complementarios</h1>
+      <p data-text-key="complementary.description">{t('complementary.description')}</p>
+    </div>
+    <div class="complementary-view__highlights" aria-label="Servicios disponibles">
+      {childServices.map(({ id, image }) => (
+        <button type="button" class="complementary-highlight" data-complementary-select={id} aria-controls={`complementary-panel-${id}`}>
+          <img src={image} alt="" loading="lazy" data-service-cover={id} />
+          <span class="complementary-highlight__shade"></span>
+          <strong data-service-name-display={id}>{nombresPublicosIniciales[id]}</strong>
+        </button>
+      ))}
+    </div>
+  </header>
+
+  <div class="complementary-services">
+    <div class="complementary-tabs" role="tablist" aria-label="Servicios complementarios">
+      {childServices.map(({ id }, index) => (
+        <button type="button" role="tab" id={`complementary-tab-${id}`} aria-controls={`complementary-panel-${id}`} aria-selected={index === 0} tabindex={index === 0 ? 0 : -1} data-complementary-tab={id}>
+          <span data-service-name-display={id}>{nombresPublicosIniciales[id]}</span>
+        </button>
+      ))}
+    </div>
+
+    {childServices.map(({ id, image }, index) => (
+      <section class="complementary-service" role="tabpanel" id={`complementary-panel-${id}`} aria-labelledby={`complementary-tab-${id}`} data-complementary-panel={id} data-gallery-panel hidden={index !== 0}>
+        <div class="complementary-service__copy">
+          <h2 data-service-name-display={id}>{nombresPublicosIniciales[id]}</h2>
+          <p class="service-view__motto" data-text-key={`service.${id}.subtitle`}>{t(`service.${id}.subtitle`)}</p>
+          <p class="service-view__description" data-text-key={`service.${id}.description`}>{t(`service.${id}.description`)}</p>
+          <button type="button" class="gold-button" data-open-quote data-service-quote={id}>Consultar este servicio ↗</button>
+          <div class="service-thumbs" data-thumbs={id} aria-label={`Fotografías de ${nombresPublicosIniciales[id]}`} data-service-name-aria={id} data-service-name-aria-template="Fotografías de {name}"></div>
+        </div>
+        <div class="complementary-service__gallery">
+          <button type="button" class="gallery-arrow" data-slide="prev" aria-label="Fotografía anterior">←</button>
+          <button type="button" class="service-active" data-active-image={id} aria-label="Ampliar imagen seleccionada">
+            <img src={image} alt="Imagen de referencia del servicio" data-service-cover-fallback={id} />
+            <span><strong data-service-name-display={id}>{nombresPublicosIniciales[id]}</strong><small>Selecciona una fotografía para ampliarla</small></span>
+          </button>
+          <button type="button" class="gallery-arrow" data-slide="next" aria-label="Fotografía siguiente">→</button>
+        </div>
+      </section>
+    ))}
+  </div>
+</section>

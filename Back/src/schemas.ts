@@ -31,7 +31,9 @@ const obraCampos = z.object({
   videoUrl: videoUrlSchema.nullable().optional(),
   ubicacion: z.string().trim().max(200).nullable().optional(),
   anio: z.number().int().min(1000).max(9999).nullable().optional(),
-  destacado_slot: z.number().int().min(1).max(5).nullable().optional(),
+  // Campo histórico: se acepta el cero (y null de clientes antiguos), pero
+  // las escrituras siempre normalizan su valor a 0.
+  destacado_slot: z.union([z.literal(0), z.null()]).optional(),
 });
 export const crearObraSchema = obraCampos.strict();
 export const actualizarObraSchema = obraCampos.partial().strict();

@@ -5,8 +5,11 @@ import { abrirLightbox } from './lightbox';
 import { nombreServicio } from './service-names';
 
 const obrasPorServicio = new Map<string, Obra[]>();
+const totalObrasPorServicio = new Map<string, number>();
 const indiceActivo = new Map<string, number>();
 const erroresServicio = new Set<string>();
+const masObrasDisponibles = new Map<string, boolean>();
+const cargasPendientes = new Map<string, Promise<void>>();
 let archivo: Obra[] | null = null;
 let filtro = 'all';
 let offsetArchivo = 0;
@@ -16,6 +19,68 @@ let hayMasObras = true;
 const get = (id: string) => document.getElementById(id);
 const cargarServicio = (id: string, offset = 0, limite = 5) =>
   apiJson<ObrasPage>(`/api/obras?servicio_id=${id}&limit=${limite}&offset=${offset}`);
+
+function actualizarControlesCinta(id: string): void {
+  const ribbon = document.querySelector<HTMLElement>(`[data-service-ribbon="${id}"]`);
+  const viewport = ribbon?.querySelector<HTMLElement>(`[data-ribbon-viewport="${id}"]`);
+  const thumbs = ribbon?.querySelector<HTMLElement>(`[data-thumbs="${id}"]`);
+  if (!ribbon || !viewport || !thumbs) return;
+
+  const puedeAnterior = viewport.scrollLeft > 1;
+  const puedeSiguiente = viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 1;
+  viewport.dataset.overflowEnd = String(puedeSiguiente);
+  ribbon.querySelector<HTMLButtonElement>('[data-ribbon-scroll="prev"]')!.disabled = !puedeAnterior;
+  ribbon.querySelector<HTMLButtonElement>('[data-ribbon-scroll="next"]')!.disabled = !puedeSiguiente;
+
+  const total = totalObrasPorServicio.get(id) || 0;
+  const indice = obrasPorServicio.get(id)?.length ? (indiceActivo.get(id) || 0) + 1 : 0;
+  ribbon.querySelector<HTMLElement>(`[data-ribbon-count="${id}"]`)!.textContent = `OBRAS · ${indice} / ${total}`;
+}
+
+function desplazarCinta(id: string, direccion: 'prev' | 'next'): void {
+  const viewport = document.querySelector<HTMLElement>(`[data-ribbon-viewport="${id}"]`);
+  if (!viewport) return;
+  const firstThumb = viewport.querySelector<HTMLElement>('button');
+  const salto = firstThumb ? firstThumb.getBoundingClientRect().width + 10 : viewport.clientWidth * .8;
+  viewport.scrollBy({ left: (direccion === 'next' ? 1 : -1) * salto * 3, behavior: 'smooth' });
+}
+
+async function moverObra(id: string, direccion: 'prev' | 'next'): Promise<void> {
+  const obras = obrasPorServicio.get(id) || [];
+  const seleccionado = Math.min(indiceActivo.get(id) || 0, obras.length - 1);
+  if (direccion === 'prev') {
+    if (seleccionado > 0) indiceActivo.set(id, seleccionado - 1);
+    else if (obras.length > 1) indiceActivo.set(id, obras.length - 1);
+  } else if (seleccionado + 1 < obras.length) {
+    indiceActivo.set(id, seleccionado + 1);
+  } else {
+    await cargarSiguienteTanda(id);
+    if ((obrasPorServicio.get(id)?.length || 0) > obras.length) indiceActivo.set(id, obras.length);
+  }
+  renderizarServicio(id);
+}
+
+async function cargarSiguienteTanda(id: string): Promise<void> {
+  const actual = obrasPorServicio.get(id) || [];
+  if (actual.length >= 50 || !masObrasDisponibles.get(id)) return;
+  const pending = cargasPendientes.get(id);
+  if (pending) return pending;
+  const request = (async () => {
+    try {
+      const page = await cargarServicio(id, actual.length, Math.min(5, 50 - actual.length));
+      obrasPorServicio.set(id, [...actual, ...page.obras].slice(0, 50));
+      totalObrasPorServicio.set(id, page.total);
+      masObrasDisponibles.set(id, page.hasMore && actual.length + page.obras.length < 50);
+      renderizarServicio(id);
+    } catch {
+      masObrasDisponibles.set(id, false);
+    } finally {
+      cargasPendientes.delete(id);
+    }
+  })();
+  cargasPendientes.set(id, request);
+  return request;
+}
 
 function renderizarGaleriaServicio(id: string, obras: Obra[]) {
   const servicio = servicios.find((item) => item.id === id);
@@ -32,8 +97,9 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
     miniaturas.append(estado);
     principal.disabled = true;
     principal.querySelector('small')!.textContent = 'Error al cargar las obras';
-    principal.closest<HTMLElement>('.service-view')?.querySelectorAll<HTMLButtonElement>('[data-slide]')
+    principal.closest<HTMLElement>('[data-gallery-panel], .service-view')?.querySelectorAll<HTMLButtonElement>('[data-slide]')
       .forEach((button) => { button.disabled = true; });
+    actualizarControlesCinta(id);
     return;
   }
 
@@ -53,11 +119,27 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
     boton.addEventListener('click', () => {
       indiceActivo.set(id, index);
       renderizarServicio(id);
+      if (index >= obras.length - 2) void cargarSiguienteTanda(id);
     });
     miniaturas.append(boton);
   });
 
+  const ribbon = miniaturas.closest<HTMLElement>('.service-ribbon');
+  const ribbonViewport = ribbon?.querySelector<HTMLElement>(`[data-ribbon-viewport="${id}"]`);
+  if (ribbonViewport && !ribbonViewport.dataset.controlsReady) {
+    ribbonViewport.dataset.controlsReady = 'true';
+    ribbonViewport.addEventListener('scroll', () => actualizarControlesCinta(id), { passive: true });
+    ribbon?.querySelectorAll<HTMLButtonElement>('[data-ribbon-scroll]').forEach((button) => {
+      button.addEventListener('click', () => desplazarCinta(id, button.dataset.ribbonScroll as 'prev' | 'next'));
+    });
+  }
+
   const obra = obras[seleccionado];
+  actualizarControlesCinta(id);
+  const miniaturaActiva = miniaturas.querySelector<HTMLButtonElement>(`button:nth-child(${seleccionado + 1})`);
+  if (miniaturaActiva && ribbon) {
+    window.requestAnimationFrame(() => miniaturaActiva.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }));
+  }
   const imagenPrincipal = principal.querySelector('img')!;
   const imagenPortada = document.querySelector<HTMLImageElement>(`[data-service-cover-fallback="${id}"]`);
   const srcRespaldo = imagenPortada?.dataset.coverUrl || imagenPortada?.src || servicio.imagen;
@@ -76,13 +158,18 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
     if (obra) abrirLightbox(obras, seleccionado, principal);
   };
 
-  const panel = principal.closest<HTMLElement>('.service-view')!;
+  const panel = principal.closest<HTMLElement>('[data-gallery-panel], .service-view');
+  if (!panel) return;
+  if (!miniaturas.dataset.pagingReady) {
+    miniaturas.dataset.pagingReady = 'true';
+    const scrollArea = ribbonViewport || miniaturas;
+    scrollArea.addEventListener('scroll', () => {
+      if (scrollArea.scrollLeft + scrollArea.clientWidth >= scrollArea.scrollWidth - 100) void cargarSiguienteTanda(id);
+    }, { passive: true });
+  }
   panel.querySelectorAll<HTMLButtonElement>('[data-slide]').forEach((boton) => {
-    boton.disabled = obras.length < 2;
-    boton.onclick = () => {
-      indiceActivo.set(id, (seleccionado + (boton.dataset.slide === 'next' ? 1 : -1) + obras.length) % obras.length);
-      renderizarServicio(id);
-    };
+    boton.disabled = boton.dataset.slide === 'prev' ? obras.length < 2 : obras.length < 2 && !masObrasDisponibles.get(id);
+    boton.onclick = () => void moverObra(id, boton.dataset.slide as 'prev' | 'next');
   });
 }
 
@@ -156,6 +243,17 @@ export async function iniciarGalerias() {
     renderizarArchivo();
   });
 
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    const target = event.target;
+    if (target instanceof Element && target.closest('input, textarea, select, button, a, [contenteditable="true"], [role="button"]')) return;
+    const panel = document.querySelector<HTMLElement>('.service-view--gallery:not([hidden])');
+    const id = panel?.dataset.service;
+    if (!id || !servicios.some((servicio) => servicio.id === id)) return;
+    event.preventDefault();
+    void moverObra(id, event.key === 'ArrowLeft' ? 'prev' : 'next');
+  });
+
   document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((boton) => {
     boton.addEventListener('click', () => {
       filtro = boton.dataset.filter || 'all';
@@ -176,9 +274,13 @@ export async function iniciarGalerias() {
     try {
       const page = await cargarServicio(servicio.id);
       obrasPorServicio.set(servicio.id, page.obras);
+      totalObrasPorServicio.set(servicio.id, page.total);
+      masObrasDisponibles.set(servicio.id, page.hasMore && page.obras.length < 50);
       erroresServicio.delete(servicio.id);
     } catch {
       obrasPorServicio.set(servicio.id, []);
+      totalObrasPorServicio.set(servicio.id, 0);
+      masObrasDisponibles.set(servicio.id, false);
       erroresServicio.add(servicio.id);
     }
     renderizarServicio(servicio.id);
@@ -192,6 +294,8 @@ export async function iniciarGalerias() {
     try {
       const page = await cargarServicio(id);
       obrasPorServicio.set(id, page.obras);
+      totalObrasPorServicio.set(id, page.total);
+      masObrasDisponibles.set(id, page.hasMore && page.obras.length < 50);
       erroresServicio.delete(id);
       renderizarServicio(id);
     } catch {
