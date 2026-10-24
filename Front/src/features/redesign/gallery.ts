@@ -10,11 +10,9 @@ const totalObrasPorServicio = new Map<string, number>();
 const indiceActivo = new Map<string, number>();
 const erroresServicio = new Set<string>();
 const masObrasDisponibles = new Map<string, boolean>();
-const cargasPendientes = new Map<string, Promise<void>>();
+const cargasPendientes = new Map<string, Promise<Obra[]>>();
 const cargasIniciales = new Map<string, Promise<void>>();
-const cargasCompletas = new Map<string, Promise<Obra[]>>();
 const TAMANO_PAGINA_CINTA = 5;
-const MAX_OBRAS_CINTA = 100;
 let archivo: Obra[] | null = null;
 let filtro = 'all';
 let offsetArchivo = 0;
@@ -30,7 +28,7 @@ function actualizarControlesCinta(id: string): void {
   if (!ribbon) return;
 
   const obras = obrasPorServicio.get(id) || [];
-  const total = Math.min(totalObrasPorServicio.get(id) || obras.length, MAX_OBRAS_CINTA);
+  const total = totalObrasPorServicio.get(id) ?? obras.length;
   const indice = obras.length ? Math.min(indiceActivo.get(id) || 0, obras.length - 1) : 0;
   const paginaInicio = obras.length ? Math.floor(indice / TAMANO_PAGINA_CINTA) * TAMANO_PAGINA_CINTA : 0;
   const desde = obras.length ? paginaInicio + 1 : 0;
@@ -75,50 +73,27 @@ async function moverObra(id: string, direccion: 'prev' | 'next'): Promise<void> 
   renderizarServicio(id);
 }
 
-async function cargarSiguienteTanda(id: string): Promise<void> {
+async function cargarSiguienteTanda(id: string): Promise<Obra[]> {
   const actual = obrasPorServicio.get(id) || [];
-  if (actual.length >= MAX_OBRAS_CINTA || !masObrasDisponibles.get(id)) return;
+  if (!masObrasDisponibles.get(id)) return [];
   const pending = cargasPendientes.get(id);
   if (pending) return pending;
   const request = (async () => {
     try {
-      const page = await cargarServicio(id, actual.length, Math.min(TAMANO_PAGINA_CINTA, MAX_OBRAS_CINTA - actual.length));
-      obrasPorServicio.set(id, [...actual, ...page.obras].slice(0, MAX_OBRAS_CINTA));
+      const page = await cargarServicio(id, actual.length, TAMANO_PAGINA_CINTA);
+      obrasPorServicio.set(id, [...actual, ...page.obras]);
       totalObrasPorServicio.set(id, page.total);
-      masObrasDisponibles.set(id, page.hasMore && actual.length + page.obras.length < MAX_OBRAS_CINTA);
+      masObrasDisponibles.set(id, page.hasMore);
       renderizarServicio(id);
+      return page.obras;
     } catch {
       masObrasDisponibles.set(id, false);
+      return [];
     } finally {
       cargasPendientes.delete(id);
     }
   })();
   cargasPendientes.set(id, request);
-  return request;
-}
-
-async function cargarObrasParaLightbox(id: string): Promise<Obra[]> {
-  const actual = obrasPorServicio.get(id) || [];
-  if (actual.length >= MAX_OBRAS_CINTA || actual.length >= (totalObrasPorServicio.get(id) || 0)) return actual;
-  const pending = cargasCompletas.get(id);
-  if (pending) return pending;
-
-  const request = (async () => {
-    try {
-      const page = await cargarServicio(id, 0, MAX_OBRAS_CINTA);
-      const obras = page.obras.slice(0, MAX_OBRAS_CINTA);
-      obrasPorServicio.set(id, obras);
-      totalObrasPorServicio.set(id, page.total);
-      masObrasDisponibles.set(id, page.hasMore && obras.length < MAX_OBRAS_CINTA);
-      actualizarControlesCinta(id);
-      return obras;
-    } catch {
-      return obrasPorServicio.get(id) || [];
-    } finally {
-      cargasCompletas.delete(id);
-    }
-  })();
-  cargasCompletas.set(id, request);
   return request;
 }
 
@@ -222,19 +197,17 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
     principal.removeAttribute('aria-busy');
   });
   principal.disabled = !obra;
-  principal.onclick = async () => {
+  principal.onclick = () => {
     if (!obra) return;
-    principal.setAttribute('aria-busy', 'true');
-    const obrasCompletas = await cargarObrasParaLightbox(id);
-    principal.removeAttribute('aria-busy');
-    const indice = Math.min(indiceActivo.get(id) || 0, obrasCompletas.length - 1);
-    if (obrasCompletas.length) abrirLightbox(obrasCompletas, indice, principal);
+    abrirLightbox(obras, seleccionado, principal, async () => {
+      return cargarSiguienteTanda(id);
+    });
   };
 
   const panel = principal.closest<HTMLElement>('[data-gallery-panel], .service-view');
   if (!panel) return;
   panel.querySelectorAll<HTMLButtonElement>('[data-slide]').forEach((boton) => {
-    const limite = Math.min(totalObrasPorServicio.get(id) || obras.length, MAX_OBRAS_CINTA);
+    const limite = totalObrasPorServicio.get(id) ?? obras.length;
     boton.disabled = boton.dataset.slide === 'prev'
       ? seleccionado === 0
       : seleccionado >= limite - 1;
@@ -350,7 +323,7 @@ export function iniciarGalerias(): void {
         const page = await cargarServicio(id);
         obrasPorServicio.set(id, page.obras);
         totalObrasPorServicio.set(id, page.total);
-        masObrasDisponibles.set(id, page.hasMore && page.obras.length < MAX_OBRAS_CINTA);
+        masObrasDisponibles.set(id, page.hasMore);
         erroresServicio.delete(id);
       } catch {
         totalObrasPorServicio.set(id, 0);

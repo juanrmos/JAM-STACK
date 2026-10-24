@@ -14,6 +14,8 @@ let list: LightboxItem[] = [];
 let index = 0;
 let returnFocus: HTMLElement | null = null;
 let closing = false;
+let loadMoreWorks: (() => Promise<Obra[]>) | null = null;
+let loadingMoreWorks = false;
 
 const get = (id: string) => document.getElementById(id);
 
@@ -38,6 +40,8 @@ function hide() {
   get('lightbox-overlay')!.hidden = true;
   get('lightbox')!.hidden = true;
   document.body.classList.remove('no-scroll');
+  loadMoreWorks = null;
+  loadingMoreWorks = false;
   if (returnFocus?.isConnected && !returnFocus.closest('[hidden]')) returnFocus.focus();
 }
 
@@ -70,22 +74,54 @@ function render() {
   updateHistoryIndex();
 }
 
-export function abrirLightbox(obras: Obra[], position: number, opener: HTMLElement) {
-  if (!obras.length) return;
-  const alreadyOpen = lightboxVisible();
-  list = obras.map((obra) => ({
+function toLightboxItem(obra: Obra): LightboxItem {
+  return {
     imagenUrl: obra.imagenUrl,
     titulo: obra.titulo,
     categoria: nombreServicio(obra.servicio_id),
     meta: [obra.ubicacion, obra.anio].filter(Boolean).join(' · '),
     videoUrl: obra.videoUrl,
-  }));
+  };
+}
+
+async function avanzarLightbox() {
+  if (loadingMoreWorks || !list.length) return;
+  if (loadMoreWorks && index === list.length - 1) {
+    loadingMoreWorks = true;
+    get('lightbox')?.setAttribute('aria-busy', 'true');
+    try {
+      const additionalWorks = await loadMoreWorks();
+      if (additionalWorks.length) list.push(...additionalWorks.map(toLightboxItem));
+      else loadMoreWorks = null;
+    } catch {
+      loadMoreWorks = null;
+    } finally {
+      loadingMoreWorks = false;
+      get('lightbox')?.removeAttribute('aria-busy');
+    }
+    if (!lightboxVisible()) return;
+  }
+  index = (index + 1) % list.length;
+  render();
+}
+
+export function abrirLightbox(
+  obras: Obra[],
+  position: number,
+  opener: HTMLElement,
+  loadMore?: () => Promise<Obra[]>,
+) {
+  if (!obras.length) return;
+  const alreadyOpen = lightboxVisible();
+  list = obras.map(toLightboxItem);
+  loadMoreWorks = loadMore || null;
   abrirElementoLightbox(position, opener, alreadyOpen);
 }
 
 export function abrirLightboxGaleria(fotos: AboutPhoto[], position: number, opener: HTMLElement) {
   if (!fotos.length) return;
   const alreadyOpen = lightboxVisible();
+  loadMoreWorks = null;
   list = fotos.map((foto) => ({
     imagenUrl: foto.imagenUrl,
     titulo: foto.texto_alternativo,
@@ -149,10 +185,7 @@ export function iniciarLightbox() {
     index = (index - 1 + list.length) % list.length;
     render();
   });
-  document.querySelector('[data-lightbox-next]')?.addEventListener('click', () => {
-    index = (index + 1) % list.length;
-    render();
-  });
+  document.querySelector('[data-lightbox-next]')?.addEventListener('click', () => void avanzarLightbox());
   window.addEventListener('popstate', sincronizarHistorial);
   document.addEventListener('keydown', (event) => {
     if (!lightboxVisible()) return;
@@ -161,9 +194,6 @@ export function iniciarLightbox() {
       index = (index - 1 + list.length) % list.length;
       render();
     }
-    if (event.key === 'ArrowRight') {
-      index = (index + 1) % list.length;
-      render();
-    }
+    if (event.key === 'ArrowRight') void avanzarLightbox();
   });
 }
