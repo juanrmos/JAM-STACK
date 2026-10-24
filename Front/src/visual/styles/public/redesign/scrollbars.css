@@ -3,16 +3,23 @@ body:has(#app-main) {
   color-scheme: dark;
 }
 
+:root:has(#app-main) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(217, 165, 32, .55) transparent;
+}
+
 body:has(#app-main) * {
   scrollbar-width: thin;
   scrollbar-color: rgba(217, 165, 32, .55) transparent;
 }
 
+:root:has(#app-main)::-webkit-scrollbar,
 body:has(#app-main) *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
+:root:has(#app-main)::-webkit-scrollbar-thumb,
 body:has(#app-main) *::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 99px;
@@ -20,6 +27,7 @@ body:has(#app-main) *::-webkit-scrollbar-thumb {
   background-clip: padding-box;
 }
 
+:root:has(#app-main)::-webkit-scrollbar-track,
 body:has(#app-main) *::-webkit-scrollbar-track { background: transparent; }
 
 body:has(#app-main) .service-ribbon__viewport { scrollbar-width: none; }

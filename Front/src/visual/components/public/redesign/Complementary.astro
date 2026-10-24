@@ -42,7 +42,16 @@ const childServices = [
           <p class="service-view__motto" data-text-key={`service.${id}.subtitle`}>{t(`service.${id}.subtitle`)}</p>
           <p class="service-view__description" data-text-key={`service.${id}.description`}>{t(`service.${id}.description`)}</p>
           <button type="button" class="gold-button" data-open-quote data-service-quote={id}>Consultar este servicio ↗</button>
-          <div class="service-thumbs" data-thumbs={id} aria-label={`Fotografías de ${nombresPublicosIniciales[id]}`} data-service-name-aria={id} data-service-name-aria-template="Fotografías de {name}"></div>
+          <div class="service-ribbon" data-service-ribbon={id}>
+            <p class="service-ribbon__count" data-ribbon-count={id} aria-live="polite">OBRAS · 0–0 / 0</p>
+            <div class="service-ribbon__row">
+              <div class="service-ribbon__viewport service-thumbs" data-ribbon-viewport={id} data-thumbs={id} aria-label={`Fotografías de ${nombresPublicosIniciales[id]}`} data-service-name-aria={id} data-service-name-aria-template="Fotografías de {name}"></div>
+              <div class="service-ribbon__controls" aria-label="Páginas de miniaturas">
+                <button type="button" data-ribbon-page="prev" data-service-ribbon-control={id} aria-label="Página anterior de miniaturas" disabled>‹</button>
+                <button type="button" data-ribbon-page="next" data-service-ribbon-control={id} aria-label="Página siguiente de miniaturas" disabled>›</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="complementary-service__gallery">
           <button type="button" class="gallery-arrow" data-slide="prev" aria-label="Fotografía anterior">←</button>

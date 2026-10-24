@@ -24,9 +24,9 @@ const t = (key: string) => catalogo[key as keyof typeof catalogo]?.valor || '';
         <p class="service-ribbon__count" data-ribbon-count={s.id} aria-live="polite">OBRAS · 0 / 0</p>
         <div class="service-ribbon__row">
           <div class="service-ribbon__viewport service-thumbs" data-ribbon-viewport={s.id} data-thumbs={s.id} aria-label={`Miniaturas de ${nombresPublicosIniciales[s.id]}`} data-service-name-aria={s.id} data-service-name-aria-template="Miniaturas de {name}"></div>
-          <div class="service-ribbon__controls" aria-label="Desplazar miniaturas">
-            <button type="button" data-ribbon-scroll="prev" data-service-ribbon-control={s.id} aria-label="Ver miniaturas anteriores" disabled>‹</button>
-            <button type="button" data-ribbon-scroll="next" data-service-ribbon-control={s.id} aria-label="Ver más miniaturas" disabled>›</button>
+          <div class="service-ribbon__controls" aria-label="Páginas de miniaturas">
+            <button type="button" data-ribbon-page="prev" data-service-ribbon-control={s.id} aria-label="Página anterior de miniaturas" disabled>‹</button>
+            <button type="button" data-ribbon-page="next" data-service-ribbon-control={s.id} aria-label="Página siguiente de miniaturas" disabled>›</button>
           </div>
         </div>
       </div>
