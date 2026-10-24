@@ -56,10 +56,6 @@
   margin-top: .35rem;
 }
 
-.service-view .service-thumbs {
-  margin-top: 1rem;
-}
-
 .compact-profile {
   display: flex;
   gap: .7rem;
@@ -111,7 +107,6 @@
   .service-view__description { order: 5; margin: 0 0 .35rem; }
   .service-view .gold-button { order: 6; margin-top: .2rem; }
   .service-view .compact-profile { order: 8; margin: .3rem 0 0; }
-  .service-view .service-thumbs { order: 9; margin-top: .5rem; }
 }
 
 .complementary-view {
@@ -151,7 +146,7 @@
 .complementary-service__copy h2 { font-size: clamp(2.5rem, 4vw, 4rem); line-height: .98; margin: .6rem 0; }
 .complementary-service__copy .service-view__motto { margin: 1rem 0 .5rem; }
 .complementary-service__copy .service-view__description { margin: .6rem 0 1.4rem; }
-.complementary-service__copy .service-thumbs { margin-top: 1.5rem; }
+.complementary-service__copy .service-ribbon { margin-top: 1.5rem; }
 .complementary-service__gallery { min-width: 0; display: grid; grid-template-columns: 42px minmax(0, 1fr) 42px; align-items: center; gap: .6rem; }
 .complementary-service__gallery .service-active { width: 100%; height: clamp(300px, 42vw, 530px); }
 .complementary-service__gallery .gallery-arrow { position: static; }
@@ -167,7 +162,7 @@
   .complementary-tabs button { flex: 1; padding: .75rem .4rem; font-size: .85rem; }
   .complementary-service { grid-template-columns: 1fr; gap: 1rem; align-items: start; }
   .complementary-service__copy h2 { font-size: clamp(2.25rem, 10vw, 3rem); }
-  .complementary-service__copy .service-thumbs { margin: 1.2rem 0; }
+  .complementary-service__copy .service-ribbon { margin: 1.2rem 0; }
   .complementary-service__gallery { grid-template-columns: 36px minmax(0, 1fr) 36px; gap: .35rem; }
   .complementary-service__gallery .service-active { height: min(68vw, 390px); }
 }

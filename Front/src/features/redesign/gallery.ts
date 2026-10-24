@@ -12,6 +12,9 @@ const erroresServicio = new Set<string>();
 const masObrasDisponibles = new Map<string, boolean>();
 const cargasPendientes = new Map<string, Promise<void>>();
 const cargasIniciales = new Map<string, Promise<void>>();
+const cargasCompletas = new Map<string, Promise<Obra[]>>();
+const TAMANO_PAGINA_CINTA = 5;
+const MAX_OBRAS_CINTA = 100;
 let archivo: Obra[] | null = null;
 let filtro = 'all';
 let offsetArchivo = 0;
@@ -19,32 +22,43 @@ let cargandoArchivo = false;
 let hayMasObras = true;
 
 const get = (id: string) => document.getElementById(id);
-const cargarServicio = (id: string, offset = 0, limite = 5) =>
+const cargarServicio = (id: string, offset = 0, limite = TAMANO_PAGINA_CINTA) =>
   apiJson<ObrasPage>(`/api/obras?servicio_id=${id}&limit=${limite}&offset=${offset}`);
 
 function actualizarControlesCinta(id: string): void {
   const ribbon = document.querySelector<HTMLElement>(`[data-service-ribbon="${id}"]`);
-  const viewport = ribbon?.querySelector<HTMLElement>(`[data-ribbon-viewport="${id}"]`);
-  const thumbs = ribbon?.querySelector<HTMLElement>(`[data-thumbs="${id}"]`);
-  if (!ribbon || !viewport || !thumbs) return;
+  if (!ribbon) return;
 
-  const puedeAnterior = viewport.scrollLeft > 1;
-  const puedeSiguiente = viewport.scrollLeft + viewport.clientWidth < viewport.scrollWidth - 1;
-  viewport.dataset.overflowEnd = String(puedeSiguiente);
-  ribbon.querySelector<HTMLButtonElement>('[data-ribbon-scroll="prev"]')!.disabled = !puedeAnterior;
-  ribbon.querySelector<HTMLButtonElement>('[data-ribbon-scroll="next"]')!.disabled = !puedeSiguiente;
+  const obras = obrasPorServicio.get(id) || [];
+  const total = Math.min(totalObrasPorServicio.get(id) || obras.length, MAX_OBRAS_CINTA);
+  const indice = obras.length ? Math.min(indiceActivo.get(id) || 0, obras.length - 1) : 0;
+  const paginaInicio = obras.length ? Math.floor(indice / TAMANO_PAGINA_CINTA) * TAMANO_PAGINA_CINTA : 0;
+  const desde = obras.length ? paginaInicio + 1 : 0;
+  const hasta = obras.length ? Math.min(paginaInicio + TAMANO_PAGINA_CINTA, total) : 0;
+  const counter = ribbon.querySelector<HTMLElement>(`[data-ribbon-count="${id}"]`);
+  if (counter) counter.textContent = `OBRAS · ${desde}–${hasta} / ${total}`;
 
-  const total = totalObrasPorServicio.get(id) || 0;
-  const indice = obrasPorServicio.get(id)?.length ? (indiceActivo.get(id) || 0) + 1 : 0;
-  ribbon.querySelector<HTMLElement>(`[data-ribbon-count="${id}"]`)!.textContent = `OBRAS · ${indice} / ${total}`;
+  const previous = ribbon.querySelector<HTMLButtonElement>('[data-ribbon-page="prev"]');
+  const next = ribbon.querySelector<HTMLButtonElement>('[data-ribbon-page="next"]');
+  if (previous) previous.disabled = paginaInicio === 0;
+  if (next) next.disabled = paginaInicio + TAMANO_PAGINA_CINTA >= total;
 }
 
-function desplazarCinta(id: string, direccion: 'prev' | 'next'): void {
-  const viewport = document.querySelector<HTMLElement>(`[data-ribbon-viewport="${id}"]`);
-  if (!viewport) return;
-  const firstThumb = viewport.querySelector<HTMLElement>('button');
-  const salto = firstThumb ? firstThumb.getBoundingClientRect().width + 10 : viewport.clientWidth * .8;
-  viewport.scrollBy({ left: (direccion === 'next' ? 1 : -1) * salto * 3, behavior: 'smooth' });
+async function cambiarPaginaCinta(id: string, direccion: 'prev' | 'next'): Promise<void> {
+  const obras = obrasPorServicio.get(id) || [];
+  const indice = indiceActivo.get(id) || 0;
+  const inicioPagina = Math.floor(indice / TAMANO_PAGINA_CINTA) * TAMANO_PAGINA_CINTA;
+  const destino = direccion === 'next' ? inicioPagina + TAMANO_PAGINA_CINTA : Math.max(0, inicioPagina - TAMANO_PAGINA_CINTA);
+
+  if (destino >= obras.length && direccion === 'next' && masObrasDisponibles.get(id)) {
+    await cargarSiguienteTanda(id);
+  }
+
+  const actualizadas = obrasPorServicio.get(id) || [];
+  if (destino < actualizadas.length) {
+    indiceActivo.set(id, destino);
+    renderizarServicio(id);
+  }
 }
 
 async function moverObra(id: string, direccion: 'prev' | 'next'): Promise<void> {
@@ -52,7 +66,6 @@ async function moverObra(id: string, direccion: 'prev' | 'next'): Promise<void> 
   const seleccionado = Math.min(indiceActivo.get(id) || 0, obras.length - 1);
   if (direccion === 'prev') {
     if (seleccionado > 0) indiceActivo.set(id, seleccionado - 1);
-    else if (obras.length > 1) indiceActivo.set(id, obras.length - 1);
   } else if (seleccionado + 1 < obras.length) {
     indiceActivo.set(id, seleccionado + 1);
   } else {
@@ -64,15 +77,15 @@ async function moverObra(id: string, direccion: 'prev' | 'next'): Promise<void> 
 
 async function cargarSiguienteTanda(id: string): Promise<void> {
   const actual = obrasPorServicio.get(id) || [];
-  if (actual.length >= 50 || !masObrasDisponibles.get(id)) return;
+  if (actual.length >= MAX_OBRAS_CINTA || !masObrasDisponibles.get(id)) return;
   const pending = cargasPendientes.get(id);
   if (pending) return pending;
   const request = (async () => {
     try {
-      const page = await cargarServicio(id, actual.length, Math.min(5, 50 - actual.length));
-      obrasPorServicio.set(id, [...actual, ...page.obras].slice(0, 50));
+      const page = await cargarServicio(id, actual.length, Math.min(TAMANO_PAGINA_CINTA, MAX_OBRAS_CINTA - actual.length));
+      obrasPorServicio.set(id, [...actual, ...page.obras].slice(0, MAX_OBRAS_CINTA));
       totalObrasPorServicio.set(id, page.total);
-      masObrasDisponibles.set(id, page.hasMore && actual.length + page.obras.length < 50);
+      masObrasDisponibles.set(id, page.hasMore && actual.length + page.obras.length < MAX_OBRAS_CINTA);
       renderizarServicio(id);
     } catch {
       masObrasDisponibles.set(id, false);
@@ -81,6 +94,31 @@ async function cargarSiguienteTanda(id: string): Promise<void> {
     }
   })();
   cargasPendientes.set(id, request);
+  return request;
+}
+
+async function cargarObrasParaLightbox(id: string): Promise<Obra[]> {
+  const actual = obrasPorServicio.get(id) || [];
+  if (actual.length >= MAX_OBRAS_CINTA || actual.length >= (totalObrasPorServicio.get(id) || 0)) return actual;
+  const pending = cargasCompletas.get(id);
+  if (pending) return pending;
+
+  const request = (async () => {
+    try {
+      const page = await cargarServicio(id, 0, MAX_OBRAS_CINTA);
+      const obras = page.obras.slice(0, MAX_OBRAS_CINTA);
+      obrasPorServicio.set(id, obras);
+      totalObrasPorServicio.set(id, page.total);
+      masObrasDisponibles.set(id, page.hasMore && obras.length < MAX_OBRAS_CINTA);
+      actualizarControlesCinta(id);
+      return obras;
+    } catch {
+      return obrasPorServicio.get(id) || [];
+    } finally {
+      cargasCompletas.delete(id);
+    }
+  })();
+  cargasCompletas.set(id, request);
   return request;
 }
 
@@ -110,15 +148,18 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
   const seleccionado = Math.min(indiceActivo.get(id) || 0, obras.length - 1);
   indiceActivo.set(id, Math.max(0, seleccionado));
 
+  const paginaInicio = Math.floor(seleccionado / TAMANO_PAGINA_CINTA) * TAMANO_PAGINA_CINTA;
+  const obrasPagina = obras.slice(paginaInicio, paginaInicio + TAMANO_PAGINA_CINTA);
   const buttons = [...miniaturas.querySelectorAll<HTMLButtonElement>('button[data-obra-id]')];
   const currentIds = buttons.map((button) => button.dataset.obraId);
-  const expectedIds = obras.map((obra) => obra.id);
+  const expectedIds = obrasPagina.map((obra) => obra.id);
   if (currentIds.length > expectedIds.length || currentIds.some((id, index) => id !== expectedIds[index])) {
     miniaturas.replaceChildren();
     buttons.length = 0;
   }
-  for (let index = buttons.length; index < obras.length; index += 1) {
-    const obra = obras[index];
+  for (let index = buttons.length; index < obrasPagina.length; index += 1) {
+    const obra = obrasPagina[index];
+    const indiceObra = paginaInicio + index;
     const boton = document.createElement('button');
     boton.type = 'button';
     boton.dataset.obraId = obra.id;
@@ -130,28 +171,25 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
     imagen.decoding = 'async';
     boton.append(imagen);
     boton.addEventListener('click', () => {
-      indiceActivo.set(id, index);
+      indiceActivo.set(id, indiceObra);
       renderizarServicio(id);
-      if (index >= (obrasPorServicio.get(id)?.length || 0) - 2) void cargarSiguienteTanda(id);
     });
     miniaturas.append(boton);
     buttons.push(boton);
   }
-  buttons.forEach((button, index) => button.setAttribute('aria-pressed', String(seleccionado === index)));
+  buttons.forEach((button, index) => button.setAttribute('aria-pressed', String(seleccionado === paginaInicio + index)));
 
   const ribbon = miniaturas.closest<HTMLElement>('.service-ribbon');
-  const ribbonViewport = ribbon?.querySelector<HTMLElement>(`[data-ribbon-viewport="${id}"]`);
-  if (ribbonViewport && !ribbonViewport.dataset.controlsReady) {
-    ribbonViewport.dataset.controlsReady = 'true';
-    ribbonViewport.addEventListener('scroll', () => actualizarControlesCinta(id), { passive: true });
-    ribbon?.querySelectorAll<HTMLButtonElement>('[data-ribbon-scroll]').forEach((button) => {
-      button.addEventListener('click', () => desplazarCinta(id, button.dataset.ribbonScroll as 'prev' | 'next'));
+  if (ribbon && !ribbon.dataset.controlsReady) {
+    ribbon.dataset.controlsReady = 'true';
+    ribbon.querySelectorAll<HTMLButtonElement>('[data-ribbon-page]').forEach((button) => {
+      button.addEventListener('click', () => void cambiarPaginaCinta(id, button.dataset.ribbonPage as 'prev' | 'next'));
     });
   }
 
   const obra = obras[seleccionado];
   actualizarControlesCinta(id);
-  const miniaturaActiva = miniaturas.querySelector<HTMLButtonElement>(`button:nth-child(${seleccionado + 1})`);
+  const miniaturaActiva = miniaturas.querySelector<HTMLButtonElement>(`button:nth-child(${seleccionado - paginaInicio + 1})`);
   if (miniaturaActiva && ribbon) {
     window.requestAnimationFrame(() => miniaturaActiva.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }));
   }
@@ -184,21 +222,22 @@ function renderizarGaleriaServicio(id: string, obras: Obra[]) {
     principal.removeAttribute('aria-busy');
   });
   principal.disabled = !obra;
-  principal.onclick = () => {
-    if (obra) abrirLightbox(obras, seleccionado, principal);
+  principal.onclick = async () => {
+    if (!obra) return;
+    principal.setAttribute('aria-busy', 'true');
+    const obrasCompletas = await cargarObrasParaLightbox(id);
+    principal.removeAttribute('aria-busy');
+    const indice = Math.min(indiceActivo.get(id) || 0, obrasCompletas.length - 1);
+    if (obrasCompletas.length) abrirLightbox(obrasCompletas, indice, principal);
   };
 
   const panel = principal.closest<HTMLElement>('[data-gallery-panel], .service-view');
   if (!panel) return;
-  if (!miniaturas.dataset.pagingReady) {
-    miniaturas.dataset.pagingReady = 'true';
-    const scrollArea = ribbonViewport || miniaturas;
-    scrollArea.addEventListener('scroll', () => {
-      if (scrollArea.scrollLeft + scrollArea.clientWidth >= scrollArea.scrollWidth - 100) void cargarSiguienteTanda(id);
-    }, { passive: true });
-  }
   panel.querySelectorAll<HTMLButtonElement>('[data-slide]').forEach((boton) => {
-    boton.disabled = boton.dataset.slide === 'prev' ? obras.length < 2 : obras.length < 2 && !masObrasDisponibles.get(id);
+    const limite = Math.min(totalObrasPorServicio.get(id) || obras.length, MAX_OBRAS_CINTA);
+    boton.disabled = boton.dataset.slide === 'prev'
+      ? seleccionado === 0
+      : seleccionado >= limite - 1;
     boton.onclick = () => void moverObra(id, boton.dataset.slide as 'prev' | 'next');
   });
 }
@@ -311,7 +350,7 @@ export function iniciarGalerias(): void {
         const page = await cargarServicio(id);
         obrasPorServicio.set(id, page.obras);
         totalObrasPorServicio.set(id, page.total);
-        masObrasDisponibles.set(id, page.hasMore && page.obras.length < 50);
+        masObrasDisponibles.set(id, page.hasMore && page.obras.length < MAX_OBRAS_CINTA);
         erroresServicio.delete(id);
       } catch {
         totalObrasPorServicio.set(id, 0);
