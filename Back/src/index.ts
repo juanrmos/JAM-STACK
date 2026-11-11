@@ -43,7 +43,7 @@ import {
 
 import { jsonResponse } from "./routes/response";
 import { crearRespuestaAccessInicio } from "./routes/accessBootstrap";
-import { servirMedia, recibirSubidaLocal } from "./storage/local";
+import { servirMedia, recibirSubidaLocal, recibirSubidaFirmada } from "./storage/local";
 import { corsHeaders } from "./http/cors";
 import { clavesImagenesSitio, type ImagenSitioClave } from "../../Shared/contracts/imagenes-sitio";
 
@@ -129,6 +129,12 @@ export default {
               403,
             ),
           );
+        }
+
+        // Subida firmada de objetos hacia el binding nativo permanente env.BUCKET (valida token JWT_SECRET de 5m)
+        const signedUploadMatch = method === "PUT" ? pathname.match(/^\/api\/(?:obras|logos|imagenes-sitio)\/upload\/(.+)$/) : null;
+        if (signedUploadMatch) {
+          return withCors(await recibirSubidaFirmada(request, env, signedUploadMatch[1]));
         }
 
         // Navegación de nivel superior para completar el login interactivo de Access.

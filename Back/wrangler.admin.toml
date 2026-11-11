@@ -14,7 +14,7 @@ CF_ACCESS_AUD_FRONTEND = "74a24d429ddb2b359fb6b061008bb5d6d70bf685894d4d2d9a89aa
 FRONTEND_ORIGIN = "https://portafolio-front.pages.dev"
 # Las URLs inmutables de Pages de este mismo proyecto usan el mismo Access.
 ALLOW_PAGES_PREVIEW_ORIGINS = "true"
-# ADMIN_SECRET, JWT_SECRET y las credenciales R2 se guardan como secretos del Worker.
+# ADMIN_SECRET y JWT_SECRET se guardan como secretos permanentes del Worker; la subida a R2 usa JWT_SECRET y el binding nativo permanente BUCKET.
 
 [[d1_databases]]
 binding = "DB"

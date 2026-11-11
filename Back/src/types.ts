@@ -29,11 +29,11 @@ export interface Env {
   JWT_SECRET: string;
   /** Secreto compartido de alta entropía para el login del admin */
   ADMIN_SECRET: string;
-  /** Credenciales S3-compatible para generar URLs firmadas de R2 */
-  R2_ACCESS_KEY_ID: string;
-  R2_SECRET_ACCESS_KEY: string;
-  /** Endpoint público del bucket R2 (dominio custom o .r2.dev) */
-  R2_BUCKET_ENDPOINT: string;
+  /** Credenciales S3-compatible opcionales (histórico; la subida usa JWT_SECRET + env.BUCKET) */
+  R2_ACCESS_KEY_ID?: string;
+  R2_SECRET_ACCESS_KEY?: string;
+  /** Endpoint S3 opcional del bucket R2 */
+  R2_BUCKET_ENDPOINT?: string;
   /** Nombre del bucket usado al firmar subidas; debe coincidir con BUCKET */
   R2_BUCKET_NAME: string;
   /** URL pública de lectura (.r2.dev) */

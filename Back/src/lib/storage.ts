@@ -3,13 +3,14 @@
  * Usa aws4fetch ya que R2 es S3-compatible.
  * Referencia: skill deep-security, principio 4 (mínimo privilegio).
  */
-import { AwsClient } from "aws4fetch";
 import type { Env } from "../types";
-import { generarUrlSubidaLocal } from "../storage/local";
+import { generarUrlSubidaLocal, generarUrlSubidaFirmada } from "../storage/local";
 
 /**
  * Genera una URL firmada de subida a R2 (PUT, 5 min de expiración).
- * La app cliente sube el archivo directo a esta URL — el Worker nunca ve pasar el binario.
+ * En producción usa un token JWT firmado con el secreto permanente JWT_SECRET
+ * y el binding nativo permanente env.BUCKET de Cloudflare R2, evitando tokens
+ * S3 temporales sujetos a expiración.
  */
 export async function generarUrlSubida(
   request: Request,
@@ -20,25 +21,7 @@ export async function generarUrlSubida(
   if (env.LOCAL_UPLOAD === 'true') {
     return generarUrlSubidaLocal(request, env, clave, tipoMime);
   }
-  const cliente = new AwsClient({
-    accessKeyId: env.R2_ACCESS_KEY_ID,
-    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-  });
-
-  const endpoint = env.R2_BUCKET_ENDPOINT.replace(/^https?:\/\//, "").replace(/\/$/, "");
-  if (!env.R2_BUCKET_NAME) throw new Error("Falta R2_BUCKET_NAME");
-  const url = new URL(`https://${endpoint}/${env.R2_BUCKET_NAME}/${clave}`);
-  url.searchParams.set("X-Amz-Expires", "300"); // 5 minutos
-
-  const firmada = await cliente.sign(
-    new Request(url, {
-      method: "PUT",
-      headers: { "Content-Type": tipoMime },
-    }),
-    { aws: { signQuery: true } },
-  );
-
-  return firmada.url;
+  return generarUrlSubidaFirmada(request, env, clave, tipoMime);
 }
 
 /**

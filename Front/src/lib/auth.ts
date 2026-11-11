@@ -112,15 +112,19 @@ export function sanitizeImage(file: File): Promise<File> {
 export async function uploadToSignedUrl(uploadUrl: string, file: File): Promise<Response> {
   let response: Response;
   try {
+    const isSameOrigin =
+      typeof window !== "undefined" &&
+      new URL(uploadUrl, window.location.origin).origin === window.location.origin;
     response = await fetch(uploadUrl, {
       method: "PUT",
       headers: { "Content-Type": file.type },
+      credentials: isSameOrigin ? "include" : "omit",
       body: file,
     });
   } catch (err) {
     if (err instanceof TypeError) {
       throw new TypeError(
-        "No se pudo transferir el archivo al almacenamiento (R2). Verifica tu conexión o las credenciales R2 del servidor.",
+        "No se pudo transferir el archivo al almacenamiento (R2). Verifica tu conexión o recarga la página.",
       );
     }
     throw err;
