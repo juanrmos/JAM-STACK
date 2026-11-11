@@ -214,7 +214,7 @@ const helpBySection: Record<string, string> = {
 </AdminLayout>
 
 <script>
-  import { apiFetch } from '../../../lib/auth';
+  import { apiFetch, sanitizeImage, uploadToSignedUrl } from '../../../lib/auth';
 
   const form = document.querySelector<HTMLFormElement>('#content-form')!;
   const saveStatus = document.querySelector<HTMLElement>('#content-status')!;
@@ -629,15 +629,15 @@ const helpBySection: Record<string, string> = {
     });
     photoForm.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const file = photoInput.files?.[0];
-      if (!file) return;
+      const rawFile = photoInput.files?.[0];
+      if (!rawFile) return;
       photoStatus.textContent = 'Subiendo imagen…';
       try {
+        const file = await sanitizeImage(rawFile);
         const permission = await apiFetch('/api/imagenes-sitio/upload-url', { method: 'POST', body: JSON.stringify({ nombreArchivo: file.name, tipoMime: file.type }) });
         if (!permission.ok) throw Error('La imagen no cumple los requisitos.');
         const { uploadUrl, imagenKey: objectKey } = await permission.json();
-        const upload = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
-        if (!upload.ok) throw Error('Falló la subida de la imagen.');
+        await uploadToSignedUrl(uploadUrl, file);
         const save = await apiFetch(`/api/imagenes-sitio/${spaceKey}`, { method: 'PUT', body: JSON.stringify({ imagenKey: objectKey }) });
         if (!save.ok) throw Error('La imagen no se pudo asignar.');
         const saved = await save.json();

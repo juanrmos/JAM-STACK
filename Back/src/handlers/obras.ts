@@ -30,8 +30,10 @@ export async function obtenerUrlSubida(
   const { nombreArchivo, tipoMime } = resultado.data;
   const id = generarId();
   const timestamp = Date.now();
-  const extension = nombreArchivo.split(".").pop() ?? "jpg";
-  const nombreSanitizado = sanitizarNombre(nombreArchivo.replace(/\.[^.]+$/, ""));
+  const extPorMime: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const rawExt = nombreArchivo.includes(".") ? sanitizarNombre(nombreArchivo.split(".").pop() || "") : "";
+  const extension = /^(jpe?g|png|webp)$/.test(rawExt) ? rawExt : (extPorMime[tipoMime] ?? "webp");
+  const nombreSanitizado = sanitizarNombre(nombreArchivo.replace(/\.[^.]+$/, "")).replace(/-+/g, "-").replace(/^-|-$/g, "") || "imagen";
 
   const imagenKey = `obras/${id}/${timestamp}-${nombreSanitizado}.${extension}`;
   const uploadUrl = await generarUrlSubida(request, env, imagenKey, tipoMime);

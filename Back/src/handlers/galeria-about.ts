@@ -8,7 +8,7 @@ const photoKey = (value: unknown): value is string => typeof value === 'string' 
 
 export async function listarFotosSobreNosotros(_request: Request, env: Env): Promise<Response> {
   const { results } = await env.DB.prepare('SELECT id,imagen_key,texto_alternativo,orden FROM fotos_sobre_nosotros WHERE orden>0 ORDER BY orden,id').all<{ id: string; imagen_key: string; texto_alternativo: string; orden: number }>();
-  return jsonResponse({ fotos: results.map((photo) => ({ id: photo.id, imagenUrl: generarUrlPublica(env, photo.imagen_key), texto_alternativo: photo.texto_alternativo, orden: photo.orden })), limite: 20 });
+  return jsonResponse({ fotos: results.map((photo) => ({ id: photo.id, imagenUrl: generarUrlPublica(env, photo.imagen_key), texto_alternativo: photo.texto_alternativo, orden: photo.orden })), limite: 100 });
 }
 
 export async function agregarFotoSobreNosotros(request: Request, env: Env): Promise<Response> {
@@ -19,7 +19,7 @@ export async function agregarFotoSobreNosotros(request: Request, env: Env): Prom
   if (!alt || alt.length > 160) return invalid('El texto alternativo debe tener entre 1 y 160 caracteres.');
   if (!await env.BUCKET.head(body.imagenKey)) return invalid('Sube la imagen antes de guardarla.');
   const count = await env.DB.prepare('SELECT COUNT(*) cantidad FROM fotos_sobre_nosotros WHERE orden>0').first<{ cantidad: number }>();
-  if (Number(count?.cantidad || 0) >= 20) return invalid('La galería admite hasta 20 fotografías.');
+  if (Number(count?.cantidad || 0) >= 100) return invalid('La galería admite hasta 100 fotografías.');
   const id = crypto.randomUUID();
   const orden = Number(count?.cantidad || 0) + 1;
   await env.DB.prepare('INSERT INTO fotos_sobre_nosotros(id,imagen_key,texto_alternativo,orden,fecha_creacion) VALUES(?,?,?,?,?)').bind(id, body.imagenKey, alt, orden, new Date().toISOString()).run();
@@ -28,7 +28,7 @@ export async function agregarFotoSobreNosotros(request: Request, env: Env): Prom
 
 export async function ordenarFotosSobreNosotros(request: Request, env: Env): Promise<Response> {
   const body = await request.json().catch(() => null) as { ids?: unknown } | null;
-  if (!body || Object.keys(body).length !== 1 || !Array.isArray(body.ids) || body.ids.length > 20 || body.ids.some((id) => typeof id !== 'string') || new Set(body.ids).size !== body.ids.length) return invalid('La lista de fotografías es inválida.');
+  if (!body || Object.keys(body).length !== 1 || !Array.isArray(body.ids) || body.ids.length > 100 || body.ids.some((id) => typeof id !== 'string') || new Set(body.ids).size !== body.ids.length) return invalid('La lista de fotografías es inválida.');
   const { results } = await env.DB.prepare('SELECT id FROM fotos_sobre_nosotros WHERE orden>0 ORDER BY orden').all<{ id: string }>();
   const ids = body.ids as string[];
   if (ids.length !== results.length || results.some(({ id }) => !ids.includes(id))) return invalid('La lista debe incluir todas las fotografías existentes.');

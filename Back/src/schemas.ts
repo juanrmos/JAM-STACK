@@ -41,13 +41,13 @@ export const actualizarObraSchema = obraCampos.partial().strict();
 /** POST /api/logos */
 export const crearLogoSchema = z.object({
   nombre: z.string().min(1, "El nombre es obligatorio").max(200),
-  imagenKey: z.string().min(1, "La clave de imagen es obligatoria"),
+  imagenKey: z.string().regex(/^logos\/[a-zA-Z0-9/_.-]+$/, "La clave de imagen es inválida"),
   activo: z.boolean().optional().default(false),
 });
 
 /** PUT /api/logos/:id */
 export const actualizarLogoSchema = z.object({
   nombre: z.string().min(1).max(200).optional(),
-  imagenKey: z.string().min(1).optional(),
+  imagenKey: z.string().regex(/^logos\/[a-zA-Z0-9/_.-]+$/, "La clave de imagen es inválida").optional(),
   activo: z.boolean().optional(),
 });

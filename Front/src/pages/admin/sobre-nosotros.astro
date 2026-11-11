@@ -35,7 +35,7 @@ const aboutFields = [
     <section class="about-admin__card" aria-labelledby="about-gallery-heading">
       <div class="about-admin__section-heading">
         <h3 id="about-gallery-heading">Galería fotográfica</h3>
-        <p>Hasta 20 imágenes autorizadas. Puedes cambiar el orden o quitar una fotografía.</p>
+        <p>Hasta 100 imágenes autorizadas. Puedes cambiar el orden o quitar una fotografía.</p>
       </div>
       <form id="about-photo-upload" class="about-admin__upload">
         <label for="about-photo-file">Agregar fotografía</label>
@@ -54,7 +54,7 @@ const aboutFields = [
   .about-admin{max-width:1050px;margin:2rem auto;padding:0 1rem 5rem;color:#254044}.about-admin__intro{display:grid;gap:.5rem;margin-bottom:1.5rem}.about-admin__intro>p{color:#d9a520;letter-spacing:.12em;font-size:.75rem}.about-admin__intro h2{font:clamp(2rem,5vw,3.2rem) 'Cormorant Garamond',serif;margin:0}.about-admin__intro>span,.about-admin__section-heading p{color:#748080}.about-admin__card{padding:1.25rem;margin:1rem 0;border:1px solid #ddd;background:#fff}.about-admin__section-heading{margin-bottom:1rem}.about-admin__section-heading h3{font:1.65rem 'Cormorant Garamond',serif;margin:0 0 .2rem}.about-admin__fields{display:grid;gap:.2rem}.about-admin .content-field{display:block;margin:1rem 0}.about-admin .content-field__label{display:block;font-weight:600;margin-bottom:.3rem}.about-admin .content-field__key{display:block;color:#98a29f;font: .75rem monospace;margin-bottom:.4rem}.about-admin .content-field input,.about-admin .content-field textarea,.about-admin__upload input{box-sizing:border-box;width:100%;padding:.8rem;border:1px solid #d7dcda;border-radius:4px;color:#254044;font:inherit}.about-admin .content-field textarea{min-height:100px;resize:vertical}.about-admin .content-field__meta{display:flex;justify-content:space-between;min-height:1.3rem;padding-top:.2rem}.about-admin .content-field__error{color:#b45f62;font-size:.75rem}.about-admin .content-field__counter{margin-left:auto;color:#98a29f;font-size:.75rem}.about-admin .content-field__counter.is-near-limit{color:#d9a520}.about-admin .content-field__counter.is-over-limit{color:#b45f62}.about-admin [aria-invalid=true]{border-color:#b45f62!important}.about-admin__save-row{display:flex;justify-content:space-between;align-items:center;gap:1rem;border-top:1px solid #e5e8e6;margin-top:1rem;padding-top:1rem}.about-admin__save-row p,.about-admin__count{color:#748080;font-size:.85rem}.about-admin__save-row>div{display:flex;gap:.5rem}.about-admin button{padding:.65rem 1rem;border:1px solid #ccd2d0;border-radius:4px;background:white;color:#254044;cursor:pointer}.about-admin button:disabled{opacity:.5;cursor:not-allowed}.about-admin .button-primary{background:#d9a520;border-color:#d9a520;color:#12262a;font-weight:700}.about-admin__upload{display:grid;gap:.65rem;padding:1.25rem;border:1px solid #e3e5e4;background:#fafaf8}.about-admin__upload label{font-size:.9rem}.about-admin__upload .button-primary{width:100%}.about-admin__upload p{margin:0;color:#748080}.about-admin__count{margin:.8rem 0}.admin-photo-gallery__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}.admin-photo-gallery__grid article{border:1px solid #ddd;padding:.7rem;background:white}.admin-photo-gallery__grid img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}.admin-photo-gallery__grid small{display:block;margin-top:.4rem;color:#526361}.admin-photo-gallery__actions{display:flex;gap:.4rem;margin-top:.5rem}.admin-photo-gallery__actions button:last-child{margin-left:auto}@media(max-width:600px){.about-admin__save-row{align-items:flex-start;flex-direction:column}.about-admin__save-row>div{width:100%}.about-admin__save-row button{flex:1}.admin-photo-gallery__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <script>
-  import { apiFetch } from '../../lib/auth';
+  import { apiFetch, sanitizeImage, uploadToSignedUrl } from '../../lib/auth';
   type Photo = { id: string; imagenUrl: string; texto_alternativo: string; orden: number };
   type Editable = HTMLInputElement | HTMLTextAreaElement;
   const textForm = document.querySelector<HTMLFormElement>('#about-text-form')!;
@@ -120,8 +120,8 @@ const aboutFields = [
     if (!response.ok) throw Error('No se pudieron cargar las fotografías.');
     photos = (await response.json()).fotos;
     photosLoaded = true;
-    document.querySelector('#about-photo-count')!.textContent = `${photos.length}/20 fotografías`;
-    photoList.innerHTML = photos.map((photo, index) => `<article><img src="${safe(photo.imagenUrl)}" alt="${safe(photo.texto_alternativo)}"><small>${index + 1}. ${safe(photo.texto_alternativo)}</small><div class="admin-photo-gallery__actions"><button type="button" data-move="up" data-id="${safe(photo.id)}" ${index===0?'disabled':''}>Subir</button><button type="button" data-move="down" data-id="${safe(photo.id)}" ${index===photos.length-1?'disabled':''}>Bajar</button><button type="button" data-delete-photo="${safe(photo.id)}">Eliminar</button></div></article>`).join('') || '<p>Aún no se agregaron fotografías.</p>';
+    document.querySelector('#about-photo-count')!.textContent = `${photos.length}/100 fotografías`;
+    photoList.innerHTML = photos.map((photo, index) => `<article><img loading="lazy" decoding="async" src="${safe(photo.imagenUrl)}" alt="${safe(photo.texto_alternativo)}"><small>${index + 1}. ${safe(photo.texto_alternativo)}</small><div class="admin-photo-gallery__actions"><button type="button" data-move="up" data-id="${safe(photo.id)}" ${index===0?'disabled':''}>Subir</button><button type="button" data-move="down" data-id="${safe(photo.id)}" ${index===photos.length-1?'disabled':''}>Bajar</button><button type="button" data-delete-photo="${safe(photo.id)}">Eliminar</button></div></article>`).join('') || '<p>Aún no se agregaron fotografías.</p>';
   }
   textFields.forEach((field) => {
     field.addEventListener('input', () => { delete textStatus.dataset.locked; field.dataset.touched = 'true'; updateTextState(); });
@@ -176,15 +176,15 @@ const aboutFields = [
   });
   document.querySelector<HTMLFormElement>('#about-photo-upload')!.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const file = document.querySelector<HTMLInputElement>('#about-photo-file')!.files?.[0];
-    if (!file || photos.length >= 20) { photoStatus.textContent = 'La galería admite hasta 20 fotografías.'; return; }
+    const rawFile = document.querySelector<HTMLInputElement>('#about-photo-file')!.files?.[0];
+    if (!rawFile || photos.length >= 100) { photoStatus.textContent = 'La galería admite hasta 100 fotografías.'; return; }
     photoStatus.textContent = 'Subiendo fotografía…';
     try {
+      const file = await sanitizeImage(rawFile);
       const grant = await apiFetch('/api/imagenes-sitio/upload-url', { method: 'POST', body: JSON.stringify({ nombreArchivo: file.name, tipoMime: file.type }) });
       if (!grant.ok) throw Error('Formato no permitido. Usa JPEG, PNG o WebP.');
       const { uploadUrl, imagenKey } = await grant.json();
-      const uploaded = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
-      if (!uploaded.ok) throw Error('No se pudo transferir la imagen.');
+      await uploadToSignedUrl(uploadUrl, file);
       const saved = await apiFetch('/api/about/photos', { method: 'POST', body: JSON.stringify({ imagenKey, textoAlternativo: (document.querySelector<HTMLInputElement>('#about-photo-alt')!).value }) });
       if (!saved.ok) throw Error((await saved.json()).error?.mensaje || 'No se pudo guardar la fotografía.');
       photoStatus.textContent = 'Fotografía agregada.';

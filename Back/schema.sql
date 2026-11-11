@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS fotos_sobre_nosotros (
  id TEXT PRIMARY KEY NOT NULL,
  imagen_key TEXT NOT NULL UNIQUE,
  texto_alternativo TEXT NOT NULL DEFAULT 'Fotografía de la Corporación Artística Antony Rodríguez' CHECK(length(trim(texto_alternativo)) BETWEEN 1 AND 160),
- orden INTEGER NOT NULL CHECK(orden BETWEEN -40 AND -1 OR orden BETWEEN 1 AND 20),
+ orden INTEGER NOT NULL CHECK(orden BETWEEN -100 AND -1 OR orden BETWEEN 1 AND 100),
  fecha_creacion TEXT NOT NULL
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uq_fotos_sobre_nosotros_orden ON fotos_sobre_nosotros(orden);

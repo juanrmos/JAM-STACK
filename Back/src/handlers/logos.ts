@@ -10,6 +10,7 @@ import {
 } from "../schemas";
 import { generarUrlSubida, generarUrlPublica } from "../lib/storage";
 import { jsonResponse } from "../routes/response";
+import { limpiarImagen } from "../storage/cleanup";
 
 // ---- Utilidades ----
 
@@ -84,8 +85,10 @@ export async function obtenerUrlSubidaLogo(
   const { nombreArchivo, tipoMime } = resultado.data;
   const id = generarId();
   const timestamp = Date.now();
-  const extension = nombreArchivo.split(".").pop() ?? "jpg";
-  const nombreSanitizado = sanitizarNombre(nombreArchivo.replace(/\.[^.]+$/, ""));
+  const extPorMime: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const rawExt = nombreArchivo.includes(".") ? sanitizarNombre(nombreArchivo.split(".").pop() || "") : "";
+  const extension = /^(jpe?g|png|webp)$/.test(rawExt) ? rawExt : (extPorMime[tipoMime] ?? "webp");
+  const nombreSanitizado = sanitizarNombre(nombreArchivo.replace(/\.[^.]+$/, "")) || "imagen";
 
   const imagenKey = `logos/${id}/${timestamp}-${nombreSanitizado}.${extension}`;
   const uploadUrl = await generarUrlSubida(request, env, imagenKey, tipoMime);
@@ -111,6 +114,9 @@ export async function crearLogo(
   }
 
   const { nombre, imagenKey, activo } = resultado.data;
+  if (!(await env.BUCKET.head(imagenKey))) {
+    return jsonResponse({ error: { codigo: "IMAGEN_NO_ENCONTRADA", mensaje: "Sube la imagen antes de guardar el logo." } }, 400);
+  }
   const id = generarId();
   const fechaCreacion = new Date().toISOString();
 
@@ -153,6 +159,9 @@ export async function actualizarLogo(
   }
 
   const campos = resultado.data;
+  if (campos.imagenKey !== undefined && !(await env.BUCKET.head(campos.imagenKey))) {
+    return jsonResponse({ error: { codigo: "IMAGEN_NO_ENCONTRADA", mensaje: "Sube la imagen antes de actualizar el logo." } }, 400);
+  }
   const updates: string[] = [];
   const values: unknown[] = [];
 
@@ -188,11 +197,7 @@ export async function actualizarLogo(
   }
 
   if (campos.imagenKey !== undefined && campos.imagenKey !== existente.imagen_key) {
-    try {
-      await env.BUCKET.delete(existente.imagen_key);
-    } catch (err) {
-      console.error(`Error eliminando objeto viejo R2 ${existente.imagen_key}:`, err);
-    }
+    await limpiarImagen(env, existente.imagen_key);
   }
 
   return jsonResponse({ actualizado: true });
@@ -230,11 +235,7 @@ export async function eliminarLogo(
   await env.DB.prepare("DELETE FROM logos WHERE id = ?").bind(logoId).run();
 
   // Mantener la imagen si D1 no confirma la eliminación del registro.
-  try {
-    await env.BUCKET.delete(logo.imagen_key);
-  } catch (err) {
-    console.error(`Error eliminando objeto R2 ${logo.imagen_key}:`, err);
-  }
+  await limpiarImagen(env, logo.imagen_key);
 
   return jsonResponse({ eliminado: true });
 }

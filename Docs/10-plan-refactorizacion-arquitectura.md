@@ -826,7 +826,7 @@ Esta sección actualiza las decisiones funcionales acordadas después de la secc
 - Materiales e Insumos presenta un enlace de consulta por WhatsApp, sin inventario, precios ni compra en línea. Las dos pestañas complementarias muestran sus propios textos, portadas y obras/fotos relacionadas por sus IDs; la introducción del grupo presenta ambas portadas como avance visual.
 - La introducción general y los textos de ambas pestañas se editan desde Admin > Contenido > Servicios. El nombre del grupo usa `grupos_servicios.nombre_publico`; su texto superior e introducción usan claves permitidas de `textos`; los nombres de las pestañas usan `servicios.nombre_publico`; sus lemas y descripciones usan `textos`. Las portadas existentes `service.electricos.cover` y `service.drywall.cover` se reutilizan en la introducción y en cada pestaña.
 - El perfil/biografía reutiliza los textos editoriales de Perfil y su fotografía única `profile.photo`. La tarjeta de Perfil solo aparece en Inicio y abre la vista Perfil. Se elimina de las vistas de servicio.
-- Sobre nosotros es una sección distinta, con textos propios en `textos` y una colección independiente de hasta 20 fotos, ordenable y administrable. El archivo binario se conserva en R2; D1 guarda claves, orden y texto alternativo.
+- Sobre nosotros es una sección distinta, con textos propios en `textos` y una colección independiente de hasta 100 fotos, ordenable y administrable. El archivo binario se conserva en R2; D1 guarda claves, orden y texto alternativo.
 - La cinta pública acepta hasta 50 obras por servicio. Conserva 5 obras iniciales por vista y carga las siguientes en tandas de 5 al acercarse al final. El archivo general conserva paginación. El orden de lectura es fecha de creación descendente y luego ID descendente.
 - Se retira el uso funcional de destacados y sus controles del Admin. `obras.destacado_slot` se mantiene por compatibilidad con el esquema histórico, pero el nuevo esquema obliga el valor `0`, no hay índice ni filtro de slots y el API no lo usa para presentar ni ordenar obras.
 
@@ -843,6 +843,6 @@ La administración de Sobre nosotros se presenta en una sola entrada del panel. 
 ### Validación requerida antes de integrar
 
 - Inicializar esquema, fixtures y medios con `--local` y el persist path nuevo; verificar que Worker y Front usan `127.0.0.1`.
-- Comprobar esquema, claves foráneas, slots cero, catálogo de 9 IDs, límites de 20 fotos y campos permitidos del cotizador.
+- Comprobar esquema, claves foráneas, slots cero, catálogo de 9 IDs, límite de 100 fotos y campos permitidos del cotizador.
 - Probar Admin de obras sin destacados, CRUD de obras y paginación, galerías por tandas hasta 50, filtros y orden descendente, navegación Perfil/Sobre nosotros, colección de fotos con orden y eliminación, nombres de servicios, cotizador y texto de WhatsApp.
 - Ejecutar typecheck, Astro check y build local. Un build por sí solo no certifica los recorridos funcionales.

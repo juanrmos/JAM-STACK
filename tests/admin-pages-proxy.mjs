@@ -64,6 +64,12 @@ test('el proxy permite contenido, textos, servicios e imágenes del panel y los 
     ['/admin/api/tipografia-portada', '/api/tipografia-portada', 'PUT'],
     ['/admin/api/imagenes-sitio/upload-url', '/api/imagenes-sitio/upload-url', 'POST'],
     ['/admin/api/imagenes-sitio/about.photo', '/api/imagenes-sitio/about.photo', 'PUT'],
+    ['/admin/api/about/photos', '/api/about/photos', 'GET'],
+    ['/admin/api/about/photos', '/api/about/photos', 'POST'],
+    ['/admin/api/about/photos/order', '/api/about/photos/order', 'PUT'],
+    ['/admin/api/about/photos/123e4567-e89b-12d3-a456-426614174000', '/api/about/photos/123e4567-e89b-12d3-a456-426614174000', 'DELETE'],
+    ['/admin/api/cotizador/campos', '/api/cotizador/campos', 'GET'],
+    ['/admin/api/cotizador/campos', '/api/cotizador/campos', 'PUT'],
   ];
 
   for (const [incomingPath, workerPath, method] of paths) {

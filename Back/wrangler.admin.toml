@@ -20,6 +20,7 @@ ALLOW_PAGES_PREVIEW_ORIGINS = "true"
 binding = "DB"
 database_name = "portafolio-db-contenido-candidato-2026-10-23"
 database_id = "3eb95e22-5657-4841-9a11-047eaa5fe746"
+migrations_dir = "migrations-production"
 
 [[r2_buckets]]
 binding = "BUCKET"

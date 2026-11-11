@@ -34,7 +34,9 @@ self.addEventListener("fetch", (event) => {
     PREFIXES_API.some((prefix) => url.pathname.startsWith(prefix)) ||
     request.headers.get("X-PWA-Version-Check") === "1"
   ) {
-    event.respondWith(fetch(request, { cache: "no-store" }));
+    event.respondWith(
+      fetch(request, { cache: "no-store" }).catch(() => Response.error())
+    );
     return;
   }
 
