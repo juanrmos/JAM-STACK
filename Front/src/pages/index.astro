@@ -22,8 +22,52 @@ import '../visual/styles/public/redesign/profile-avatar.css';
 import '../visual/styles/public/redesign/service-gallery.css';
 import '../visual/styles/public/redesign/overlays.css';
 import { enlaceWhatsapp } from '../features/cotizacion/whatsapp';
+
+const canonicalUrl = new URL('/', Astro.site ?? 'https://corporacionantonyrodriguez.com').href;
+const descripcionDocumento = 'Antony Rodríguez Solís, artista plástico y presidente ejecutivo de la Corporación Artística Antony Rodríguez en Huánuco. Murales, esculturas, cuadros, restauración e insumos artísticos.';
+const organizationId = `${canonicalUrl}#organization`;
+const personId = `${canonicalUrl}#antony-rodriguez-solis`;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${canonicalUrl}#website`,
+      name: 'Corporación Artística Antony Rodríguez',
+      alternateName: 'Corporación Antony Rodríguez',
+      url: canonicalUrl,
+      publisher: { '@id': organizationId },
+    },
+    {
+      '@type': 'Organization',
+      '@id': organizationId,
+      name: 'Corporación Artística Antony Rodríguez',
+      url: canonicalUrl,
+      telephone: '+51949772875',
+      address: {
+        '@type': 'PostalAddress',
+        addressRegion: 'Huánuco',
+        addressCountry: 'PE',
+      },
+      employee: { '@id': personId },
+    },
+    {
+      '@type': 'Person',
+      '@id': personId,
+      name: 'Antony Rodríguez Solís',
+      jobTitle: 'Presidente ejecutivo',
+      nationality: 'Peruana',
+      worksFor: { '@id': organizationId },
+    },
+  ],
+};
 ---
-<DocumentLayout tituloDocumento="Corporación Artística Antony Rodríguez">
+<DocumentLayout
+  tituloDocumento="Antony Rodríguez Solís | Corporación Artística Antony Rodríguez"
+  descripcionDocumento={descripcionDocumento}
+  canonicalUrl={canonicalUrl}
+  structuredData={structuredData}
+>
   <Shell />
   <main id="app-main"><Home/><Archive/><Profile/><About/><Complementary/><Contact/><Services/></main>
   <Quote/><Lightbox/>

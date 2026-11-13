@@ -6,8 +6,8 @@ const buildVersion = buildEnv.CF_PAGES_COMMIT_SHA || buildEnv.GITHUB_SHA || `loc
 
 // https://astro.build/config
 export default defineConfig({
-  // Canonical site origin for sitemap generation. Override when a custom domain is connected.
-  site: buildEnv.PUBLIC_SITE_URL || 'https://portafolio-front.pages.dev',
+  // Canonical production origin used by canonical URLs, robots.txt, and the sitemap.
+  site: 'https://corporacionantonyrodriguez.com',
   vite: {
     define: {
       __BUILD_VERSION__: JSON.stringify(buildVersion),
