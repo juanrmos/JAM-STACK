@@ -3,7 +3,7 @@ import type { APIRoute } from 'astro';
 export const prerender = true;
 
 export const GET: APIRoute = ({ site }) => {
-  const siteUrl = site || new URL('https://portafolio-front.pages.dev');
+  const siteUrl = site || new URL('https://corporacionantonyrodriguez.com');
   const homepage = new URL('/', siteUrl).href;
   const content = [
     '<?xml version="1.0" encoding="UTF-8"?>',

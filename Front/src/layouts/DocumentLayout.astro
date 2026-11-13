@@ -9,9 +9,20 @@ import { siteConfig } from "../config/site";
 
 interface Props {
   tituloDocumento?: string;
+  descripcionDocumento?: string;
+  canonicalUrl?: string;
+  structuredData?: Record<string, unknown>;
 }
 
-const { tituloDocumento = siteConfig.artista.nombreEstudio } = Astro.props;
+const {
+  tituloDocumento = siteConfig.artista.nombreEstudio,
+  descripcionDocumento = 'Portafolio artístico de Antony Rodríguez: murales, esculturas, cuadros y restauración.',
+  canonicalUrl,
+  structuredData,
+} = Astro.props;
+const structuredDataJson = structuredData
+  ? JSON.stringify(structuredData).replace(/</g, '\\u003c')
+  : undefined;
 
 import "../visual/styles/base.css";
 import "../visual/styles/shared/title-fonts.css";
@@ -89,11 +100,15 @@ void adminApiBaseUrl;
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="theme-color" content="#2F4F4F" />
 
-    <meta
-      name="description"
-      content="Portafolio de arte — murales, retratos y esculturas personalizadas con la maestría del realismo"
-    />
+    <meta name="description" content={descripcionDocumento} />
     <title>{tituloDocumento}</title>
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {canonicalUrl && <meta property="og:site_name" content={siteConfig.artista.nombreEstudio} />}
+    {canonicalUrl && <meta property="og:type" content="website" />}
+    {canonicalUrl && <meta property="og:title" content={tituloDocumento} />}
+    {canonicalUrl && <meta property="og:description" content={descripcionDocumento} />}
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    {structuredDataJson && <script type="application/ld+json" set:html={structuredDataJson} />}
 
     <FontLinks />
   </head>
