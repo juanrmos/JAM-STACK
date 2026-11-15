@@ -1,0 +1,19 @@
+---
+import SeoServiceLanding from '../../visual/components/public/redesign/SeoServiceLanding.astro';
+import { paginasSeoServicios, paginaSeoComplementarios } from '../../config/seo-servicios';
+import type { ServicioSeo } from '../../config/seo-servicios';
+
+export function getStaticPaths() {
+  return [
+    ...paginasSeoServicios.map((page) => ({ params: { slug: page.slug }, props: { entry: { kind: 'service' as const, page } } })),
+    { params: { slug: paginaSeoComplementarios.slug }, props: { entry: { kind: 'group' as const, page: paginaSeoComplementarios } } },
+  ];
+}
+
+const { entry } = Astro.props as {
+  entry:
+    | { kind: 'service'; page: ServicioSeo }
+    | { kind: 'group'; page: typeof paginaSeoComplementarios }
+};
+---
+<SeoServiceLanding entry={entry} />
