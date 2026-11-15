@@ -1,0 +1,216 @@
+---
+import DocumentLayout from '../../../../layouts/DocumentLayout.astro';
+import Shell from './Shell.astro';
+import Quote from './Quote.astro';
+import { servicios } from '../../../../config/servicios';
+import { paginasSeoServicios, paginaSeoComplementarios, urlServicio } from '../../../../config/seo-servicios';
+import type { ServicioSeo } from '../../../../config/seo-servicios';
+import { nombresPublicosIniciales } from '../../../../../../Shared/contracts/servicios';
+import catalogo from '../../../../../../Shared/contracts/textos.json';
+import { enlaceWhatsapp } from '../../../../features/cotizacion/whatsapp';
+import '../../../../visual/styles/public/redesign/tokens.css';
+import '../../../../visual/styles/public/redesign/scrollbars.css';
+import '../../../../visual/styles/public/redesign/shell.css';
+import '../../../../visual/styles/public/redesign/overlays.css';
+import '../../../../visual/styles/public/redesign/service-landing.css';
+
+type Entry =
+  | { kind: 'service'; page: ServicioSeo }
+  | { kind: 'group'; page: typeof paginaSeoComplementarios };
+
+interface Props { entry: Entry }
+
+const { entry } = Astro.props;
+const groupPage = entry.kind === 'group';
+const service = groupPage ? null : servicios.find((item) => item.id === entry.page.id) ?? null;
+const serviceSeo = entry.kind === 'service' ? entry.page : null;
+const entryPage = entry.page;
+const serviceId = service?.id;
+const serviceName = serviceId ? nombresPublicosIniciales[serviceId] : 'Servicios Complementarios';
+const subtitleKey = serviceId ? `service.${serviceId}.subtitle` : '';
+const descriptionKey = serviceId ? `service.${serviceId}.description` : '';
+const text = (key: string) => catalogo[key as keyof typeof catalogo]?.valor || '';
+const subtitle = subtitleKey ? text(subtitleKey) : '';
+const description = descriptionKey ? text(descriptionKey) : text('complementary.description');
+const canonicalUrl = new URL(`/servicios/${entryPage.slug}/`, Astro.site ?? 'https://corporacionantonyrodriguez.com').href;
+const organizationId = 'https://corporacionantonyrodriguez.com/#organization';
+const structuredData = groupPage
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: serviceName,
+      description: entryPage.descripcion,
+      url: canonicalUrl,
+      mainEntity: {
+        '@type': 'ItemList',
+        itemListElement: paginasSeoServicios.filter((item) => item.id === 'electricos' || item.id === 'drywall').map((item, index) => ({
+          '@type': 'ListItem', position: index + 1, name: nombresPublicosIniciales[item.id], url: new URL(urlServicio(item.id), Astro.site ?? 'https://corporacionantonyrodriguez.com').href,
+        })),
+      },
+    }
+  : {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: serviceName,
+      serviceType: serviceName,
+      description: entryPage.descripcion,
+      url: canonicalUrl,
+      areaServed: { '@type': 'AdministrativeArea', name: 'Huánuco, Perú' },
+      provider: { '@id': organizationId },
+    };
+
+const complementaryServices = paginasSeoServicios.filter((item) => item.id === 'electricos' || item.id === 'drywall');
+const otherServices = paginasSeoServicios.filter((item) => item.id !== serviceId);
+
+const whatsappHref = serviceId === 'materiales'
+  ? enlaceWhatsapp('Hola, deseo consultar por la Venta de Materiales e Insumos.')
+  : null;
+---
+<DocumentLayout
+  tituloDocumento={entryPage.titulo}
+  descripcionDocumento={entryPage.descripcion}
+  canonicalUrl={canonicalUrl}
+  structuredData={structuredData}
+>
+  <Shell />
+  <main id="app-main" class="seo-service-page" data-seo-page={groupPage ? 'complementarios' : serviceId}>
+    {groupPage ? (
+      <>
+        <section class="seo-service-hero seo-service-hero--group" aria-labelledby="seo-service-heading">
+          <div class="seo-service-hero__copy">
+            <a href="/" class="seo-service-back">← Inicio</a>
+            <p class="eyebrow">Soluciones para tus espacios · Huánuco, Perú</p>
+            <h1 id="seo-service-heading" data-service-group-display="complementarios">Servicios Complementarios</h1>
+            <p class="seo-service-hero__description" data-text-key="complementary.description">{description}</p>
+          </div>
+          <div class="seo-service-group-cards" aria-label="Servicios complementarios disponibles">
+            {complementaryServices.map((page) => {
+              const item = servicios.find((candidate) => candidate.id === page.id)!;
+              return (
+                <a class="seo-service-group-card" href={urlServicio(page.id)}>
+                  <img src={item.imagen} alt={page.altImagen} loading="eager" data-service-cover={page.id} />
+                  <span class="seo-service-group-card__content">
+                    <strong data-service-name-display={page.id}>{nombresPublicosIniciales[page.id]}</strong>
+                    <span data-text-key={`service.${page.id}.description`}>{text(`service.${page.id}.description`)}</span>
+                    <span class="seo-service-link">Ver servicio ↗</span>
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+        <section class="seo-service-links" aria-labelledby="seo-service-links-heading">
+          <p class="eyebrow">Catálogo</p>
+          <h2 id="seo-service-links-heading">Explora los servicios</h2>
+          <div class="seo-service-links__grid">
+            {paginasSeoServicios.map((page) => (
+              <a href={urlServicio(page.id)} data-service-name-display={page.id}>{nombresPublicosIniciales[page.id]} <span aria-hidden="true">↗</span></a>
+            ))}
+          </div>
+        </section>
+      </>
+    ) : service && serviceId ? (
+      <>
+        <section class="seo-service-hero" aria-labelledby="seo-service-heading">
+          <div class="seo-service-hero__copy">
+            <a href="/" class="seo-service-back">← Inicio</a>
+            <p class="eyebrow">Servicio artístico · Huánuco, Perú</p>
+            <h1 id="seo-service-heading"><span data-service-name-display={serviceId}>{serviceName}</span> en Huánuco</h1>
+            <p class="seo-service-hero__motto" data-text-key={subtitleKey}>{subtitle}</p>
+            <p class="seo-service-hero__description" data-text-key={descriptionKey}>{description}</p>
+            <div class="seo-service-hero__actions">
+              {whatsappHref ? (
+                <a class="gold-button" href={whatsappHref} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp ↗</a>
+              ) : (
+                <button type="button" class="gold-button" data-open-quote data-service-quote={serviceId}>Consultar este servicio ↗</button>
+              )}
+              <a class="seo-service-text-link" href={`/?vista=${serviceId}`} data-view={serviceId}>Ver obras del servicio →</a>
+            </div>
+          </div>
+          <figure class="seo-service-hero__image">
+            <img src={service.imagen} alt={serviceSeo?.altImagen || serviceName} loading="eager" data-service-cover={serviceId} />
+            <figcaption data-service-name-display={serviceId}>{serviceName}</figcaption>
+          </figure>
+        </section>
+        <section class="seo-service-links" aria-labelledby="seo-service-links-heading">
+          <p class="eyebrow">Más soluciones</p>
+          <h2 id="seo-service-links-heading">Otros servicios artísticos</h2>
+          <div class="seo-service-links__grid">
+            {otherServices.map((page) => (
+              <a href={urlServicio(page.id)} data-service-name-display={page.id}>{nombresPublicosIniciales[page.id]} <span aria-hidden="true">↗</span></a>
+            ))}
+            <a href={`/servicios/${paginaSeoComplementarios.slug}/`}>Servicios Complementarios <span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
+      </>
+    ) : null}
+  </main>
+  <Quote />
+</DocumentLayout>
+
+<script>
+  import { iniciarContenido } from '../../../../features/redesign/content';
+  import { iniciarCotizadorNuevo } from '../../../../features/redesign/quote';
+  import { obtenerLogoActivo } from '../../../../services/api/logos';
+  import { actualizarFuenteImagen } from '../../../../features/media/image-source';
+  import { actualizarFavicon } from '../../../../features/brand/favicon';
+
+  const menu = document.querySelector<HTMLElement>('#main-menu');
+  const menuToggle = document.querySelector<HTMLButtonElement>('#menu-toggle');
+  menuToggle?.addEventListener('click', () => {
+    const open = menu?.classList.toggle('is-open') ?? false;
+    menuToggle.setAttribute('aria-expanded', String(open));
+  });
+  menu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+    menu.classList.remove('is-open');
+    menuToggle?.setAttribute('aria-expanded', 'false');
+  }));
+
+  const serviceNameId = document.querySelector<HTMLElement>('.seo-service-page')?.dataset.seoPage;
+  const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href;
+  const titleSuffix = ' | Corporación Artística Antony Rodríguez';
+  const updateSearchMetadata = () => {
+    if (!serviceNameId) return;
+    const isGroup = serviceNameId === 'complementarios';
+    const name = isGroup
+      ? document.querySelector<HTMLElement>('[data-service-group-display="complementarios"]')?.textContent?.trim()
+      : document.querySelector<HTMLElement>(`[data-service-name-display="${serviceNameId}"]`)?.textContent?.trim();
+    const description = document.querySelector<HTMLElement>(isGroup
+      ? '[data-text-key="complementary.description"]'
+      : `[data-text-key="service.${serviceNameId}.description"]`)?.textContent?.trim();
+    if (name) {
+      const title = `${name} en Huánuco${titleSuffix}`;
+      document.title = title;
+      document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', title);
+    }
+    if (description) {
+      const text = `${name || 'Servicio artístico'} en Huánuco. ${description}`.slice(0, 160);
+      document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', text);
+      document.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.setAttribute('content', text);
+    }
+    if (canonical) document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.setAttribute('content', canonical);
+  };
+
+  const results = await Promise.allSettled([iniciarContenido(), iniciarCotizadorNuevo()]);
+  updateSearchMetadata();
+  document.addEventListener('app:service-names-updated', updateSearchMetadata);
+  document.documentElement.dataset.publicState = 'ready';
+
+  void obtenerLogoActivo().then((logo) => {
+    if (!logo) return;
+    actualizarFavicon(logo.imagenUrl);
+    const target = document.querySelector<HTMLElement>('.brand__mark');
+    if (!target) return;
+    const image = document.createElement('img');
+    image.alt = 'Logo activo';
+    image.width = 42;
+    image.height = 42;
+    void actualizarFuenteImagen(image, logo.imagenUrl).then((loaded) => {
+      if (loaded) target.replaceChildren(image);
+    });
+  }).catch(() => {});
+
+  if (results.some((result) => result.status === 'rejected')) {
+    document.documentElement.dataset.publicState = 'ready';
+  }
+</script>

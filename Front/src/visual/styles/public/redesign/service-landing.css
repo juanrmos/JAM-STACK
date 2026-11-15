@@ -1,0 +1,74 @@
+.seo-service-page {
+  box-sizing: border-box;
+  min-height: calc(100dvh - var(--header-h, 92px));
+  padding: clamp(2rem, 5vw, 5rem) clamp(1rem, 5vw, 5rem) 4rem;
+  background: #12262a;
+  color: #faf8f2;
+}
+
+.seo-service-hero {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 6rem);
+  width: min(1200px, 100%);
+  margin: 0 auto;
+}
+
+.seo-service-hero__copy { max-width: 620px; }
+.seo-service-back { display: inline-block; margin-bottom: 2rem; color: #d9a520; }
+.seo-service-hero .eyebrow { margin: 0 0 .9rem; }
+.seo-service-hero h1 {
+  margin: 0;
+  font: 500 clamp(2.8rem, 6.5vw, 5.7rem)/.98 'Cormorant Garamond', serif;
+  letter-spacing: -.025em;
+  overflow-wrap: anywhere;
+}
+.seo-service-hero__motto { margin: 1rem 0; color: #d9a520; font: 500 clamp(1.35rem, 2.5vw, 2rem)/1.2 'Cormorant Garamond', serif; }
+.seo-service-hero__description { max-width: 58ch; margin: 1rem 0 0; color: #dae1dc; font-size: clamp(1rem, 1.4vw, 1.15rem); line-height: 1.7; }
+.seo-service-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; margin-top: 2rem; }
+.seo-service-hero .gold-button { border: 0; border-radius: 2px; padding: 1rem 1.4rem; background: #d9a520; color: #17292a; font-weight: 700; cursor: pointer; }
+.seo-service-text-link { color: #d9a520; }
+.seo-service-hero__image {
+  position: relative;
+  min-height: min(58vw, 500px);
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #d9a52080;
+  background: #1b3a3d;
+}
+.seo-service-hero__image::after { position: absolute; inset: 35% 0 0; background: linear-gradient(transparent, #101819df); content: ''; pointer-events: none; }
+.seo-service-hero__image img { width: 100%; height: 100%; min-height: inherit; object-fit: cover; }
+.seo-service-hero__image figcaption { position: absolute; z-index: 1; right: 1.5rem; bottom: 1.5rem; left: 1.5rem; color: #faf8f2; font: 500 clamp(1.5rem, 3vw, 2.6rem)/1.1 'Cormorant Garamond', serif; }
+
+.seo-service-links { width: min(1200px, 100%); margin: clamp(4rem, 8vw, 7rem) auto 0; padding-top: 2rem; border-top: 1px solid #faf8f222; }
+.seo-service-links .eyebrow { margin: 0 0 .5rem; }
+.seo-service-links h2 { margin: 0 0 1.5rem; color: #faf8f2; font: 500 clamp(1.8rem, 3vw, 2.6rem)/1.1 'Cormorant Garamond', serif; }
+.seo-service-links__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
+.seo-service-links__grid a { display: flex; justify-content: space-between; gap: .75rem; padding: 1rem; border: 1px solid #faf8f222; color: #dae1dc; transition: border-color .2s ease, color .2s ease; }
+.seo-service-links__grid a:hover { border-color: #d9a520; color: #d9a520; }
+.seo-service-group-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.seo-service-group-card { position: relative; display: flex; min-height: 380px; align-items: flex-end; overflow: hidden; border: 1px solid #faf8f222; color: #faf8f2; }
+.seo-service-group-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.55); transition: transform .35s ease, filter .35s ease; }
+.seo-service-group-card:hover img { transform: scale(1.03); filter: brightness(.72); }
+.seo-service-group-card__content { position: relative; display: grid; gap: .65rem; width: 100%; padding: 1.5rem; background: linear-gradient(transparent, #101819d9); }
+.seo-service-group-card__content strong { font: 500 clamp(1.5rem, 2.5vw, 2.25rem)/1.05 'Cormorant Garamond', serif; }
+.seo-service-group-card__content > span:not(.seo-service-link) { color: #dae1dc; line-height: 1.5; }
+.seo-service-link { color: #d9a520; font-weight: 700; }
+
+@media (max-width: 760px) {
+  .seo-service-page { padding: 1.5rem 1rem 3rem; }
+  .seo-service-hero { grid-template-columns: 1fr; gap: 2rem; }
+  .seo-service-back { margin-bottom: 1.5rem; }
+  .seo-service-hero__image { min-height: 62vw; }
+  .seo-service-hero__image img { max-height: 62vw; }
+  .seo-service-hero__actions { align-items: stretch; flex-direction: column; }
+  .seo-service-hero__actions > * { text-align: center; }
+  .seo-service-group-cards { grid-template-columns: 1fr; }
+  .seo-service-group-card { min-height: 300px; }
+  .seo-service-links__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seo-service-group-card img, .seo-service-links__grid a { transition: none; }
+}
