@@ -295,6 +295,13 @@
   [data-admin-view="contenido"] .button-secondary { min-height: 40px; padding: .55rem .68rem; font-size: .74rem; }
 }
 
+@media (max-width: 360px) {
+  [data-admin-view="contenido"] .content-savebar { flex-wrap: wrap; gap: .35rem; }
+  [data-admin-view="contenido"] .content-savebar__state { max-width: none; width: 100%; }
+  [data-admin-view="contenido"] .content-savebar__actions { width: 100%; }
+  [data-admin-view="contenido"] .content-savebar__actions button { flex: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-admin-view="contenido"] *, [data-admin-view="contenido"] *::before, [data-admin-view="contenido"] *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
